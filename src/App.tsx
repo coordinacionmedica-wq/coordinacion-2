@@ -120,8 +120,20 @@ import { AntibioticManual } from './components/AntibioticManual';
 import { HumanResourcesView } from './components/HumanResourcesView';
 import { ProductivityStatsView } from './components/ProductivityStatsView';
 import { AdminToolbox } from './components/AdminToolbox';
+import { AppProvider } from './context/AppContext';
+import { BootScreen } from './components/BootScreen';
+import { LoginPage } from './components/LoginPage';
+import { AppHeader } from './components/AppHeader';
+import { BottomNav } from './components/BottomNav';
+import { AyudaView } from './components/AyudaView';
+import { DocsView } from './components/DocsView';
+import { CodigoRojoModal } from './components/CodigoRojoModal';
+import { CodigoAzulModal } from './components/CodigoAzulModal';
+import { AuthInboxModal } from './components/AuthInboxModal';
+import { CallModal } from './components/CallModal';
+import { AppStyles } from './components/AppStyles';
 
-export default function App() {
+function AppContent() {
   // View States
   const [isBooting, setIsBooting] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -2673,237 +2685,11 @@ Usa un tono directivo, formal y conciso en español. Solo usa negritas y viñeta
     return list;
   }, [selectedMonth, selectedYear, daysInMonth]);
 
-  if (isBooting) {
-    return (
-      <div className="fixed inset-0 bg-stone-50 flex flex-col items-center justify-center z-50">
-        <motion.div 
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="text-6xl mb-4"
-        >
-          🏥
-        </motion.div>
-        <h1 className="font-bold text-3xl text-emerald-700 tracking-widest uppercase">COORDINACION MEDICA HDSAR</h1>
-        <p className="text-xs text-emerald-600/60 mt-2 font-mono">CONSOLIDACIÓN TOTAL V27.0 - REACT</p>
-      </div>
-    );
-  }
+  if (isBooting) return <BootScreen />;
 
-  if (!session) {
-    return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center p-6 overflow-y-auto">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-6 md:p-10 rounded-[32px] border border-emerald-100 w-full max-w-md text-center shadow-2xl relative my-4 md:my-8"
-        >
-          <div className="flex justify-center mb-6">
-            <div className="bg-emerald-50 p-4 rounded-full border border-emerald-100">
-               <ShieldCheck className="w-10 h-10 text-emerald-600" />
-            </div>
-          </div>
-          <h2 className="text-2xl font-bold text-emerald-700 mb-8 uppercase tracking-widest">COORDINACION MEDICA HDSAR</h2>
-          
-          {fbUser && (
-            <div className="mb-6 flex items-center justify-center gap-2 bg-emerald-50/50 py-2 px-4 rounded-full border border-emerald-100/50">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[9px] uppercase font-black text-emerald-600/70 tracking-widest">
-                Acceso Cifrado y Protegido
-              </span>
-            </div>
-          )}
+  if (!session) return <LoginPage />;
 
-          <div className="space-y-4">
-            <input 
-              type="text" 
-              placeholder="Usuario / ID" 
-              className="w-full bg-stone-50 border border-slate-200 text-slate-800 p-4 rounded-xl outline-none focus:border-emerald-500 transition-colors font-bold"
-              value={loginU}
-              onChange={(e) => setLoginU(e.target.value)}
-            />
-            <input 
-              type="password" 
-              placeholder="Contraseña" 
-              className="w-full bg-stone-50 border border-slate-200 text-slate-800 p-4 rounded-xl outline-none focus:border-emerald-500 transition-colors font-bold"
-              value={loginP}
-              onChange={(e) => setLoginP(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-            />
-            <button 
-              onClick={handleLogin}
-              className="w-full bg-emerald-600 text-white p-4 rounded-xl font-black text-lg shadow-xl shadow-emerald-500/20 active:scale-95 transition-transform"
-            >
-              ACCEDER AL SISTEMA
-            </button>
-
-            <button 
-              onClick={() => setShowRegModal(true)}
-              className="w-full bg-emerald-50 text-emerald-700 p-4 rounded-xl font-bold border border-emerald-100 hover:bg-emerald-100 transition-colors"
-            >
-              REGISTRAR TALENTO HUMANO
-            </button>
-
-            <a 
-              href="https://wa.me/573173683886" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="mt-6 flex items-center justify-center gap-2 text-emerald-700 font-bold bg-emerald-50/50 p-3 rounded-xl border border-emerald-100/50 hover:bg-emerald-100 transition-colors cursor-pointer"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" className="w-6 h-6 text-emerald-500">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.878-.788-1.472-1.761-1.645-2.06-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-              <div className="text-left">
-                <span className="block text-[10px] uppercase text-emerald-600/70">Contacto Coordinador</span>
-                <span>+57 317 3683886</span>
-              </div>
-            </a>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
-              <div className="relative flex justify-center text-[10px] uppercase tracking-widest"><span className="bg-white px-4 text-slate-400">O acceder con</span></div>
-            </div>
-
-            <button 
-              onClick={handleGoogleLogin}
-              className="w-full bg-white border border-slate-200 text-slate-800 p-4 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-slate-50 transition-colors shadow-sm"
-            >
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
-              CONTINUAR CON GOOGLE
-            </button>
-          </div>
-          <p className="text-[10px] text-slate-500 mt-8 tracking-widest uppercase font-mono">Consolidado 2026</p>
-        </motion.div>
-
-        {/* Modal de Registro para Usuarios Nuevos */}
-        <AnimatePresence>
-          {showRegModal && (
-            <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xl z-[200] flex items-center justify-center p-0 sm:p-4 overflow-y-auto">
-              <motion.div 
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 20, opacity: 0 }}
-                className="bg-white w-full h-full sm:h-auto sm:max-w-2xl sm:rounded-[40px] shadow-2xl p-6 sm:p-10 border-0 sm:border sm:border-emerald-100 relative flex flex-col pt-20 sm:pt-10"
-              >
-                {/* Botón Cerrar / Cancelar */}
-                <button 
-                  onClick={() => {
-                    setShowRegModal(false);
-                    setGeneratedCreds(null);
-                  }}
-                  className="absolute top-6 right-6 p-3 bg-slate-100/50 hover:bg-rose-50 rounded-full text-slate-400 hover:text-rose-600 transition-all active:scale-90 z-[210] flex items-center gap-2 group"
-                >
-                  <span className="text-[10px] uppercase font-black tracking-widest hidden sm:inline group-hover:inline">Cancelar</span>
-                  <X className="w-6 h-6" />
-                </button>
-
-                {generatedCreds ? (
-                  <div className="text-center py-10 space-y-6">
-                    <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle className="w-10 h-10 text-emerald-600" />
-                    </div>
-                    <h2 className="text-3xl font-black text-slate-800">¡Registro Exitoso!</h2>
-                    <p className="text-slate-500">Sus credenciales han sido enviadas a <span className="font-bold text-emerald-600">{regEmail}</span>.</p>
-                    
-                    <div className="bg-emerald-50 p-8 rounded-3xl border border-emerald-100 space-y-4">
-                      <div className="flex justify-between items-center border-b border-emerald-200/50 pb-3">
-                        <span className="text-[10px] uppercase font-black text-emerald-600/50">Usuario</span>
-                        <span className="text-xl font-mono font-black text-emerald-700">{generatedCreds.u}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] uppercase font-black text-emerald-600/50">Contraseña</span>
-                        <span className="text-xl font-mono font-black text-emerald-700">{generatedCreds.p}</span>
-                      </div>
-                    </div>
-
-                    <button 
-                      onClick={() => {
-                        setShowRegModal(false);
-                        setGeneratedCreds(null);
-                        setLoginU(generatedCreds.u);
-                        setLoginP(generatedCreds.p);
-                      }}
-                      className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-emerald-500/20 active:scale-95 transition-transform"
-                    >
-                      INICIAR SESIÓN AHORA
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="mb-8">
-                      <h2 className="text-3xl font-black text-slate-800 tracking-tight">Auto-Registro de Talento Humano</h2>
-                      <p className="text-sm text-slate-400 italic">Complete todos los requerimientos para acceder al sistema hospitalario.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Nombres *</label>
-                          <input className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regNombre} onChange={e => setRegNombre(e.target.value)} />
-                        </div>
-                        <div>
-                          <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Apellidos *</label>
-                          <input className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regApellidos} onChange={e => setRegApellidos(e.target.value)} />
-                        </div>
-                        <div>
-                          <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Cédula de Ciudadanía *</label>
-                          <input className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regCedula} onChange={e => setRegCedula(e.target.value)} />
-                        </div>
-                        <div>
-                          <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Registro Médico / Tarjeta Prof.</label>
-                          <input className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regRegistroMedico} onChange={e => setRegRegistroMedico(e.target.value)} />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Correo Electrónico *</label>
-                          <input type="email" className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regEmail} onChange={e => setRegEmail(e.target.value)} />
-                        </div>
-                        <div>
-                          <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Teléfono / WhatsApp</label>
-                          <input className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regTelefono} onChange={e => setRegTelefono(e.target.value)} />
-                        </div>
-                        <div>
-                          <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Cargo / Rol *</label>
-                          <select className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regRol} onChange={e => setRegRol(e.target.value as any)}>
-                            <option value="Médico General">Médico General</option>
-                            <option value="Médico Rural">Médico Rural</option>
-                            <option value="Médico Especialista">Médico Especialista</option>
-                            <option value="Médico Obstetra/Ginecólogo">Médico Ginecobstetra</option>
-                            <option value="Enfermero Jefe">Enfermera(o) Jefe</option>
-                            <option value="Jefe de Partos">Jefe de Partos</option>
-                            <option value="Auxiliar Enfermería">Auxiliar de Enfermería</option>
-                            <option value="Interno">Médico Interno</option>
-                            <option value="Triage">Personal de Triage</option>
-                            <option value="Odontólogo">Odontólogo</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button 
-                      onClick={handleSelfRegister}
-                      disabled={isRegistering}
-                      className={`w-full mt-8 ${isRegistering ? 'bg-slate-300' : 'bg-emerald-600'} text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3`}
-                    >
-                      {isRegistering ? (
-                        <>
-                          <div className="w-5 h-5 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-                          PROCESANDO...
-                        </>
-                      ) : (
-                        'FINALIZAR REGISTRO Y GENERAR ACCESOS'
-                      )}
-                    </button>
-                  </>
-                )}
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-      </div>
-    );
-  }
+  {/* LoginPage extracted to components/LoginPage.tsx */}
 
   const roles = [
     'Médico Rural', 
@@ -2923,40 +2709,7 @@ Usa un tono directivo, formal y conciso en español. Solo usa negritas y viñeta
 
   return (
     <div className={`bg-stone-50 min-h-screen text-slate-800 flex flex-col font-sans transition-all duration-500`} style={{ '--primary': theme.primary } as any}>
-      <style>{`
-        :root { 
-          --primary: ${theme.primary}; 
-          --primary-soft: ${theme.primary}15;
-          --primary-mid: ${theme.primary}66;
-        }
-        .bg-primary { background-color: var(--primary); }
-        .text-primary { color: var(--primary); }
-        .border-primary { border-color: var(--primary); }
-        .hover\\:bg-primary:hover { background-color: var(--primary); }
-        .hover\\:text-primary:hover { color: var(--primary); }
-        
-        .font-sans { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
-        .font-serif { font-family: ui-serif, Georgia, serif; }
-        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 5px;
-          height: 5px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: var(--primary-mid);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: var(--primary);
-        }
-        .safe-area-bottom {
-          padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.25rem);
-        }
-      `}</style>
+      <AppStyles theme={theme} />
       {/* Offline Alert */}
       <AnimatePresence>
         {!isOnline && (
@@ -2991,141 +2744,7 @@ Usa un tono directivo, formal y conciso en español. Solo usa negritas y viñeta
         )}
       </AnimatePresence>
       
-          {isFirebaseUnauthenticatedAdmin && (
-            <div className="bg-amber-500 text-black text-[10px] uppercase font-black py-2 px-4 flex items-center justify-center gap-3 sticky top-0 z-[60] shadow-lg">
-              <ShieldCheck className="w-4 h-4" />
-              <span>Atención: Ha entrado como Administrador Maestro pero no ha iniciado sesión con Google. Los cambios no se guardarán en la nube.</span>
-              <button 
-                onClick={handleGoogleLogin}
-                className="bg-black text-white px-3 py-1 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Vincular Google
-              </button>
-            </div>
-          )}
-      <header className="bg-white/95 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-40 p-2 md:p-4 no-print shadow-sm">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-4">
-             <div>
-                <h1 className="font-black text-emerald-700 tracking-tighter flex items-center gap-2">
-                   <StethoscopeIcon className="w-5 h-5" />
-                   COORDINACIÓN MÉDICA HDSAR
-                </h1>
-                <p className="text-[10px] text-stone-500 font-mono italic">Julián Humberto Vélez Varela Md - Coordinador Médico</p>
-             </div>
-
-             {/* Bandeja de Autorización for Admins */}
-             {isAdminUser && (
-               <button 
-                 onClick={() => setShowAuthInbox(true)}
-                 className={`
-                    p-2 rounded-xl border flex items-center gap-2 transition-all relative ml-4
-                    ${shiftRequests.filter(r => r.status === 'pending').length > 0 
-                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-500 animate-pulse' 
-                      : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600'}
-                 `}
-               >
-                 <ShieldCheck className="w-5 h-5" />
-                 <div className="text-left hidden lg:block">
-                   <div className="text-[8px] uppercase font-bold opacity-50">Administración</div>
-                   <div className="text-[10px] uppercase font-black">Bandeja de Autorización</div>
-                 </div>
-                 {shiftRequests.filter(r => r.status === 'pending').length > 0 && (
-                   <span className="absolute -top-1 -right-1 bg-amber-500 text-black text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-black shadow-lg">
-                     {shiftRequests.filter(r => r.status === 'pending').length}
-                   </span>
-                 )}
-               </button>
-             )}
-
-             {/* Dynamic Notification Indicator */}
-             {session?.doctorId && userNotifications.length > 0 && (
-               <div className="relative group">
-                 <button className="bg-emerald-500/10 p-2 rounded-xl border border-emerald-500/20 text-emerald-600 relative">
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                      {userNotifications.length}
-                    </span>
-                 </button>
-                 {/* Tooltip-like dropdown */}
-                 <div className="absolute top-full left-0 mt-2 w-72 bg-white border border-emerald-100 rounded-2xl shadow-2xl p-4 hidden group-hover:block z-[60]">
-                    <h4 className="text-[10px] uppercase text-emerald-600 font-bold mb-3 border-b border-emerald-500/10 pb-2">Notificaciones</h4>
-                    <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-                       {userNotifications.map(n => (
-                         <div key={n.id} className="text-[11px] bg-emerald-50/30 p-3 rounded-xl border border-emerald-100 group/item">
-                            <p className="text-slate-700">{n.message}</p>
-                            <div className="flex justify-between items-center mt-2">
-                              <span className="text-[8px] text-slate-400">{new Date(n.timestamp).toLocaleTimeString()}</span>
-                              <button 
-                                onClick={() => markNotificationRead(n.id)}
-                                className="text-emerald-500 hover:scale-110 active:scale-95"
-                              >
-                                <CheckCircle className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                         </div>
-                       ))}
-                    </div>
-                 </div>
-               </div>
-             )}
-          </div>
-          <div className="flex items-center gap-3">
-            <a 
-              href="https://wa.me/573173683886?mode=gi_t" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-[#25D366] text-white px-4 py-1.5 rounded-xl text-xs font-black hover:bg-[#20ba59] transition-all shadow-lg shadow-emerald-500/10 no-print"
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span className="hidden md:inline uppercase">Chat Médico</span>
-            </a>
-            <button 
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-rose-500 font-bold text-xs bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20 no-print"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline uppercase">Cerrar Sesión</span>
-            </button>
-          </div>
-        </div>
-        
-        <div className="max-w-7xl mx-auto mt-4 overflow-x-auto">
-          <div className="flex gap-2">
-            {[
-              { id: 'home', label: 'Dashboard', icon: ChevronRight },
-              { id: 'turnos', label: 'Turnero Hospitalario', icon: Calendar },
-              { id: 'pic', label: 'Capacitaciones (PIC)', icon: BrainCircuit },
-              { id: 'solicitudes', label: 'Solicitudes', icon: Send },
-              { id: 'rural', label: 'Disponibilidades Rurales', icon: MapPin },
-              ...((session.r === 'admin' || session.r === 'root') ? [
-                { id: 'stats', label: 'Estadísticas', icon: BarChart3 }
-              ] : []),
-              { id: 'novedades', label: 'Novedades', icon: ClipboardList },
-              { id: 'bd', label: 'Talento Humano', icon: Database },
-              { id: 'docs', label: 'Guías & Manuales', icon: FileText },
-              ...(session.r === 'admin' ? [
-                { id: 'admin', label: 'Panel Administrativo', icon: Settings },
-                { id: 'toolbox', label: 'Caja de Herramientas AI', icon: Database },
-                { id: 'ayuda', label: 'Resumen Órdenes', icon: BookOpen }
-              ] : [])
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
-                  activeTab === tab.id 
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20' 
-                    : 'bg-white text-emerald-800/60 hover:bg-emerald-50 border border-emerald-100'
-                }`}
-              >
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </header>
+      <AppHeader isAdminUser={isAdminUser} showAuthInbox={() => setShowAuthInbox(true)} />
 
       {/* Main Content */}
       <main className="flex-1 max-w-[100vw] overflow-x-hidden p-4 pb-24 md:pb-32">
@@ -3398,133 +3017,7 @@ Usa un tono directivo, formal y conciso en español. Solo usa negritas y viñeta
             </motion.div>
           )}
 
-          {activeTab === 'ayuda' && (
-            <motion.div 
-               key="ayuda"
-               initial={{ opacity: 0, y: 10 }} 
-               animate={{ opacity: 1, y: 0 }} 
-               exit={{ opacity: 0, y: -10 }}
-               className="space-y-6 max-w-5xl mx-auto pb-20"
-            >
-              <div className="bg-white p-8 rounded-[40px] border border-slate-200 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-12 opacity-5">
-                   <BookOpen className="w-64 h-64" />
-                </div>
-                
-                <h2 className="text-3xl font-black text-slate-800 mb-2">Resumen de Funciones y Órdenes</h2>
-                <p className="text-slate-500 font-medium mb-8">Guía operativa para la administración del sistema V27.0 - ESE Roldanillo</p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                   <div className="p-6 bg-sky-50 rounded-3xl border border-sky-100 group hover:shadow-md transition-all">
-                      <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-sky-600 mb-4">
-                        <Calendar className="w-5 h-5" />
-                      </div>
-                      <h4 className="font-bold text-sky-900 mb-2">Gestión de Turnos</h4>
-                      <p className="text-xs text-sky-700 leading-relaxed">
-                        Ciclo de siglas: Clic en celdas para cambiar turnos. El sistema valida automáticamente conflictos de agenda y genera descansos (PT) tras noches.
-                      </p>
-                   </div>
-
-                   <div className="p-6 bg-rose-50 rounded-3xl border border-rose-100 group hover:shadow-md transition-all">
-                      <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-rose-600 mb-4">
-                        <PhoneIncoming className="w-5 h-5" />
-                      </div>
-                      <h4 className="font-bold text-rose-900 mb-2">Llamado Disponibilidad</h4>
-                      <p className="text-xs text-rose-700 leading-relaxed">
-                        Procedimiento de crisis: Busca al médico asignado a Disponibilidad (Siglas D) y envía una notificación push de alta prioridad al dispositivo del médico.
-                      </p>
-                   </div>
-
-                   <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100 group hover:shadow-md transition-all">
-                      <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-emerald-600 mb-4">
-                        <ClipboardList className="w-5 h-5" />
-                      </div>
-                      <h4 className="font-bold text-emerald-900 mb-2">Control de Auditoría</h4>
-                      <p className="text-xs text-emerald-700 leading-relaxed">
-                        Registro irreversible de novedades: Cada cambio de turno queda grabado con sello de tiempo, admin responsable y valor anterior.
-                      </p>
-                   </div>
-
-                   <div className="p-6 bg-violet-50 rounded-3xl border border-violet-100 group hover:shadow-md transition-all">
-                      <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-violet-600 mb-4">
-                        <BrainIcon className="w-5 h-5" />
-                      </div>
-                      <h4 className="font-bold text-violet-900 mb-2">PIC (Programa Institucional de Capacitaciones)</h4>
-                      <p className="text-xs text-violet-700 leading-relaxed">
-                        Módulo PIC: Permite programar capacitaciones mensuales cargando soportes de Pre-test, asistencia firmada y evaluación post-test obligatoria.
-                      </p>
-                   </div>
-
-                   <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 group hover:shadow-md transition-all">
-                      <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-amber-600 mb-4">
-                        <Users className="w-5 h-5" />
-                      </div>
-                      <h4 className="font-bold text-amber-900 mb-2">Roles y Permisos</h4>
-                      <p className="text-xs text-amber-700 leading-relaxed">
-                        Diferenciación jerárquica: Solo Admins pueden programar. Enfermeros Jefes pueden gestionar llamados a disponibilidad y alertas.
-                      </p>
-                   </div>
-
-                   <div className="p-6 bg-indigo-50 rounded-3xl border border-indigo-100 group hover:shadow-md transition-all">
-                      <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-indigo-600 mb-4">
-                        <ShieldCheck className="w-5 h-5" />
-                      </div>
-                      <h4 className="font-bold text-indigo-900 mb-2">Auto-Registro</h4>
-                      <p className="text-xs text-indigo-700 leading-relaxed">
-                        Flujo de ingreso: Médicos nuevos se registran &rarr; Admin valida y activa &rarr; Se generan credenciales para el logueo del profesional.
-                      </p>
-                   </div>
-
-                   <div className="p-6 bg-slate-900 rounded-3xl border border-slate-800 text-white group hover:shadow-md transition-all">
-                      <div className="w-10 h-10 bg-slate-800 rounded-xl shadow-sm flex items-center justify-center text-sky-400 mb-4">
-                        <FileText className="w-5 h-5" />
-                      </div>
-                      <h4 className="font-bold mb-2">Informes de Función</h4>
-                      <p className="text-[10px] text-slate-400 leading-relaxed">
-                        Resumen para Administrador: Este panel consolida todas las reglas de negocio aplicadas al motor de turnos del hospital.
-                      </p>
-                   </div>
-                </div>
-
-                <div className="mt-12 space-y-4">
-                   <h3 className="text-xl font-black text-slate-800">Órdenes de Sistema (Comandos)</h3>
-                   <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 overflow-x-auto">
-                      <table className="w-full text-left text-sm font-medium text-slate-600">
-                         <thead>
-                            <tr className="border-b border-slate-200 uppercase text-[10px] font-black tracking-widest text-slate-400">
-                               <th className="pb-4 py-2">Comando / Función</th>
-                               <th className="pb-4 py-2">Propósito Operativo</th>
-                               <th className="pb-4 py-2">Acceso</th>
-                            </tr>
-                         </thead>
-                         <tbody className="divide-y divide-slate-100">
-                            <tr>
-                               <td className="py-4 font-bold text-slate-800">cycleShift()</td>
-                               <td className="py-4">Ciclar turnos en la cuadrícula mensual</td>
-                               <td className="py-4"><span className="px-2 py-1 bg-sky-100 text-sky-700 rounded-lg text-[10px] font-black">ADMIN</span></td>
-                            </tr>
-                            <tr>
-                               <td className="py-4 font-bold text-slate-800">pushNotification()</td>
-                               <td className="py-4">Enviar alertas push a dispositivos registrados</td>
-                               <td className="py-4"><span className="px-2 py-1 bg-sky-100 text-sky-700 rounded-lg text-[10px] font-black">ADMIN / ENF JEF</span></td>
-                            </tr>
-                            <tr>
-                               <td className="py-4 font-bold text-slate-800">handleCallAvailability()</td>
-                               <td className="py-4">Activar protocolo de médico de guardia</td>
-                               <td className="py-4"><span className="px-2 py-1 bg-rose-100 text-rose-700 rounded-lg text-[10px] font-black">ADMIN / ENF JEF</span></td>
-                            </tr>
-                            <tr>
-                               <td className="py-4 font-bold text-slate-800">updateDoctorMonth()</td>
-                               <td className="py-4">Persistencia granular por profesional</td>
-                               <td className="py-4"><span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black">SISTEMA</span></td>
-                            </tr>
-                         </tbody>
-                      </table>
-                   </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
+          {activeTab === 'ayuda' && <AyudaView />}
 
           {activeTab === 'stats' && (
             <motion.div 
@@ -4822,30 +4315,10 @@ Usa un tono directivo, formal y conciso en español. Solo usa negritas y viñeta
           )}
 
           {activeTab === 'docs' && (
-            <motion.div 
-               key="docs" 
-               initial={{ opacity: 0, y: 10 }} 
-               animate={{ opacity: 1, y: 0 }}
-               className="h-full space-y-4"
-            >
-              <div className="flex gap-4">
-                 <button 
-                  className="flex-1 p-6 bg-emerald-50 rounded-2xl border border-emerald-100 hover:border-emerald-500 transition-all flex items-center justify-center gap-3 font-bold text-emerald-800 shadow-sm"
-                  onClick={() => setShowAntibioticManual(true)}
-                 >
-                    <FileText className="text-emerald-600" /> Manual Antibióticos
-                 </button>
-                 <button 
-                  className="flex-1 p-6 bg-rose-50 rounded-2xl border border-rose-100 hover:border-rose-500 transition-all flex items-center justify-center gap-3 font-bold text-rose-800 shadow-sm"
-                  onClick={() => setShowInductionManual(true)}
-                 >
-                    <Users className="text-rose-500" /> Inducción General
-                 </button>
-              </div>
-              <div className="bg-white rounded-3xl h-[60vh] flex items-center justify-center text-slate-300 overflow-hidden">
-                 <p className="text-slate-400 italic">Pre-visualización de PDF bloqueada por políticas de iframe.</p>
-              </div>
-            </motion.div>
+            <DocsView
+              onShowAntibioticManual={() => setShowAntibioticManual(true)}
+              onShowInductionManual={() => setShowInductionManual(true)}
+            />
           )}
 
           {activeTab === 'admin' && session.r === 'admin' && (
@@ -5363,51 +4836,7 @@ Usa un tono directivo, formal y conciso en español. Solo usa negritas y viñeta
         </AnimatePresence>
       </main>
 
-      {/* Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-emerald-100 p-1 md:p-2 flex justify-around z-50 no-print max-w-7xl mx-auto rounded-t-3xl sm:mb-2 sm:px-4 shadow-2xl safe-area-bottom">
-        {[
-          { id: 'home', icon: ChevronRight, label: 'Home' },
-          { id: 'turnos', icon: Calendar, label: 'Turnos' },
-          { id: 'solicitudes', icon: Send, label: 'Solicitudes' },
-          { id: 'rural', icon: MapPin, label: 'Rural' },
-          { id: 'novedades', icon: ClipboardList, label: 'Novedades' },
-          ...(session.r === 'admin' ? [{ id: 'admin', icon: Settings, label: 'Admin' }] : [])
-        ].map(btn => (
-          <button
-            key={btn.id}
-            onClick={() => setActiveTab(btn.id as any)}
-            className={`flex flex-col items-center justify-center p-2 md:p-3 rounded-2xl flex-1 md:w-24 transition-all ${
-              activeTab === btn.id ? 'text-white bg-emerald-600 shadow-lg' : 'text-slate-400 hover:text-emerald-600'
-            }`}
-          >
-            <btn.icon className="w-5 h-5 md:w-6 md:h-6 mb-0.5 md:mb-1" />
-            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-widest">{btn.label}</span>
-          </button>
-        ))}
-      </nav>
-
-      <style>{`
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; color: black !important; }
-          .turns-table { font-size: 8px !important; color: black !important; width: 100% !important; border: 1px solid #ccc !important; }
-          td, th { border: 1px solid #ccc !important; padding: 2px !important; color: black !important; background: transparent !important; }
-          .sticky-col { position: relative !important; background: white !important; border-right: 1px solid #ccc !important; box-shadow: none !important; }
-          .h-low, .h-ok, .h-over { color: black !important; border: 1px solid #ccc !important; }
-        }
-        
-        /* Custom scrollbars */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #fafaf9; }
-        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #059669; }
-
-        .slot-label {
-          writing-mode: vertical-rl;
-          text-orientation: mixed;
-          transform: rotate(180deg);
-        }
-      `}</style>
+      <BottomNav />
 
       {editingDoc && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-center justify-center p-6">
@@ -5535,73 +4964,20 @@ Usa un tono directivo, formal y conciso en español. Solo usa negritas y viñeta
           </motion.div>
         </div>
       )}
-      {showAuthInbox && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-center justify-center p-6">
-          <motion.div initial={{scale:0.9, opacity:0}} animate={{scale:1, opacity:1}} className="bg-white w-full max-w-2xl p-8 rounded-[32px] border border-emerald-100 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-              <ShieldCheck className="w-48 h-48 text-emerald-600" />
-            </div>
-            
-            <div className="flex justify-between items-center mb-6 relative z-10">
-              <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3">
-                <ShieldCheck className="w-6 h-6 text-emerald-600" />
-                Bandeja de Autorización
-              </h2>
-              <button onClick={() => setShowAuthInbox(false)} className="bg-slate-50 p-2 rounded-xl text-slate-400 hover:text-rose-500 transition-colors border border-slate-200">
-                <XCircle className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 relative z-10">
-              {shiftRequests.filter(r => r.status === 'pending').length === 0 ? (
-                <div className="text-center py-20">
-                  <div className="text-emerald-500/30 font-black uppercase tracking-widest italic">No hay solicitudes pendientes</div>
-                </div>
-              ) : (
-                shiftRequests.filter(r => r.status === 'pending').map(req => {
-                  const docName = doctors.find(d => d.id === req.doctorId)?.nombre || 'Médico Desconocido';
-                  return (
-                    <div key={req.id} className="bg-slate-50 border border-emerald-100 p-5 rounded-2xl flex justify-between items-center group hover:border-emerald-500/50 transition-all shadow-sm">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-black text-slate-800 uppercase text-sm">{docName}</span>
-                          <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold uppercase">Solicitud</span>
-                        </div>
-                        <div className="text-xs text-emerald-600">
-                          Día {req.day} - Jornada: <span className="font-bold uppercase">{req.slot}</span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 mt-2 italic bg-white p-3 rounded-xl border border-emerald-50 border-dashed">
-                          "{req.reason || 'Sin motivo especificado'}"
-                        </p>
-                      </div>
-                      <div className="flex gap-2 ml-4">
-                         <button 
-                           onClick={() => updateRequestStatus(req.id, 'approved')}
-                           className="w-12 h-12 flex items-center justify-center bg-emerald-600 text-white rounded-xl hover:scale-110 active:scale-95 transition-all shadow-lg shadow-emerald-500/20"
-                           title="Autorizar"
-                         >
-                            <CheckCircle className="w-6 h-6" />
-                         </button>
-                         <button 
-                           onClick={() => updateRequestStatus(req.id, 'rejected')}
-                           className="w-12 h-12 flex items-center justify-center bg-rose-500 text-white rounded-xl hover:scale-110 active:scale-95 transition-all shadow-lg shadow-rose-500/20"
-                           title="Rechazar"
-                         >
-                            <XCircle className="w-6 h-6" />
-                         </button>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            <div className="mt-8 pt-6 border-t border-emerald-100 text-[10px] text-slate-400 italic text-center">
-              Las solicitudes autorizadas se verán reflejadas automáticamente en el turnero.
-            </div>
-          </motion.div>
-        </div>
-      )}
+      <AuthInboxModal
+        isOpen={showAuthInbox}
+        onClose={() => setShowAuthInbox(false)}
+        requests={shiftRequests}
+        doctors={doctors}
+        onApprove={(id) => {
+          const req = shiftRequests.find(r => r.id === id);
+          if (req) approveRequest(req.id.toString(), req.doctorId, req.day, req.slot);
+        }}
+        onReject={(id) => {
+          const req = shiftRequests.find(r => r.id === id);
+          if (req) rejectRequest(req.id.toString(), req.doctorId, req.day, req.slot);
+        }}
+      />
       {/* Modal Components */}
       <InductionManual 
         isOpen={showInductionManual} 
@@ -5613,110 +4989,25 @@ Usa un tono directivo, formal y conciso en español. Solo usa negritas y viñeta
       />
 
       {/* Availability Call Modal */}
-      <AnimatePresence>
-        {showCallModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-lg rounded-[40px] shadow-2xl p-8 border border-rose-100 relative"
-            >
-              <button onClick={() => setShowCallModal(false)} className="absolute top-6 right-6 p-2 bg-stone-50 rounded-full text-slate-400 hover:text-rose-500 transition-colors z-30">
-                <XCircle className="w-6 h-6" />
-              </button>
-
-              <div className="mb-8 flex items-center gap-4">
-                <div className="p-4 bg-rose-50 rounded-3xl text-rose-600">
-                   <PhoneIncoming className="w-8 h-8" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black text-slate-800">Llamado a Disponibilidad</h2>
-                  <p className="text-[10px] text-rose-500 font-bold uppercase tracking-widest">Protocolo de Asistencia Institucional</p>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                   <div>
-                      <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Día</label>
-                      <input type="number" min={1} max={daysInMonth} value={callDay} onChange={e => { setCallDay(Number(e.target.value)); setCallTargetId(null); }} className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-bold" />
-                   </div>
-                   <div>
-                      <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Jornada</label>
-                      <select value={callSlot} onChange={e => { setCallSlot(e.target.value as SlotType); setCallTargetId(null); }} className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-bold">
-                        <option value="m">Mañana</option>
-                        <option value="t">Tarde</option>
-                        <option value="n">Noche</option>
-                      </select>
-                   </div>
-                </div>
-
-                <div>
-                  <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Asistencial a Llamar</label>
-                  <select 
-                    value={callTargetId || ''} 
-                    onChange={e => setCallTargetId(Number(e.target.value))} 
-                    className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-bold"
-                  >
-                    <option value="">Selección Automática (Primer Disponible)</option>
-                    {Object.keys(currentMonthData).reduce((acc: any[], idStr) => {
-                      const id = Number(idStr);
-                      const sigla = currentMonthData[id]?.[callSlot]?.[callDay] || 'X';
-                      if (sigla.startsWith('D')) {
-                        const doc = doctors.find(d => d.id === id);
-                        if (doc) acc.push({ id: doc.id, name: doc.nombre, sigla });
-                      }
-                      return acc;
-                    }, []).map(opt => (
-                      <option key={opt.id} value={opt.id}>{opt.name} ({opt.sigla})</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Servicio o Labor Administrativa</label>
-                    <select 
-                      value={callService}
-                      onChange={e => setCallService(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-bold"
-                    >
-                      <option value="Traslado Médico">TRASLADO MÉDICO</option>
-                      <option value="Apoyo Urgencias">APOYO URGENCIAS</option>
-                      <option value="Apoyo Hospitalización">APOYO HOSPITALIZACIÓN</option>
-                      <option value="Apoyo Observación">APOYO OBSERVACIÓN</option>
-                      <option value="Apoyo al Triage">APOYO AL TRIAGE</option>
-                      <option value="Cubrir Incapacidad">CUBRIR INCAPACIDAD</option>
-                      <option value="Ayudantía Quirúrgica">AYUDANTÍA QUIRÚRGICA</option>
-                      <option value="Brigadas">BRIGADAS</option>
-                      <option value="Consulta Externa">CONSULTA EXTERNA</option>
-                      <option value="Administrativo">ADMINISTRATIVO</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Administrador / Enfermero que llama</label>
-                    <input 
-                      type="text" 
-                      placeholder={session?.n || "Nombre del responsable"}
-                      value={callCaller}
-                      onChange={e => setCallCaller(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-bold font-mono"
-                    />
-                  </div>
-                </div>
-
-                <button 
-                  onClick={handleCallAvailability}
-                  className="w-full bg-rose-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-rose-500/20 hover:bg-rose-700 transition-all flex items-center justify-center gap-3"
-                >
-                  <Send className="w-5 h-5" /> GENERAR ALERTA DE LLAMADO
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <CallModal
+        isOpen={showCallModal}
+        onClose={() => setShowCallModal(false)}
+        callDay={callDay}
+        setCallDay={setCallDay}
+        callSlot={callSlot}
+        setCallSlot={setCallSlot}
+        callTargetId={callTargetId}
+        setCallTargetId={setCallTargetId}
+        callService={callService}
+        setCallService={setCallService}
+        callCaller={callCaller}
+        setCallCaller={setCallCaller}
+        daysInMonth={daysInMonth}
+        currentMonthData={currentMonthData}
+        doctors={doctors}
+        sessionName={session?.n}
+        onConfirm={handleCallAvailability}
+      />
 
       <AnimatePresence>
         {showActivitiesModal && (
@@ -5881,243 +5172,17 @@ Usa un tono directivo, formal y conciso en español. Solo usa negritas y viñeta
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {showCodigoRojo && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300] flex items-center justify-center p-4 overflow-y-auto">
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-4xl rounded-[40px] shadow-2xl p-8 border border-rose-100 relative"
-            >
-              <button onClick={() => setShowCodigoRojo(false)} className="absolute top-6 right-6 p-2 bg-rose-50 rounded-full text-rose-400 hover:text-rose-600 transition-colors z-30">
-                <XCircle className="w-6 h-6" />
-              </button>
+      <CodigoRojoModal isOpen={showCodigoRojo} onClose={() => setShowCodigoRojo(false)} />
 
-              <div className="mb-8 flex items-center gap-6">
-                <div className="p-5 bg-rose-100 rounded-3xl text-rose-600 animate-pulse shadow-lg shadow-rose-200">
-                   <Flame className="w-10 h-10" />
-                </div>
-                <div>
-                  <h2 className="text-4xl font-black text-slate-800 tracking-tighter">CÓDIGO ROJO</h2>
-                  <p className="text-sm text-rose-600 font-black uppercase tracking-[0.2em] mt-1">Hemorragia Obstétrica • Protocolo HDSAR</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* ALERTA TEMPRANA - NEW SECTION */}
-                <div className="col-span-1 md:col-span-3 bg-rose-600 p-6 rounded-3xl text-white shadow-lg">
-                   <h3 className="font-black text-xs mb-4 uppercase flex items-center gap-2">
-                      <AlertCircle className="w-5 h-5" /> PANEL DE ALERTA TEMPRANA (GRADOS DE CHOQUE)
-                   </h3>
-                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="bg-white/10 p-3 rounded-2xl border border-white/20">
-                         <div className="text-[10px] uppercase opacity-70 font-bold mb-1">Sensorio</div>
-                         <div className="text-xs font-black">Normal / Agitado / Letárgico</div>
-                      </div>
-                      <div className="bg-white/10 p-3 rounded-2xl border border-white/20">
-                         <div className="text-[10px] uppercase opacity-70 font-bold mb-1">Perfusión</div>
-                         <div className="text-xs font-black">Normal / Pálida / Fría / Sudorosa</div>
-                      </div>
-                      <div className="bg-white/10 p-3 rounded-2xl border border-white/20">
-                         <div className="text-[10px] uppercase opacity-70 font-bold mb-1">Pulso (LPM)</div>
-                         <div className="text-xs font-black">60-90 / 91-100 / 101-120 / &gt;120</div>
-                      </div>
-                      <div className="bg-white/10 p-3 rounded-2xl border border-white/20">
-                         <div className="text-[10px] uppercase opacity-70 font-bold mb-1">Presión Sistólica</div>
-                         <div className="text-xs font-black">&gt;90 / 80-90 / 70-79 / &lt;70 mmHg</div>
-                      </div>
-                   </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="bg-rose-50 p-6 rounded-3xl border border-rose-100">
-                    <h3 className="font-black text-rose-700 text-xs mb-4 uppercase flex items-center gap-2">
-                       <Timer className="w-4 h-4" /> MINUTO 0: ACTIVACIÓN
-                    </h3>
-                    <ul className="space-y-2 text-xs font-bold text-slate-600">
-                      <li className="flex gap-2"><span>1.</span> Identificar choque o hemorragia &gt;500ml</li>
-                      <li className="flex gap-2"><span>2.</span> Alertar al equipo y activar alarma</li>
-                      <li className="flex gap-2"><span>3.</span> Oxígeno por cánula (3L) o máscara</li>
-                      <li className="flex gap-2"><span>4.</span> Posición Decúbito Lateral Izq.</li>
-                    </ul>
-                  </div>
-                  <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
-                    <h3 className="font-black text-amber-700 text-xs mb-4 uppercase">DISTRIBUCIÓN DEL EQUIPO</h3>
-                    <div className="space-y-3">
-                       <div className="flex items-center gap-2 text-xs">
-                         <div className="w-2 h-2 bg-amber-500 rounded-full" />
-                         <span className="font-black">Coordinador:</span> Dirige y ordena
-                       </div>
-                       <div className="flex items-center gap-2 text-xs">
-                         <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                         <span className="font-black">Asistente 1:</span> Vía Aérea (Cabeza)
-                       </div>
-                       <div className="flex items-center gap-2 text-xs">
-                         <div className="w-2 h-2 bg-green-500 rounded-full" />
-                         <span className="font-black">Asistente 2:</span> Circulación (Brazos)
-                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                   <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-100">
-                      <h3 className="font-black text-emerald-700 text-xs mb-4 uppercase flex items-center gap-2">
-                         <Syringe className="w-4 h-4" /> MINUTO 1-20: REANIMACIÓN
-                      </h3>
-                      <ul className="space-y-2 text-xs font-bold text-slate-600">
-                        <li className="flex gap-2"><span>•</span> 2 Catéteres gruesos (#14 o #16)</li>
-                        <li className="flex gap-2"><span>•</span> Muestras: Hemoclasif, Hemograma, Pruebas Coag.</li>
-                        <li className="flex gap-2"><span>•</span> Cristaloides calientes (2 Litros)</li>
-                        <li className="flex gap-2"><span>•</span> Sonda Foley para control de diuresis</li>
-                      </ul>
-                   </div>
-                   <div className="bg-white p-6 rounded-3xl border border-slate-200">
-                      <h3 className="font-black text-slate-800 text-xs mb-4 uppercase flex items-center gap-2">
-                         <HeartPulse className="w-4 h-4" /> MINUTO 20-60: HEMOSTASIA
-                      </h3>
-                      <div className="space-y-2 text-[10px] font-bold text-slate-500">
-                        <div className="p-2 bg-slate-100 rounded-lg">Masaje Uterino Bimanual Permanente</div>
-                        <div className="grid grid-cols-2 gap-2">
-                           <div className="p-2 bg-rose-50 text-rose-700 rounded-lg">Oxitocina: 40 UI IV</div>
-                           <div className="p-2 bg-blue-50 text-blue-700 rounded-lg">Misoprostol: 800mcg</div>
-                        </div>
-                        <div className="p-2 bg-amber-50 text-amber-700 rounded-lg">Tranexámico: 1g IV lento</div>
-                      </div>
-                   </div>
-                </div>
-
-                <div className="space-y-4">
-                   <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl">
-                      <h3 className="font-black text-rose-500 text-xs mb-4 uppercase flex items-center gap-2">
-                         <AlertCircle className="w-4 h-4" /> MANEJO AVANZADO
-                      </h3>
-                      <p className="text-[10px] opacity-70 mb-4 italic leading-relaxed">Si la hemorragia persiste tras 60 minutos o el choque es grave:</p>
-                      <ul className="space-y-3 text-xs font-black">
-                        <li className="flex gap-3 items-center text-rose-400">
-                           <div className="w-4 h-4 rounded-full border border-rose-500 flex items-center justify-center text-[8px]">1</div>
-                           INICIAR TRANSFUSIÓN (PAQUETE 1)
-                        </li>
-                        <li className="flex gap-3 items-center">
-                           <div className="w-4 h-4 rounded-full border border-slate-500 flex items-center justify-center text-[8px]">2</div>
-                           DECISIÓN QUIRÚRGICA
-                        </li>
-                        <li className="flex gap-3 items-center">
-                           <div className="w-4 h-4 rounded-full border border-slate-500 flex items-center justify-center text-[8px]">3</div>
-                           DETERMINAR REMISIÓN NIVEL III
-                        </li>
-                      </ul>
-                   </div>
-                   <div className="p-4 rounded-2xl border-2 border-dashed border-rose-200 text-center">
-                      <p className="text-[9px] font-black text-rose-400 uppercase">🚨 LLAMADO PRIORITARIO: GINECO-OBSTETRICIA</p>
-                   </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showCodigoAzul && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300] flex items-center justify-center p-4 overflow-y-auto">
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-4xl rounded-[40px] shadow-2xl p-8 border border-blue-100 relative"
-            >
-              <button onClick={() => setShowCodigoAzul(false)} className="absolute top-6 right-6 p-2 bg-blue-50 rounded-full text-blue-400 hover:text-blue-600 transition-colors z-30">
-                <XCircle className="w-6 h-6" />
-              </button>
-
-              <div className="mb-8 flex items-center gap-6">
-                <div className="p-5 bg-blue-100 rounded-3xl text-blue-600 shadow-lg shadow-blue-200">
-                   <Activity className="w-10 h-10" />
-                </div>
-                <div>
-                  <h2 className="text-4xl font-black text-slate-800 tracking-tighter">CÓDIGO AZUL</h2>
-                  <p className="text-sm text-blue-600 font-black uppercase tracking-[0.2em] mt-1">RCP Avanzado • Soporte Vital HDSAR</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-4">
-                  <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100">
-                    <h3 className="font-black text-blue-700 text-xs mb-4 uppercase">1. RECONOCIMIENTO</h3>
-                    <div className="space-y-2 text-xs font-bold text-slate-600">
-                       <div className="p-2 bg-white rounded-lg">• Verificar escena segura</div>
-                       <div className="p-2 bg-white rounded-lg font-black text-blue-600">• ¿No responde? Pedir apoyo</div>
-                       <div className="p-2 bg-white rounded-lg">• Pulso y Resp (&lt; 10s)</div>
-                    </div>
-                  </div>
-                  <div className="bg-slate-900 text-white p-6 rounded-3xl">
-                     <h3 className="font-black text-blue-400 text-xs mb-4 uppercase">2. COMPRESIONES (CAB)</h3>
-                     <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                           <div className="text-xl font-black text-blue-500">30:2</div>
-                           <div className="text-[10px] leading-tight">Ciclo de compresiones y ventilaciones</div>
-                        </div>
-                        <p className="text-[10px] opacity-60">Frecuencia: 100-120 lpm. Profundidad: 5-6 cm. Permitir descompresión total.</p>
-                     </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                   <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
-                      <h3 className="font-black text-amber-700 text-xs mb-4 uppercase">3. RITMOS DESFIBRILABLES</h3>
-                      <p className="text-[9px] font-black text-slate-400 mb-3 uppercase">TVSP / FV</p>
-                      <div className="space-y-3 text-xs font-bold">
-                         <div className="p-3 bg-white rounded-xl border border-amber-200 text-amber-600 text-center">DESCARGA (200J Bifásico)</div>
-                         <div className="p-3 bg-white rounded-xl border border-slate-100">Adrenalina 1mg (3-5 min)</div>
-                         <div className="p-3 bg-white rounded-xl border border-slate-100">Amiodarona 300mg / 150mg</div>
-                      </div>
-                   </div>
-                   <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200">
-                      <h3 className="font-black text-slate-400 text-xs mb-4 uppercase">4. RITMOS NO DESFIBRILABLES</h3>
-                      <p className="text-[9px] font-black text-slate-400 mb-3 uppercase">Asistolia / AESP</p>
-                      <div className="space-y-3 text-xs font-bold">
-                         <div className="p-3 bg-blue-600 text-white rounded-xl text-center shadow-lg">ADRENALINA LO ANTES POSIBLE</div>
-                         <div className="p-3 bg-white rounded-xl border border-slate-200">RCP Continuo (2 min)</div>
-                         <div className="p-3 bg-white rounded-xl border border-slate-200">Tratar causas (5H / 5T)</div>
-                      </div>
-                   </div>
-                </div>
-
-                <div className="space-y-4">
-                   <div className="bg-white p-6 rounded-3xl border-2 border-blue-100 h-full">
-                      <h3 className="font-black text-slate-800 text-xs mb-4 uppercase flex items-center gap-2">
-                         <Search className="w-4 h-4 text-blue-500" /> CAUSAS REVERSIBLES
-                      </h3>
-                      <div className="grid grid-cols-2 gap-4 text-[9px] font-bold">
-                         <div className="space-y-1">
-                            <p className="text-blue-600">5 H's</p>
-                            <p>• Hipovolemia</p>
-                            <p>• Hipoxia</p>
-                            <p>• Hidrogeniones</p>
-                            <p>• Hipo/Hiper K</p>
-                            <p>• Hipotermia</p>
-                         </div>
-                         <div className="space-y-1">
-                            <p className="text-rose-600">5 T's</p>
-                            <p>• Tensión Neum.</p>
-                            <p>• Taponamiento</p>
-                            <p>• Tóxicos</p>
-                            <p>• Tromb Pulm.</p>
-                            <p>• Tromb Coro.</p>
-                         </div>
-                      </div>
-                      <div className="mt-8 p-4 bg-blue-50 rounded-2xl">
-                         <p className="text-[9px] font-black text-blue-600 uppercase text-center">🚨 VÍA AÉREA AVANZADA Y CAPNOGRAFÍA</p>
-                      </div>
-                   </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <CodigoAzulModal isOpen={showCodigoAzul} onClose={() => setShowCodigoAzul(false)} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
   );
 }
