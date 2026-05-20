@@ -35,7 +35,8 @@ import {
   firebaseConfig
 } from '../firebase';
 import {
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   onAuthStateChanged,
   signInAnonymously,
@@ -221,6 +222,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       setFbUser(user);
+    });
+    // Handle Google redirect result
+    getRedirectResult(auth).then((result) => {
+      if (result?.user?.email) {
+        const email = result.user.email;
+        const adminEmails = ['julive17@gmail.com', 'coordinacionmedica@correohdsa.gov.co'];
+        if (adminEmails.includes(email)) {
+          const sess: UserSession = { r: 'admin', n: result.user.displayName || email };
+          setSession(sess);
+          localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
+        }
+      }
+    }).catch((err) => {
+      console.error('Google redirect error:', err);
     });
     return unsub;
   }, []);
@@ -433,7 +448,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const handleGoogleLogin = useCallback(async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithRedirect(auth, provider);
     } catch (err) {
       console.error('Google login error:', err);
     }
