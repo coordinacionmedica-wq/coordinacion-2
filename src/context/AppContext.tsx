@@ -108,6 +108,28 @@ interface AppContextType {
   updateDoctorMonth: (doctorId: number, shifts: DoctorShifts) => Promise<void>;
   updateMonthlyData: (data: MonthlyData) => Promise<void>;
 
+  // Doctor CRUD
+  saveEditedDoctor: (doctor: Doctor) => Promise<void>;
+  toggleDoctorStatus: (id: number) => Promise<void>;
+  deleteDoctor: (id: number) => Promise<void>;
+  resetDoctorPass: (id: number) => Promise<void>;
+  changePassword: (doctorId: number, oldPass: string, newPass: string) => Promise<void>;
+
+  // Variables
+  addVariable: (slot: SlotType, code: string, hours: number) => Promise<void>;
+  removeVariable: (slot: SlotType, code: string) => Promise<void>;
+
+  // Activities
+  addActivity: (activity: Partial<TrainingActivity>) => Promise<void>;
+  deleteActivity: (id: string) => Promise<void>;
+
+  // Service Mappings
+  saveServiceMappings: (mappings: ServiceMapping[]) => Promise<void>;
+
+  // Shift Requests
+  submitShiftRequest: (day: number, slot: SlotType, reason: string) => Promise<void>;
+  updateRequestStatus: (id: number, status: 'approved' | 'rejected') => Promise<void>;
+
   // AI state
   isGeneratingAI: boolean;
   setIsGeneratingAI: React.Dispatch<React.SetStateAction<boolean>>;
@@ -451,6 +473,167 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch { /* ignore */ }
   }, []);
 
+  // ── Doctor CRUD ──
+  const saveEditedDoctor = useCallback(async (doctor: Doctor) => {
+    try {
+      await setDoc(doc(db, 'doctors', doctor.id.toString()), doctor);
+      notify('Médico actualizado correctamente', 'success');
+    } catch (err) {
+      notify('Error: No se pudo actualizar el médico', 'error');
+      handleFirestoreError(err, OperationType.WRITE, `doctors/${doctor.id}`);
+    }
+  }, [notify]);
+
+  const toggleDoctorStatus = useCallback(async (id: number) => {
+    const d = doctors.find(doc => doc.id === id);
+    if (!d) return;
+    try {
+      await updateDoc(doc(db, 'doctors', id.toString()), { st: d.st === 'activo' ? 'inactivo' : 'activo' });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `doctors/${id}`);
+    }
+  }, [doctors]);
+
+  const deleteDoctor = useCallback(async (id: number) => {
+    if (!confirm('¿Eliminar permanentemente?')) return;
+    try {
+      await deleteDoc(doc(db, 'doctors', id.toString()));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, `doctors/${id}`);
+    }
+  }, []);
+
+  const resetDoctorPass = useCallback(async (id: number) => {
+    const defaultPass = `ESE${Math.floor(1000 + Math.random() * 9000)}`;
+    try {
+      await updateDoc(doc(db, 'doctors', id.toString()), { password: defaultPass, passwordLastChanged: Date.now() });
+      notify(`Contraseña reseteada a: ${defaultPass}`, 'success');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `doctors/${id}`);
+    }
+  }, [notify]);
+
+  const changePassword = useCallback(async (doctorId: number, oldPass: string, newPass: string) => {
+    const d = doctors.find(doc => doc.id === doctorId);
+    if (!d) return;
+    if (d.password !== oldPass) { alert('La contraseña actual es incorrecta'); return; }
+    if (newPass.length < 4) { alert('La nueva contraseña debe tener al menos 4 caracteres'); return; }
+    try {
+      await updateDoc(doc(db, 'doctors', doctorId.toString()), { password: newPass, passwordLastChanged: Date.now() });
+      notify('Contraseña actualizada con éxito', 'success');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `doctors/${doctorId}`);
+    }
+  }, [doctors, notify]);
+
+  // ── Variables ──
+  const addVariable = useCallback(async (slot: SlotType, code: string, hours: number) => {
+    if (!code.trim()) { alert('La sigla no puede estar vacía.'); return; }
+    const upper = code.trim().toUpperCase();
+    if (['L','CAP','X','PT'].includes(upper)) { alert('Esta sigla es reservada del sistema.'); return; }
+    const updated = { ...variables, [slot]: { ...variables[slot], [upper]: hours } };
+    try {
+      await setDoc(doc(db, 'settings', 'variables'), updated);
+      notify(`Sigla ${upper} agregada`, 'success');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, 'settings/variables');
+    }
+  }, [variables, notify]);
+
+  const removeVariable = useCallback(async (slot: SlotType, code: string) => {
+    if (['L','CAP','X'].includes(code)) { alert('Esta sigla es reservada del sistema.'); return; }
+    if (!confirm(`¿Eliminar la sigla ${code}?`)) return;
+    const newSlot = { ...variables[slot] };
+    delete newSlot[code];
+    const updated = { ...variables, [slot]: newSlot };
+    try {
+      await setDoc(doc(db, 'settings', 'variables'), updated);
+      notify(`Sigla ${code} eliminada`, 'info');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, 'settings/variables');
+    }
+  }, [variables, notify]);
+
+  // ── Activities ──
+  const addActivity = useCallback(async (activity: Partial<TrainingActivity>) => {
+    if (!activity.activityName || !activity.day) {
+      alert('El nombre de la actividad y el día son obligatorios.'); return;
+    }
+    const id = Date.now().toString();
+    const newA: TrainingActivity = {
+      id, month: selectedMonth, year: selectedYear,
+      activityName: activity.activityName!, day: activity.day!,
+      place: activity.place || '', modality: activity.modality || 'presencial',
+      hours: activity.hours || 0, targetGroup: activity.targetGroup || '',
+      responsible: activity.responsible || '', targetPopulation: activity.targetPopulation || '',
+      files: activity.files || {}, attendees: activity.attendees || [],
+      status: activity.status || 'programada', timestamp: Date.now(),
+    };
+    try {
+      await setDoc(doc(db, 'trainingActivities', id), newA);
+      notify('Actividad registrada correctamente', 'success');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `trainingActivities/${id}`);
+    }
+  }, [selectedMonth, selectedYear, notify]);
+
+  const deleteActivity = useCallback(async (id: string) => {
+    if (!confirm('¿Está seguro de eliminar esta actividad?')) return;
+    try {
+      await deleteDoc(doc(db, 'trainingActivities', id));
+      notify('Actividad eliminada', 'info');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, `trainingActivities/${id}`);
+    }
+  }, [notify]);
+
+  // ── Service Mappings ──
+  const saveServiceMappings = useCallback(async (newMappings: ServiceMapping[]) => {
+    const cleaned = newMappings.map(m => ({ ...m, siglas: m.siglas.map(s => s.trim().toUpperCase()).filter(s => s !== '') }));
+    try {
+      await setDoc(doc(db, 'settings', 'serviceMappings'), { mappings: cleaned });
+      notify('Mapeos de servicios guardados', 'success');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, 'settings/serviceMappings');
+    }
+  }, [notify]);
+
+  // ── Shift Requests ──
+  const submitShiftRequest = useCallback(async (day: number, slot: SlotType, reason: string) => {
+    if (!session?.doctorId || !reason) { alert('Por favor escriba un motivo.'); return; }
+    const doctor = doctors.find(d => d.id === session.doctorId);
+    if (!doctor) return;
+    const id = Date.now();
+    const newReq: ShiftRequest = {
+      id, timestamp: id, doctorId: session.doctorId, doctorName: doctor.nombre,
+      day, slot, reason, status: 'pending', targetMonth: selectedMonth, targetYear: selectedYear,
+    };
+    try {
+      await setDoc(doc(db, 'shiftRequests', id.toString()), newReq);
+      notify('Solicitud enviada a coordinación', 'success');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `shiftRequests/${id}`);
+    }
+  }, [session, doctors, selectedMonth, selectedYear, notify]);
+
+  const updateRequestStatus = useCallback(async (id: number, status: 'approved' | 'rejected') => {
+    const req = shiftRequests.find(r => r.id === id);
+    if (!req) return;
+    try {
+      await updateDoc(doc(db, 'shiftRequests', id.toString()), { status });
+      const msg = status === 'approved'
+        ? `✅ SOLICITUD APROBADA: Tu cambio para el día ${req.day} ha sido autorizado.`
+        : `❌ SOLICITUD RECHAZADA: Tu solicitud para el día ${req.day} no pudo procesarse.`;
+      await pushNotification(req.doctorId, msg);
+      // Optional email notification
+      const doctor = doctors.find(d => d.id === req.doctorId);
+      if (doctor?.email) sendEmailNotification(doctor.email, `Solicitud ${status === 'approved' ? 'Aprobada' : 'Rechazada'}`, msg);
+      notify(status === 'approved' ? 'Solicitud autorizada' : 'Solicitud rechazada', status === 'approved' ? 'success' : 'info');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `shiftRequests/${id}`);
+    }
+  }, [shiftRequests, doctors, pushNotification, sendEmailNotification, notify]);
+
   const value: AppContextType = {
     session, setSession, fbUser, isBooting, isOnline, isFirebaseUnauthenticatedAdmin,
     doctors, variables, setVariables, currentMonthData, setCurrentMonthData,
@@ -462,6 +645,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     activeTab, setActiveTab,
     handleLogin, handleGoogleLogin, handleLogout,
     pushNotification, markNotificationRead, updateDoctorMonth, updateMonthlyData,
+    saveEditedDoctor, toggleDoctorStatus, deleteDoctor, resetDoctorPass, changePassword,
+    addVariable, removeVariable,
+    addActivity, deleteActivity,
+    saveServiceMappings,
+    submitShiftRequest, updateRequestStatus,
     isGeneratingAI, setIsGeneratingAI, aiReport, setAiReport,
     idleTimeout, setIdleTimeout
   };

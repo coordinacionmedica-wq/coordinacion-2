@@ -4,7 +4,8 @@ import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import admin from "firebase-admin";
+import { initializeApp as initAdminApp, getApps } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 import fs from "fs";
 
 dotenv.config();
@@ -16,16 +17,19 @@ const __dirname = path.dirname(__filename);
 const configPath = path.join(__dirname, "firebase-applet-config.json");
 let dbAdmin: any = null;
 
+let authAdmin: any = null;
+
 if (fs.existsSync(configPath)) {
   try {
     const firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-    admin.initializeApp({
-      projectId: firebaseConfig.projectId
-    });
-    // Use the specific database ID if provided in the config
-    dbAdmin = firebaseConfig.firestoreDatabaseId 
-      ? admin.firestore(firebaseConfig.firestoreDatabaseId)
-      : admin.firestore();
+    const adminApp = getApps().length === 0
+      ? initAdminApp({ projectId: firebaseConfig.projectId })
+      : getApps()[0];
+    const { getAuth } = await import("firebase-admin/auth");
+    authAdmin = getAuth(adminApp);
+    dbAdmin = firebaseConfig.firestoreDatabaseId
+      ? getFirestore(adminApp, firebaseConfig.firestoreDatabaseId)
+      : getFirestore(adminApp);
   } catch (err) {
     console.error("Error initializing Firebase Admin:", err);
   }
@@ -60,7 +64,7 @@ async function startServer() {
       }
 
       // Generate Custom Token for Firebase Auth
-      const customToken = await admin.auth().createCustomToken(doctorId.toString());
+      const customToken = await authAdmin.createCustomToken(doctorId.toString());
 
       res.json({ success: true, customToken });
     } catch (error) {
@@ -117,7 +121,7 @@ async function startServer() {
       }
 
       const doctorId = data.id.toString();
-      const customToken = await admin.auth().createCustomToken(doctorId);
+      const customToken = await authAdmin.createCustomToken(doctorId);
 
       res.json({
         success: true,
