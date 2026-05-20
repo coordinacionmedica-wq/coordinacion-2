@@ -19,6 +19,15 @@ interface ShiftGridTableProps {
   sundays: number[];
 }
 
+// Hour limits per category
+const HOUR_LIMITS: Record<string, { min: number; max: number }> = {
+  'Planta': { min: 150, max: 200 },
+  'CTA': { min: 150, max: 200 },
+  'APS': { min: 100, max: 160 },
+  'Rural': { min: 120, max: 180 },
+  'Disponibilidad': { min: 0, max: 48 },
+};
+
 export function ShiftGridTable(props: ShiftGridTableProps) {
   const {
     doctors, currentMonthData, variables,
@@ -28,18 +37,70 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
 
   const [editingCell, setEditingCell] = useState<{ doctorId: number; day: number; slot: SlotType } | null>(null);
   const [editingValue, setEditingValue] = useState('');
+  const [pasteMessage, setPasteMessage] = useState('');
 
   const handleSetShift = async (doctorId: number, day: number, slot: SlotType, value: string) => {
     await onSetShift(doctorId, day, slot, value);
     setEditingCell(null);
   };
 
+  // Build ordered list of (doctorId, slot) rows for paste navigation
+  const rowOrder = useMemo(() => {
+    const rows: { doctorId: number; slot: SlotType }[] = [];
+    doctors.forEach(med => {
+      (['m', 't', 'n'] as SlotType[]).forEach(slot => {
+        rows.push({ doctorId: med.id, slot });
+      });
+    });
+    return rows;
+  }, [doctors]);
+
+  // Bulk paste handler: parses tab/newline-separated clipboard data from Excel
+  const handleBulkPaste = async (e: React.ClipboardEvent) => {
+    if (!isAdmin || !editingCell) return;
+    const text = e.clipboardData.getData('text/plain');
+    if (!text || !text.includes('\t')) return; // Only handle multi-cell paste (has tabs)
+
+    e.preventDefault();
+    const rows = text.split(/\r?\n/).filter(r => r.trim());
+    if (rows.length === 0) return;
+
+    const startRowIdx = rowOrder.findIndex(r => r.doctorId === editingCell.doctorId && r.slot === editingCell.slot);
+    const startDay = editingCell.day;
+
+    let cellCount = 0;
+    for (let ri = 0; ri < rows.length; ri++) {
+      const cells = rows[ri].split('\t');
+      const currentRowIdx = startRowIdx + ri;
+      if (currentRowIdx >= rowOrder.length) break;
+      const { doctorId, slot } = rowOrder[currentRowIdx];
+
+      for (let ci = 0; ci < cells.length; ci++) {
+        const day = startDay + ci;
+        if (day > daysInMonth) break;
+        const value = cells[ci].trim() || 'X';
+        await onSetShift(doctorId, day, slot, value);
+        cellCount++;
+      }
+    }
+
+    setEditingCell(null);
+    setPasteMessage(`✓ ${cellCount} celdas pegadas`);
+    setTimeout(() => setPasteMessage(''), 3000);
+  };
+
   return (
-    <div className="relative">
+    <div className="relative" onPaste={handleBulkPaste}>
       {/* Mobile hint */}
       <div className="md:hidden flex items-center justify-between px-2 pb-1 text-[8px] text-slate-400 font-bold italic">
         <span>← Desliza horizontalmente →</span>
       </div>
+
+      {pasteMessage && (
+        <div className="absolute top-2 right-4 z-50 bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse">
+          {pasteMessage}
+        </div>
+      )}
 
       <div className="overflow-x-auto border border-slate-200 rounded-xl md:rounded-[18px] bg-white shadow-xl overflow-y-hidden custom-scrollbar -mx-1 md:mx-0">
         <table className="w-full text-[9px] md:text-[10px] text-center border-collapse">
@@ -127,16 +188,16 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                           <input
                             autoFocus
                             value={editingValue}
-                            onChange={e => setEditingValue(e.target.value.toUpperCase())}
+                            onChange={e => setEditingValue(e.target.value)}
                             onKeyDown={e => {
                               if (e.key === 'Enter') { e.preventDefault(); handleSetShift(med.id, d, slot, editingValue || 'X'); }
                               if (e.key === 'Escape') { setEditingCell(null); }
                               if (e.key === 'Tab') { e.preventDefault(); handleSetShift(med.id, d, slot, editingValue || 'X'); }
                             }}
                             onBlur={() => handleSetShift(med.id, d, slot, editingValue || 'X')}
-                            className="w-full text-center bg-transparent outline-none font-black text-emerald-700 text-[8px] md:text-xs uppercase"
+                            className="w-full text-center bg-transparent outline-none text-emerald-700 text-[8px] md:text-xs"
                             style={{ minWidth: 22 }}
-                            maxLength={4}
+                            maxLength={6}
                           />
                         ) : (
                           isShift ? (showGridHours ? `${variables[slot][val] || 0}` : val) : ''
@@ -156,7 +217,11 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                           </td>
                         );
                       })}
-                      <td rowSpan={3} className="sticky right-0 z-20 bg-sky-500 text-white font-black text-[8px] md:text-xs border border-slate-200 shadow-[-2px_0_5px_rgba(0,0,0,0.1)]">
+                      <td rowSpan={3} className={`sticky right-0 z-20 font-black text-[8px] md:text-xs border border-slate-200 shadow-[-2px_0_5px_rgba(0,0,0,0.1)] ${
+                        medTotalMonth < (HOUR_LIMITS[med.cat]?.min || 0) ? 'bg-amber-500 text-white' :
+                        medTotalMonth > (HOUR_LIMITS[med.cat]?.max || 999) ? 'bg-rose-500 text-white' :
+                        'bg-sky-500 text-white'
+                      }`} title={`Mín: ${HOUR_LIMITS[med.cat]?.min || 0}h | Máx: ${HOUR_LIMITS[med.cat]?.max || '—'}h`}>
                         {medTotalMonth}h
                       </td>
                     </>

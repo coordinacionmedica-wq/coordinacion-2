@@ -23,6 +23,7 @@ export interface Doctor {
   registroMedico?: string;
   email?: string;
   telefono?: string;
+  genero?: 'M' | 'F';
   cat: 'Planta' | 'CTA' | 'APS' | 'Rural' | 'Disponibilidad';
   rol: DoctorRole;
   st: 'activo' | 'inactivo';

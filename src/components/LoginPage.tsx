@@ -19,6 +19,7 @@ export function LoginPage() {
   const [regEmail, setRegEmail] = useState('');
   const [regTelefono, setRegTelefono] = useState('');
   const [regRol, setRegRol] = useState('Médico General');
+  const [regGenero, setRegGenero] = useState<'M' | 'F'>('M');
   const [isRegistering, setIsRegistering] = useState(false);
 
   const handleSelfRegister = async () => {
@@ -65,11 +66,12 @@ export function LoginPage() {
         nombre: `${regNombre.trim()} ${regApellidos.trim()}`,
         apellidos: regApellidos.trim(),
         registroMedico: regRegistroMedico.trim(),
+        genero: regGenero,
       } : {
         id: doctorId, nombre: `${regNombre.trim()} ${regApellidos.trim()}`,
         apellidos: regApellidos.trim(), cedula: cleanCedula,
         registroMedico: regRegistroMedico.trim(), email: regEmail.trim(),
-        telefono: regTelefono.trim(),
+        telefono: regTelefono.trim(), genero: regGenero,
         cat: regRol === 'Médico Rural' ? 'Rural' : 'Planta',
         rol: regRol, st: 'activo', username, password,
         passwordLastChanged: Date.now(), createdAt: Date.now(),
@@ -297,6 +299,13 @@ export function LoginPage() {
                           <option value="Interno">Médico Interno</option>
                           <option value="Triage">Personal de Triage</option>
                           <option value="Odontólogo">Odontólogo</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Sexo *</label>
+                        <select className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regGenero} onChange={e => setRegGenero(e.target.value as 'M' | 'F')}>
+                          <option value="M">Masculino (Dr.)</option>
+                          <option value="F">Femenino (Dra.)</option>
                         </select>
                       </div>
                     </div>

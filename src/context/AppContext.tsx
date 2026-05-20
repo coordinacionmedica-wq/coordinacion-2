@@ -358,12 +358,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ── Actions ──
   const handleLogin = useCallback(async (loginU: string, loginP: string) => {
     if (loginU === MASTER_ADMIN.u && loginP === MASTER_ADMIN.p) {
+      try {
+        const res = await fetch('/api/admin-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ u: loginU, p: loginP })
+        });
+        const data = await res.json();
+        if (data.success && data.customToken) {
+          await signInWithCustomToken(auth, data.customToken);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch {
+        try { await signInAnonymously(auth); } catch { /* fallback */ }
+      }
       const sess: UserSession = { r: 'admin', n: 'Admin General' };
       setSession(sess);
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
       return;
     }
     if (loginU === MASTER_READER.u) {
+      try { await signInAnonymously(auth); } catch { /* Firebase auth optional */ }
       const sess: UserSession = { r: 'read', n: 'Personal Invitado' };
       setSession(sess);
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
@@ -407,7 +423,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const docData = snap.docs[0].data() as Doctor;
       if (docData.password !== loginP) { alert('Contraseña incorrecta.'); return; }
       try { await signInAnonymously(auth); } catch { /* optional */ }
-      const sess: UserSession = { r: 'doctor', n: docData.nombre, doctorId: docData.id };
+      const prefix = docData.genero === 'F' ? 'Dra.' : 'Dr.';
+      const sess: UserSession = { r: 'doctor', n: `${prefix} ${docData.nombre}`, doctorId: docData.id };
       setSession(sess);
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
     }

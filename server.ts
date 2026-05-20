@@ -97,6 +97,33 @@ async function startServer() {
     }
   });
 
+  // API Route for Admin Login (master credentials)
+  const ADMIN_UID = "master-admin-001";
+  const MASTER_CREDS = { u: "761798", p: "761798" };
+
+  app.post("/api/admin-login", async (req, res) => {
+    if (!dbAdmin || !authAdmin) {
+      return res.status(500).json({ success: false, error: "Server not initialized" });
+    }
+    const { u, p } = req.body;
+    if (u !== MASTER_CREDS.u || p !== MASTER_CREDS.p) {
+      return res.json({ success: false, error: "Credenciales de admin incorrectas" });
+    }
+    try {
+      // Ensure admin doc exists in /admins collection
+      const adminRef = dbAdmin.collection("admins").doc(ADMIN_UID);
+      const adminDoc = await adminRef.get();
+      if (!adminDoc.exists) {
+        await adminRef.set({ role: "admin", createdAt: Date.now() });
+      }
+      const customToken = await authAdmin.createCustomToken(ADMIN_UID);
+      res.json({ success: true, customToken });
+    } catch (error) {
+      console.error("Admin login error:", error);
+      res.status(500).json({ success: false, error: (error as Error).message });
+    }
+  });
+
   // API Route for Doctor Login
   app.post("/api/login", async (req, res) => {
     if (!dbAdmin) {
@@ -123,12 +150,13 @@ async function startServer() {
       const doctorId = data.id.toString();
       const customToken = await authAdmin.createCustomToken(doctorId);
 
+      const prefix = data.genero === 'F' ? 'Dra.' : 'Dr.';
       res.json({
         success: true,
         customToken,
         session: {
           r: "doctor",
-          n: data.nombre,
+          n: `${prefix} ${data.nombre}`,
           doctorId: data.id
         },
         passwordLastChanged: data.passwordLastChanged
