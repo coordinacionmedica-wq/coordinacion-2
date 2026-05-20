@@ -17,6 +17,7 @@ interface ShiftGridTableProps {
     coverage: Record<string, string[]>;
   };
   sundays: number[];
+  compactView?: boolean;
 }
 
 // Hour limits per category
@@ -33,6 +34,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
     doctors, currentMonthData, variables,
     selectedMonth, selectedYear, daysInMonth,
     showGridHours, isAdmin, onSetShift, conflicts, sundays,
+    compactView,
   } = props;
 
   const [editingCell, setEditingCell] = useState<{ doctorId: number; day: number; slot: SlotType } | null>(null);
@@ -143,12 +145,77 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                 });
               }
 
+              const limits = HOUR_LIMITS[med.cat] || { min: 0, max: 999 };
+              const hourStatus = medTotalMonth < limits.min ? 'low' : medTotalMonth > limits.max ? 'high' : 'ok';
+
+              // ── Compact View: single row per doctor ──
+              if (compactView) {
+                return (
+                  <tr key={med.id} className="group hover:bg-slate-50 transition-colors border-b-2 border-slate-200">
+                    <td className="sticky left-0 bg-white z-20 text-left px-2 md:px-4 border-r-2 border-sky-500 border-b border-slate-200 shadow-xl group-hover:bg-slate-50">
+                      <div className="font-bold text-slate-800 text-[9px] md:text-xs whitespace-nowrap truncate max-w-[80px] md:max-w-none">
+                        {med.genero === 'F' ? 'Dra.' : 'Dr.'} {med.nombre}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[7px] md:text-[8px] text-slate-400 font-mono">{med.cat}</span>
+                        <span className={`text-[7px] font-bold ${hourStatus === 'low' ? 'text-amber-600' : hourStatus === 'high' ? 'text-rose-600' : 'text-emerald-600'}`}>
+                          {medTotalMonth}h / {limits.min}-{limits.max}h
+                        </span>
+                      </div>
+                    </td>
+                    <td className="bg-slate-50 text-slate-400 font-black text-[7px] py-1 border-r border-slate-200">—</td>
+                    {Array.from({ length: daysInMonth }, (_, i) => {
+                      const d = i + 1;
+                      const dow = new Date(selectedYear, selectedMonth, d).getDay();
+                      const m = currentMonthData[med.id]?.m?.[d] || 'X';
+                      const t = currentMonthData[med.id]?.t?.[d] || 'X';
+                      const n = currentMonthData[med.id]?.n?.[d] || 'X';
+                      const activeCount = [m, t, n].filter(v => v !== 'X' && v !== 'PT').length;
+                      const hasPT = [m, t, n].includes('PT');
+                      const bg = activeCount === 0 ? '' : activeCount === 1 ? 'bg-emerald-100' : activeCount >= 2 ? 'bg-sky-200' : '';
+                      return (
+                        <td key={d} className={`border border-slate-200 py-1 text-center text-[7px] md:text-[9px] font-bold ${dow === 0 ? 'border-r-2 border-r-sky-500' : ''} ${bg} ${hasPT ? 'text-amber-500' : 'text-slate-600'}`}
+                          title={`M:${m} T:${t} N:${n}`}
+                        >
+                          {activeCount > 0 ? activeCount : hasPT ? 'PT' : ''}
+                        </td>
+                      );
+                    })}
+                    {weeklyAcc.map((wv, wi) => {
+                      let colorClass = 'bg-emerald-100 text-emerald-800';
+                      if (wv >= 42) colorClass = 'bg-emerald-500 text-white';
+                      if (wv >= 66) colorClass = 'bg-rose-500 text-white shadow-inner';
+                      return (
+                        <td key={wi} className={`border border-slate-200 font-black text-[8px] md:text-xs ${colorClass}`}>
+                          {wv}h
+                        </td>
+                      );
+                    })}
+                    <td className={`sticky right-0 z-20 font-black text-[8px] md:text-xs border border-slate-200 shadow-[-2px_0_5px_rgba(0,0,0,0.1)] ${
+                      hourStatus === 'low' ? 'bg-amber-500 text-white' :
+                      hourStatus === 'high' ? 'bg-rose-500 text-white' :
+                      'bg-sky-500 text-white'
+                    }`} title={`Mín: ${limits.min}h | Máx: ${limits.max}h`}>
+                      {medTotalMonth}h
+                    </td>
+                  </tr>
+                );
+              }
+
+              // ── Full View: 3 rows per doctor (M/T/N) ──
               return (['m', 't', 'n'] as SlotType[]).map((slot, sIdx) => (
                 <tr key={`${med.id}-${slot}`} className={`group hover:bg-slate-50 transition-colors ${sIdx === 2 ? 'border-b-4 border-slate-200' : ''}`}>
                   {sIdx === 0 && (
                     <td rowSpan={3} className="sticky left-0 bg-white z-20 text-left px-2 md:px-4 border-r-2 border-sky-500 border-b border-slate-200 shadow-xl group-hover:bg-slate-50">
-                      <div className="font-bold text-slate-800 text-[9px] md:text-xs whitespace-nowrap truncate max-w-[80px] md:max-w-none">{med.nombre}</div>
-                      <div className="text-[8px] md:text-[9px] text-slate-400 font-mono">{med.cat}</div>
+                      <div className="font-bold text-slate-800 text-[9px] md:text-xs whitespace-nowrap truncate max-w-[80px] md:max-w-none">
+                        {med.genero === 'F' ? 'Dra.' : 'Dr.'} {med.nombre}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[8px] md:text-[9px] text-slate-400 font-mono">{med.cat}</span>
+                        <span className={`text-[7px] font-bold ${hourStatus === 'low' ? 'text-amber-600' : hourStatus === 'high' ? 'text-rose-600' : 'text-emerald-600'}`}>
+                          {medTotalMonth}/{limits.min}-{limits.max}h
+                        </span>
+                      </div>
                     </td>
                   )}
                   <td className="bg-slate-50 text-slate-400 font-black text-[7px] md:text-[8px] py-1 md:py-2 border-r border-slate-200 uppercase">
@@ -218,10 +285,10 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                         );
                       })}
                       <td rowSpan={3} className={`sticky right-0 z-20 font-black text-[8px] md:text-xs border border-slate-200 shadow-[-2px_0_5px_rgba(0,0,0,0.1)] ${
-                        medTotalMonth < (HOUR_LIMITS[med.cat]?.min || 0) ? 'bg-amber-500 text-white' :
-                        medTotalMonth > (HOUR_LIMITS[med.cat]?.max || 999) ? 'bg-rose-500 text-white' :
+                        hourStatus === 'low' ? 'bg-amber-500 text-white' :
+                        hourStatus === 'high' ? 'bg-rose-500 text-white' :
                         'bg-sky-500 text-white'
-                      }`} title={`Mín: ${HOUR_LIMITS[med.cat]?.min || 0}h | Máx: ${HOUR_LIMITS[med.cat]?.max || '—'}h`}>
+                      }`} title={`Mín: ${limits.min}h | Máx: ${limits.max}h`}>
                         {medTotalMonth}h
                       </td>
                     </>

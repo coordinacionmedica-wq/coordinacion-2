@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { PhoneIncoming } from 'lucide-react';
-import { SlotType } from '../types';
+import { PhoneIncoming, AlertTriangle, Users, Clock, Eye, EyeOff } from 'lucide-react';
+import { SlotType, Doctor } from '../types';
 import { useAppContext } from '../context/AppContext';
 import { useShiftActions } from '../hooks/useShiftActions';
 import { useTurneroFilters } from '../hooks/useTurneroFilters';
@@ -121,6 +121,67 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
     return list;
   }, [selectedMonth, selectedYear, daysInMonth]);
 
+  // ── Compact view toggle ──
+  const [compactView, setCompactView] = useState(false);
+
+  // ── Who's on shift NOW ──
+  const currentShiftInfo = useMemo(() => {
+    const now = new Date();
+    const today = now.getDate();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    if (currentMonth !== selectedMonth || currentYear !== selectedYear) return null;
+    const hour = now.getHours();
+    let currentSlot: SlotType = 'm';
+    if (hour >= 7 && hour < 13) currentSlot = 'm';
+    else if (hour >= 13 && hour < 19) currentSlot = 't';
+    else currentSlot = 'n';
+
+    const onDuty: { doctor: Doctor; sigla: string }[] = [];
+    doctors.forEach(doc => {
+      if (doc.st !== 'activo') return;
+      const sigla = currentMonthData[doc.id]?.[currentSlot]?.[today] || 'X';
+      if (sigla !== 'X' && sigla !== 'PT') {
+        onDuty.push({ doctor: doc, sigla });
+      }
+    });
+    return { slot: currentSlot, today, onDuty };
+  }, [doctors, currentMonthData, selectedMonth, selectedYear]);
+
+  // ── Conflict counts ──
+  const conflictCounts = useMemo(() => {
+    let overlaps = 0;
+    let postTurno = 0;
+    let noCoverage = 0;
+    Object.values(conflicts.personal).forEach(arr => {
+      arr.forEach(c => {
+        if (c.type === 'overlap') overlaps++;
+        if (c.type === 'post-turno') postTurno++;
+      });
+    });
+    Object.values(conflicts.coverage).forEach(arr => { noCoverage += arr.length; });
+    return { overlaps, postTurno, noCoverage, total: overlaps + postTurno + noCoverage };
+  }, [conflicts]);
+
+  // ── Daily coverage summary (for coverage row) ──
+  const dailyCoverage = useMemo(() => {
+    const cov: { day: number; m: number; t: number; n: number }[] = [];
+    for (let d = 1; d <= daysInMonth; d++) {
+      let mCount = 0, tCount = 0, nCount = 0;
+      doctors.forEach(doc => {
+        if (doc.st !== 'activo') return;
+        const ms = currentMonthData[doc.id]?.m?.[d] || 'X';
+        const ts = currentMonthData[doc.id]?.t?.[d] || 'X';
+        const ns = currentMonthData[doc.id]?.n?.[d] || 'X';
+        if (ms !== 'X' && ms !== 'PT') mCount++;
+        if (ts !== 'X' && ts !== 'PT') tCount++;
+        if (ns !== 'X' && ns !== 'PT') nCount++;
+      });
+      cov.push({ day: d, m: mCount, t: tCount, n: nCount });
+    }
+    return cov;
+  }, [doctors, currentMonthData, daysInMonth]);
+
   // ── Render ──
   return (
     <motion.div key="turnos" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 md:space-y-4">
@@ -145,24 +206,104 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
       </div>
 
       {/* Status Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 no-print">
-        <div className="bg-white p-3 md:p-4 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 no-print">
+        <div className="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm">
           <p className="text-[9px] md:text-[10px] text-emerald-600 uppercase font-black mb-1">Último Llamado</p>
           <div className="text-[10px] md:text-[11px] font-bold text-slate-800 truncate">
             {availabilityCalls[0] ? `${availabilityCalls[0].doctorName} (${new Date(availabilityCalls[0].timestamp).toLocaleTimeString()})` : 'Sin llamados'}
           </div>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm">
           <p className="text-[9px] md:text-[10px] text-sky-600 uppercase font-black mb-1">Personal Planta</p>
           <div className="text-lg md:text-xl font-black text-slate-800">{doctors.filter(d => d.cat === 'Planta' && d.st === 'activo').length}</div>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm">
           <p className="text-[9px] md:text-[10px] text-rose-600 uppercase font-black mb-1">Personal Rural</p>
           <div className="text-lg md:text-xl font-black text-slate-800">{doctors.filter(d => d.cat === 'Rural' && d.st === 'activo').length}</div>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm">
           <p className="text-[9px] md:text-[10px] text-amber-600 uppercase font-black mb-1">Novedades Mes</p>
           <div className="text-lg md:text-xl font-black text-slate-800">{auditLogs.filter(l => l.targetMonth === selectedMonth).length}</div>
+        </div>
+        <div className={`p-3 md:p-4 rounded-2xl border shadow-sm ${conflictCounts.total > 0 ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-emerald-200'}`}>
+          <p className="text-[9px] md:text-[10px] uppercase font-black mb-1 flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" />
+            Alertas
+          </p>
+          {conflictCounts.total === 0 ? (
+            <div className="text-[10px] font-bold text-emerald-700">Sin conflictos</div>
+          ) : (
+            <div className="text-[9px] font-bold space-y-0.5">
+              {conflictCounts.overlaps > 0 && <div className="text-rose-600">{conflictCounts.overlaps} sobrecargas</div>}
+              {conflictCounts.postTurno > 0 && <div className="text-amber-600">{conflictCounts.postTurno} post-turno</div>}
+              {conflictCounts.noCoverage > 0 && <div className="text-red-700">{conflictCounts.noCoverage} sin cobertura</div>}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Who's on shift NOW */}
+      {currentShiftInfo && (
+        <div className="bg-gradient-to-r from-indigo-50 to-sky-50 p-4 md:p-5 rounded-2xl border border-indigo-200 shadow-sm no-print">
+          <div className="flex items-center gap-2 mb-3">
+            <Clock className="w-4 h-4 text-indigo-600 animate-pulse" />
+            <h3 className="text-xs md:text-sm font-black text-indigo-800">
+              En Turno Ahora — {currentShiftInfo.slot === 'm' ? 'Mañana (7-13h)' : currentShiftInfo.slot === 't' ? 'Tarde (13-19h)' : 'Noche (19-7h)'} — Día {currentShiftInfo.today}
+            </h3>
+            <span className="ml-auto bg-indigo-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+              {currentShiftInfo.onDuty.length} médicos
+            </span>
+          </div>
+          {currentShiftInfo.onDuty.length === 0 ? (
+            <p className="text-xs text-rose-600 font-bold">⚠️ No hay médicos asignados en este momento</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {currentShiftInfo.onDuty.map(({ doctor, sigla }) => (
+                <div key={doctor.id} className="bg-white px-3 py-1.5 rounded-xl border border-indigo-100 shadow-sm">
+                  <span className="text-[10px] md:text-xs font-bold text-slate-800">{doctor.genero === 'F' ? 'Dra.' : 'Dr.'} {doctor.nombre}</span>
+                  <span className="ml-2 text-[9px] font-mono text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">{sigla}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Daily Coverage Row */}
+      <div className="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm no-print">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-[10px] md:text-xs font-black text-slate-700 flex items-center gap-1">
+            <Users className="w-3.5 h-3.5" /> Cobertura Diaria
+          </h3>
+          <button
+            onClick={() => setCompactView(!compactView)}
+            className="flex items-center gap-1 text-[9px] font-bold text-slate-500 hover:text-slate-800 transition-colors"
+          >
+            {compactView ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+            {compactView ? 'Vista Completa' : 'Vista Compacta'}
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+          <div className="flex gap-[2px] min-w-max">
+            {dailyCoverage.map(dc => {
+              const total = dc.m + dc.t + dc.n;
+              const getColor = (count: number) => count === 0 ? 'bg-rose-500' : count <= 1 ? 'bg-amber-400' : 'bg-emerald-400';
+              return (
+                <div key={dc.day} className="flex flex-col items-center gap-[1px]" title={`Día ${dc.day}: M=${dc.m} T=${dc.t} N=${dc.n}`}>
+                  <span className="text-[7px] text-slate-400 font-bold">{dc.day}</span>
+                  <div className={`w-3 h-2 rounded-sm ${getColor(dc.m)}`} />
+                  <div className={`w-3 h-2 rounded-sm ${getColor(dc.t)}`} />
+                  <div className={`w-3 h-2 rounded-sm ${getColor(dc.n)}`} />
+                  <span className="text-[6px] font-bold text-slate-500">{total}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex gap-3 mt-2 text-[8px] text-slate-500 font-bold">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-rose-500" /> Sin cobertura</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-400" /> 1 médico</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-400" /> 2+ médicos</span>
+          </div>
         </div>
       </div>
 
@@ -225,6 +366,7 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
         onSetShift={hookSetShift}
         conflicts={conflicts}
         sundays={sundays}
+        compactView={compactView}
       />
 
       {/* Legend */}
