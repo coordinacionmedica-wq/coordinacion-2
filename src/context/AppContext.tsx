@@ -219,9 +219,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // ── Firebase Auth listener ──
+  const reauthAttempted = React.useRef(false);
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       setFbUser(user);
+      // Re-authenticate if session exists but Firebase has no user (once only)
+      if (!user && !reauthAttempted.current) {
+        reauthAttempted.current = true;
+        const stored = localStorage.getItem(STORAGE_KEYS.SESSION);
+        if (stored) {
+          try {
+            const sess = JSON.parse(stored);
+            if (sess.r === 'admin') {
+              fetch('/api/admin-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ u: MASTER_ADMIN.u, p: MASTER_ADMIN.p })
+              }).then(r => r.json()).then(data => {
+                if (data.success && data.customToken) {
+                  signInWithCustomToken(auth, data.customToken).catch(() => {
+                    signInAnonymously(auth).catch(() => {});
+                  });
+                } else {
+                  signInAnonymously(auth).catch(() => {});
+                }
+              }).catch(() => {
+                signInAnonymously(auth).catch(() => {});
+              });
+            } else if (sess.r === 'doctor' || sess.r === 'read') {
+              signInAnonymously(auth).catch(() => {});
+            }
+          } catch { /* ignore */ }
+        }
+      }
     });
     // Handle Google redirect result
     getRedirectResult(auth).then((result) => {
@@ -478,14 +508,42 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     updateDoc(doc(db, 'notifications', notifId), { read: true }).catch(() => {});
   }, []);
 
+  const ensureAuth = useCallback(async () => {
+    if (auth.currentUser) return;
+    // Wait up to 3s for auth to resolve
+    for (let i = 0; i < 15; i++) {
+      await new Promise(r => setTimeout(r, 200));
+      if (auth.currentUser) return;
+    }
+    // Last resort: try admin token or anonymous
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.SESSION);
+      const sess = stored ? JSON.parse(stored) : null;
+      if (sess?.r === 'admin') {
+        const res = await fetch('/api/admin-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ u: MASTER_ADMIN.u, p: MASTER_ADMIN.p })
+        });
+        const data = await res.json();
+        if (data.success && data.customToken) {
+          await signInWithCustomToken(auth, data.customToken);
+          return;
+        }
+      }
+      await signInAnonymously(auth);
+    } catch { /* ignore */ }
+  }, []);
+
   const updateDoctorMonth = useCallback(async (doctorId: number, shifts: DoctorShifts) => {
     const monthKey = `${selectedYear}_${selectedMonth}`;
     try {
+      await ensureAuth();
       await setDoc(doc(db, 'monthlyData', monthKey, 'doctors', String(doctorId)), shifts);
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `monthlyData/${monthKey}/doctors/${doctorId}`);
     }
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, ensureAuth]);
 
   const updateMonthlyData = useCallback(async (data: MonthlyData) => {
     const monthKey = `${selectedYear}_${selectedMonth}`;
