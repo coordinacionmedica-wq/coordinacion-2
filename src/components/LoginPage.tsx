@@ -22,29 +22,92 @@ export function LoginPage() {
   const [isRegistering, setIsRegistering] = useState(false);
 
   const handleSelfRegister = async () => {
-    if (!regNombre || !regApellidos || !regCedula || !regEmail) {
-      return alert("Por favor complete todos los campos obligatorios.");
+    if (!regNombre.trim() || !regApellidos.trim() || !regCedula.trim() || !regEmail.trim()) {
+      return alert("Por favor complete los campos obligatorios: Nombres, Apellidos, Correo y Cédula.");
     }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(regEmail.trim())) {
+      return alert("El formato del correo electrónico no es válido.");
+    }
+    const cleanCedula = regCedula.trim();
+    if (!/^\d+$/.test(cleanCedula) || cleanCedula.length < 5 || cleanCedula.length > 12) {
+      return alert("La cédula debe ser un número válido (entre 5 y 12 dígitos).");
+    }
+
     setIsRegistering(true);
     try {
+      // 1. Check if doctor already exists
+      const checkRes = await fetch('/api/check-doctor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cedula: cleanCedula })
+      });
+      const checkData = await checkRes.json();
+      if (!checkData.success) throw new Error(checkData.error || 'Error verificando cédula');
+
+      const cleanName = regNombre.trim().toLowerCase().replace(/\s+/g, '').substring(0, 5);
+      const username = `${cleanName}${cleanCedula.slice(-4)}`;
+      const password = `ESE${Math.floor(1000 + Math.random() * 9000)}`;
+
+      if (checkData.exists && checkData.username) {
+        alert(`Ya existe una cuenta para esta cédula. Su usuario es: ${checkData.username}`);
+        setLoginU(checkData.username);
+        setShowRegModal(false);
+        return;
+      }
+
+      // 2. Build doctor data matching server API format
+      const isUpdate = checkData.exists && !checkData.username;
+      const doctorId = isUpdate ? checkData.id : Date.now();
+      const doctorData = isUpdate ? {
+        username, password, passwordLastChanged: Date.now(),
+        email: regEmail.trim(), telefono: regTelefono.trim(),
+        nombre: `${regNombre.trim()} ${regApellidos.trim()}`,
+        apellidos: regApellidos.trim(),
+        registroMedico: regRegistroMedico.trim(),
+      } : {
+        id: doctorId, nombre: `${regNombre.trim()} ${regApellidos.trim()}`,
+        apellidos: regApellidos.trim(), cedula: cleanCedula,
+        registroMedico: regRegistroMedico.trim(), email: regEmail.trim(),
+        telefono: regTelefono.trim(),
+        cat: regRol === 'Médico Rural' ? 'Rural' : 'Planta',
+        rol: regRol, st: 'activo', username, password,
+        passwordLastChanged: Date.now(), createdAt: Date.now(),
+      };
+
+      // 3. Register via server API
       const res = await fetch('/api/register-doctor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: `${regNombre} ${regApellidos}`,
-          apellidos: regApellidos,
-          cedula: regCedula,
-          registroMedico: regRegistroMedico,
-          email: regEmail,
-          telefono: regTelefono,
-          rol: regRol
-        })
+        body: JSON.stringify({ doctorId, doctorData, isUpdate })
       });
-      if (!res.ok) throw new Error('Registration failed');
-      const data = await res.json();
-      setGeneratedCreds({ u: data.username, p: data.password });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'Error en registro');
+
+      // 4. Send email notification (best-effort)
+      fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: regEmail.trim(),
+          subject: `${isUpdate ? 'Activación' : 'Registro'} de Cuenta - Turnero HDSAR`,
+          text: `Hola ${regNombre}, tu cuenta ha sido ${isUpdate ? 'activada' : 'registrada'}. Usuario: ${username}, Contraseña: ${password}`,
+          html: `<div style="font-family:sans-serif;padding:20px;color:#334155;">
+            <h2 style="color:#059669;">¡${isUpdate ? 'Cuenta Activada' : 'Registro Exitoso'}!</h2>
+            <p>Estimado(a) <strong>${regNombre}</strong>,</p>
+            <div style="background:#f8fafc;padding:15px;border-radius:8px;margin:20px 0;border:1px solid #e2e8f0;">
+              <p style="margin:5px 0;"><strong>Usuario:</strong> <code style="color:#059669;font-weight:bold;">${username}</code></p>
+              <p style="margin:5px 0;"><strong>Contraseña:</strong> <code style="color:#059669;font-weight:bold;">${password}</code></p>
+            </div>
+            <p style="font-size:12px;color:#64748b;">Le recomendamos cambiar su contraseña en el primer inicio de sesión.</p>
+          </div>`
+        })
+      }).catch(e => console.error("Email err:", e));
+
+      setGeneratedCreds({ u: username, p: password });
     } catch (err) {
-      alert("Error al registrar. Intente nuevamente.");
+      const msg = err instanceof Error ? err.message : String(err);
+      alert(`Error: ${msg}`);
     } finally {
       setIsRegistering(false);
     }

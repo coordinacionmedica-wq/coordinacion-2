@@ -3,10 +3,13 @@ import { useAppContext } from '../context/AppContext';
 import { AIEngineSettings, MonthlyData, AuditEntry, SlotType } from '../types';
 import { MONTH_NAMES } from '../constants';
 
+const AI_MODEL = 'gemini-2.5-flash-preview-05-20';
+
 export function useAIActions() {
   const {
     session, doctors, variables, currentMonthData, setCurrentMonthData,
-    selectedMonth, selectedYear, shiftRequests, activities, auditLogs, ruralAvailabilities,
+    selectedMonth, selectedYear, daysInMonth, shiftRequests, activities,
+    auditLogs, ruralAvailabilities, serviceMappings,
     setIsGeneratingAI, setAiReport, notify,
   } = useAppContext();
 
@@ -41,7 +44,7 @@ export function useAIActions() {
       TAREA: Genera una PROPUESTA DE PROGRAMACIÓN lógica y optimizada en Markdown profesional con tablas y secciones de "Razonamiento del Algoritmo".`;
 
       const ai = getAI();
-      const response = await ai.models.generateContent({ model: 'gemini-2.5-flash-preview-05-20', contents: prompt });
+      const response = await ai.models.generateContent({ model: AI_MODEL, contents: prompt });
       setAiReport(response.text || 'No se pudo generar la propuesta.');
     } catch (err) {
       console.error(err);
@@ -101,7 +104,7 @@ export function useAIActions() {
       Genera un análisis estadístico gerencial estructurado. Usa solo negritas y viñetas en Markdown.`;
 
       const ai = getAI();
-      const response = await ai.models.generateContent({ model: 'gemini-2.5-flash-preview-05-20', contents: prompt });
+      const response = await ai.models.generateContent({ model: AI_MODEL, contents: prompt });
       setAiReport(response.text || 'No se pudo generar el reporte.');
     } catch (err) {
       console.error(err);
@@ -133,7 +136,7 @@ Donde los días son del 1 al ${daysCount}.`;
 
       const ai = getAI();
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-preview-05-20',
+        model: AI_MODEL,
         contents: prompt,
         config: { responseMimeType: 'application/json' },
       });
@@ -177,9 +180,110 @@ Donde los días son del 1 al ${daysCount}.`;
     return entries;
   };
 
+  const generateAICapacityReport = async (period: 'semanal' | 'quincenal' | 'mensual') => {
+    setIsGeneratingAI(true);
+    setAiReport(null);
+    try {
+      const days = period === 'semanal' ? Array.from({length: 7}, (_, i) => i + 1) :
+                   period === 'quincenal' ? Array.from({length: 15}, (_, i) => i + 1) :
+                   Array.from({length: daysInMonth}, (_, i) => i + 1);
+      let totalHours = 0;
+      const hoursByCat: Record<string, number> = { Planta: 0, CTA: 0, APS: 0 };
+      const workload: Record<string, number> = {};
+      let usedSlots = 0;
+      days.forEach(day => {
+        doctors.forEach(doc => {
+          if (doc.st !== 'activo') return;
+          ['m', 't', 'n'].forEach(slot => {
+            const sigla = currentMonthData[doc.id]?.[slot as SlotType]?.[day];
+            if (sigla && sigla !== 'X' && sigla !== 'DESC') {
+              const h = variables[slot as SlotType]?.[sigla] || 0;
+              totalHours += h;
+              hoursByCat[doc.cat] = (hoursByCat[doc.cat] || 0) + h;
+              workload[doc.nombre] = (workload[doc.nombre] || 0) + h;
+              usedSlots++;
+            }
+          });
+        });
+      });
+      const topWorkload = Object.entries(workload).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([n, h]) => `${n}: ${h}h`).join(', ');
+      const prompt = `Analiza la capacidad instalada y el talento humano de un hospital para el periodo ${period} de ${MONTH_NAMES[selectedMonth]} ${selectedYear}.
+      Datos:
+      - Horas totales programadas: ${totalHours}h
+      - Distribución por categoría: Planta (${hoursByCat.Planta || 0}h), CTA (${hoursByCat.CTA || 0}h), APS (${hoursByCat.APS || 0}h)
+      - Cobertura de turnos asignados: ${((usedSlots / (days.length * 3)) * 100).toFixed(1)}%
+      - Médicos con mayor carga: ${topWorkload}
+      - Total médicos activos: ${doctors.filter(d => d.st === 'activo').length}
+      Genera un reporte gerencial conciso en español: 1. Resumen de capacidad 2. Análisis de riesgos 3. Recomendaciones estratégicas. Tono profesional y directo.`;
+      const ai = getAI();
+      const response = await ai.models.generateContent({ model: AI_MODEL, contents: prompt });
+      setAiReport(response.text || 'No se pudo generar el reporte.');
+    } catch (err) {
+      console.error(err);
+      setAiReport('Error al contactar con la IA. Verifica tu conexión.');
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
+  const generateAIServiceReport = async () => {
+    setIsGeneratingAI(true);
+    setAiReport(null);
+    try {
+      const activeDoctors = doctors.filter(d => d.st === 'activo');
+      const serviceStats: Record<string, { hours: number; shifts: number; slotsByDay: number[] }> = {};
+      serviceMappings.forEach(m => {
+        serviceStats[m.name] = { hours: 0, shifts: 0, slotsByDay: new Array(daysInMonth).fill(0) };
+      });
+      serviceStats['Otros'] = { hours: 0, shifts: 0, slotsByDay: new Array(daysInMonth).fill(0) };
+      let globalTotalHours = 0, globalUsedSlots = 0;
+      activeDoctors.forEach(doc => {
+        (['m', 't', 'n'] as SlotType[]).forEach(slot => {
+          for (let d = 1; d <= daysInMonth; d++) {
+            const sigla = currentMonthData[doc.id]?.[slot]?.[d];
+            if (sigla && sigla !== 'X' && sigla !== 'DESC' && sigla !== 'PT') {
+              const h = variables[slot][sigla] || 0;
+              globalTotalHours += h;
+              globalUsedSlots++;
+              const mapping = serviceMappings.find(m => m.siglas.some(s => s.trim().toUpperCase() === sigla.trim().toUpperCase()));
+              const target = mapping ? serviceStats[mapping.name] : serviceStats['Otros'];
+              target.hours += h;
+              target.shifts++;
+              target.slotsByDay[d - 1]++;
+            }
+          }
+        });
+      });
+      const serviceDetails = Object.entries(serviceStats).map(([name, stats]) => {
+        const peakDay = stats.slotsByDay.indexOf(Math.max(...stats.slotsByDay)) + 1;
+        const avgShiftsPerDay = (stats.shifts / daysInMonth).toFixed(2);
+        return `- **${name}**: ${stats.hours}h totales, ${stats.shifts} turnos. (Promedio diario: ${avgShiftsPerDay}. Pico: Día ${peakDay})`;
+      }).join('\n');
+      const totalCapacityPossible = activeDoctors.length * daysInMonth * 3;
+      const prompt = `Actúa como un Consultor de Gerencia Hospitalaria. Analiza los datos de servicios del mes de ${MONTH_NAMES[selectedMonth]} ${selectedYear}:
+ESTADÍSTICAS POR SERVICIO:\n${serviceDetails}
+DATOS GLOBALES:
+- Total Médicos Activos: ${activeDoctors.length}
+- Horas Totales Ejecutadas: ${globalTotalHours}h
+- Slots Utilizados: ${globalUsedSlots} de ${totalCapacityPossible} (${((globalUsedSlots/totalCapacityPossible)*100).toFixed(1)}%)
+- Novedades/Cambios: ${auditLogs.filter(l => l.targetMonth === selectedMonth).length}
+Genera un INFORME GERENCIAL que incluya: 1. ANÁLISIS DE OCUPACIÓN 2. PATRONES DE USO 3. CAPACIDAD INSTALADA 4. RECOMENDACIONES ESTRATÉGICAS. Tono directivo, formal y conciso en español.`;
+      const ai = getAI();
+      const response = await ai.models.generateContent({ model: AI_MODEL, contents: prompt });
+      setAiReport(response.text || 'No se pudo generar el reporte.');
+    } catch (err) {
+      console.error(err);
+      setAiReport('Error al generar análisis de servicios. Intente nuevamente.');
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
   return {
     generateAISchedulingProposal,
     generateAIStatsReport,
+    generateAICapacityReport,
+    generateAIServiceReport,
     generateAISuggestions,
     applyAISuggestions,
   };

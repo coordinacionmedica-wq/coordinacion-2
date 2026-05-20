@@ -6,7 +6,7 @@ import { useAppContext } from '../context/AppContext';
 import { useShiftActions } from '../hooks/useShiftActions';
 import { useTurneroFilters } from '../hooks/useTurneroFilters';
 import { useTurneroExport } from '../hooks/useTurneroExport';
-import { useTurneroAI } from '../hooks/useTurneroAI';
+import { useAIActions } from '../hooks/useAIActions';
 import { TurneroFilterPanel, TurneroAIPanel, ShiftGridTable } from './turnero';
 
 interface TurneroViewProps {
@@ -38,11 +38,28 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
     doctorFilter: filters.doctorFilter,
   });
 
-  const ai = useTurneroAI({
-    session, doctors, currentMonthData,
-    selectedMonth, selectedYear,
-    setCurrentMonthData, setNotification,
-  });
+  // AI Suggestions via unified hook
+  const { generateAISuggestions, applyAISuggestions } = useAIActions();
+  const [aiIsGenerating, setAiIsGenerating] = React.useState(false);
+  const [aiSuggestions, setAiSuggestions] = React.useState<import('../types').MonthlyData | null>(null);
+
+  const ai = {
+    isGenerating: aiIsGenerating,
+    suggestions: aiSuggestions,
+    generate: async () => {
+      setAiIsGenerating(true);
+      const result = await generateAISuggestions();
+      setAiSuggestions(result);
+      setAiIsGenerating(false);
+    },
+    apply: async () => {
+      if (aiSuggestions) {
+        await applyAISuggestions(aiSuggestions);
+        setAiSuggestions(null);
+      }
+    },
+    discard: () => setAiSuggestions(null),
+  };
 
   // ── Computed data ──
   const conflicts = useMemo(() => {

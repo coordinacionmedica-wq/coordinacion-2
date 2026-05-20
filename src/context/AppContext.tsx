@@ -369,38 +369,48 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
       return;
     }
-    // Doctor login
-    const q = query(collection(db, 'doctors'), where('username', '==', loginU));
-    const snap = await getDocs(q);
-    if (snap.empty) {
-      alert('Credenciales inválidas.');
-      return;
-    }
-    const docData = snap.docs[0].data() as Doctor;
-    if (docData.password !== loginP) {
-      alert('Contraseña incorrecta.');
-      return;
-    }
-    // Try server login for custom token
+    // Doctor Login via API (server validates credentials)
     try {
-      const res = await fetch('/api/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: loginU, password: loginP })
+        body: JSON.stringify({ u: loginU, p: loginP })
       });
-      if (res.ok) {
-        const { token } = await res.json();
-        await signInWithCustomToken(auth, token);
+      const result = await response.json();
+      if (result.success) {
+        if (result.customToken) {
+          try {
+            await signInWithCustomToken(auth, result.customToken);
+          } catch (tokenErr: any) {
+            console.error('Firebase custom token auth failed:', tokenErr);
+          }
+        }
+        const expiryDays = 90;
+        const lastChanged = result.passwordLastChanged || 0;
+        const daysSince = (Date.now() - lastChanged) / (1000 * 60 * 60 * 24);
+        if (daysSince > expiryDays) {
+          alert('Su contraseña ha expirado (vence cada 3 meses). Por favor cámbiela.');
+        }
+        const sess = result.session as UserSession;
+        setSession(sess);
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
+        return;
+      } else {
+        alert(result.error || 'Credenciales incorrectas');
+        return;
       }
-    } catch { /* custom token is optional */ }
-
-    const sess: UserSession = {
-      r: 'doctor',
-      n: docData.nombre,
-      doctorId: docData.id
-    };
-    setSession(sess);
-    localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
+    } catch {
+      // Fallback: client-side validation when server is unavailable
+      const q = query(collection(db, 'doctors'), where('username', '==', loginU));
+      const snap = await getDocs(q);
+      if (snap.empty) { alert('Credenciales inválidas.'); return; }
+      const docData = snap.docs[0].data() as Doctor;
+      if (docData.password !== loginP) { alert('Contraseña incorrecta.'); return; }
+      try { await signInAnonymously(auth); } catch { /* optional */ }
+      const sess: UserSession = { r: 'doctor', n: docData.nombre, doctorId: docData.id };
+      setSession(sess);
+      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
+    }
   }, []);
 
   const handleGoogleLogin = useCallback(async () => {
