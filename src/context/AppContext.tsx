@@ -199,7 +199,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return stored ? Number(stored) : 15;
   });
 
-  const isFirebaseUnauthenticatedAdmin = session?.r === 'admin' && !fbUser;
+  const isFirebaseUnauthenticatedAdmin = session?.r === 'admin' && (!fbUser || fbUser.isAnonymous);
 
   // ── Notify helper ──
   const notify = useCallback((message: string, type: AppNotification['type']) => {
