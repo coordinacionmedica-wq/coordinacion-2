@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import { initializeApp as initAdminApp, getApps } from "firebase-admin/app";
+import { initializeApp as initAdminApp, getApps, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import fs from "fs";
 
@@ -16,23 +16,41 @@ const __dirname = path.dirname(__filename);
 // Initialize Firebase Admin
 const configPath = path.join(__dirname, "firebase-applet-config.json");
 let dbAdmin: any = null;
-
 let authAdmin: any = null;
 
-if (fs.existsSync(configPath)) {
-  try {
-    const firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-    const adminApp = getApps().length === 0
-      ? initAdminApp({ projectId: firebaseConfig.projectId })
-      : getApps()[0];
-    const { getAuth } = await import("firebase-admin/auth");
-    authAdmin = getAuth(adminApp);
-    dbAdmin = firebaseConfig.firestoreDatabaseId
-      ? getFirestore(adminApp, firebaseConfig.firestoreDatabaseId)
-      : getFirestore(adminApp);
-  } catch (err) {
-    console.error("Error initializing Firebase Admin:", err);
+try {
+  const firebaseConfig = fs.existsSync(configPath)
+    ? JSON.parse(fs.readFileSync(configPath, "utf-8"))
+    : { projectId: process.env.FIREBASE_PROJECT_ID || "" };
+
+  // Build credential from env variable or service account file
+  let credential: any = undefined;
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    credential = cert(serviceAccount);
+  } else {
+    const saPath = path.join(__dirname, "service-account.json");
+    if (fs.existsSync(saPath)) {
+      const serviceAccount = JSON.parse(fs.readFileSync(saPath, "utf-8"));
+      credential = cert(serviceAccount);
+    }
   }
+
+  const adminApp = getApps().length === 0
+    ? initAdminApp({
+        projectId: firebaseConfig.projectId,
+        ...(credential && { credential }),
+      })
+    : getApps()[0];
+
+  const { getAuth } = await import("firebase-admin/auth");
+  authAdmin = getAuth(adminApp);
+  dbAdmin = firebaseConfig.firestoreDatabaseId
+    ? getFirestore(adminApp, firebaseConfig.firestoreDatabaseId)
+    : getFirestore(adminApp);
+  console.log("Firebase Admin initialized successfully");
+} catch (err) {
+  console.error("Error initializing Firebase Admin:", err);
 }
 
 async function startServer() {

@@ -40,7 +40,6 @@ import {
   GoogleAuthProvider,
   onAuthStateChanged,
   signInAnonymously,
-  signInWithCustomToken,
   signOut,
   User
 } from 'firebase/auth';
@@ -218,6 +217,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, []);
 
+  // ── Admin email list ──
+  const ADMIN_EMAILS = ['julive17@gmail.com', 'coordinacionmedica@correohdsa.gov.co'];
+
   // ── Firebase Auth listener ──
   const reauthAttempted = React.useRef(false);
   useEffect(() => {
@@ -228,37 +230,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         reauthAttempted.current = true;
         const stored = localStorage.getItem(STORAGE_KEYS.SESSION);
         if (stored) {
-          try {
-            const sess = JSON.parse(stored);
-            if (sess.r === 'admin') {
-              fetch('/api/admin-login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ u: MASTER_ADMIN.u, p: MASTER_ADMIN.p })
-              }).then(r => r.json()).then(data => {
-                if (data.success && data.customToken) {
-                  signInWithCustomToken(auth, data.customToken).catch(() => {
-                    signInAnonymously(auth).catch(() => {});
-                  });
-                } else {
-                  signInAnonymously(auth).catch(() => {});
-                }
-              }).catch(() => {
-                signInAnonymously(auth).catch(() => {});
-              });
-            } else if (sess.r === 'doctor' || sess.r === 'read') {
-              signInAnonymously(auth).catch(() => {});
-            }
-          } catch { /* ignore */ }
+          signInAnonymously(auth).catch(() => {});
         }
       }
     });
-    // Handle Google redirect result
+    // Handle Google redirect result — detect admin by email
     getRedirectResult(auth).then((result) => {
       if (result?.user?.email) {
         const email = result.user.email;
-        const adminEmails = ['julive17@gmail.com', 'coordinacionmedica@correohdsa.gov.co'];
-        if (adminEmails.includes(email)) {
+        if (ADMIN_EMAILS.includes(email)) {
           const sess: UserSession = { r: 'admin', n: result.user.displayName || email };
           setSession(sess);
           localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
@@ -402,76 +382,44 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // ── Actions ──
   const handleLogin = useCallback(async (loginU: string, loginP: string) => {
+    // Admin login — credentials only, Firebase anonymous auth
     if (loginU === MASTER_ADMIN.u && loginP === MASTER_ADMIN.p) {
-      try {
-        const res = await fetch('/api/admin-login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ u: loginU, p: loginP })
-        });
-        const data = await res.json();
-        if (data.success && data.customToken) {
-          await signInWithCustomToken(auth, data.customToken);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch {
-        try { await signInAnonymously(auth); } catch { /* fallback */ }
-      }
+      try { await signInAnonymously(auth); } catch { /* optional */ }
       const sess: UserSession = { r: 'admin', n: 'Admin General' };
       setSession(sess);
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
       return;
     }
+    // Reader login
     if (loginU === MASTER_READER.u) {
-      try { await signInAnonymously(auth); } catch { /* Firebase auth optional */ }
+      try { await signInAnonymously(auth); } catch { /* optional */ }
       const sess: UserSession = { r: 'read', n: 'Personal Invitado' };
       setSession(sess);
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
       return;
     }
-    // Doctor Login via API (server validates credentials)
+    // Doctor login — client-side validation against Firestore
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ u: loginU, p: loginP })
-      });
-      const result = await response.json();
-      if (result.success) {
-        if (result.customToken) {
-          try {
-            await signInWithCustomToken(auth, result.customToken);
-          } catch (tokenErr: any) {
-            console.error('Firebase custom token auth failed:', tokenErr);
-          }
-        }
-        const expiryDays = 90;
-        const lastChanged = result.passwordLastChanged || 0;
-        const daysSince = (Date.now() - lastChanged) / (1000 * 60 * 60 * 24);
-        if (daysSince > expiryDays) {
-          alert('Su contraseña ha expirado (vence cada 3 meses). Por favor cámbiela.');
-        }
-        const sess = result.session as UserSession;
-        setSession(sess);
-        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
-        return;
-      } else {
-        alert(result.error || 'Credenciales incorrectas');
-        return;
-      }
-    } catch {
-      // Fallback: client-side validation when server is unavailable
+      try { await signInAnonymously(auth); } catch { /* optional */ }
       const q = query(collection(db, 'doctors'), where('username', '==', loginU));
       const snap = await getDocs(q);
       if (snap.empty) { alert('Credenciales inválidas.'); return; }
       const docData = snap.docs[0].data() as Doctor;
       if (docData.password !== loginP) { alert('Contraseña incorrecta.'); return; }
-      try { await signInAnonymously(auth); } catch { /* optional */ }
+      // Check password expiry
+      const expiryDays = 90;
+      const lastChanged = docData.passwordLastChanged || 0;
+      const daysSince = (Date.now() - lastChanged) / (1000 * 60 * 60 * 24);
+      if (daysSince > expiryDays) {
+        alert('Su contraseña ha expirado (vence cada 3 meses). Por favor cámbiela.');
+      }
       const prefix = docData.genero === 'F' ? 'Dra.' : 'Dr.';
       const sess: UserSession = { r: 'doctor', n: `${prefix} ${docData.nombre}`, doctorId: docData.id };
       setSession(sess);
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
+    } catch (err) {
+      console.error('Login error:', err);
+      alert('Error al iniciar sesión. Intente de nuevo.');
     }
   }, []);
 
@@ -515,24 +463,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       await new Promise(r => setTimeout(r, 200));
       if (auth.currentUser) return;
     }
-    // Last resort: try admin token or anonymous
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.SESSION);
-      const sess = stored ? JSON.parse(stored) : null;
-      if (sess?.r === 'admin') {
-        const res = await fetch('/api/admin-login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ u: MASTER_ADMIN.u, p: MASTER_ADMIN.p })
-        });
-        const data = await res.json();
-        if (data.success && data.customToken) {
-          await signInWithCustomToken(auth, data.customToken);
-          return;
-        }
-      }
-      await signInAnonymously(auth);
-    } catch { /* ignore */ }
+    try { await signInAnonymously(auth); } catch { /* ignore */ }
   }, []);
 
   const updateDoctorMonth = useCallback(async (doctorId: number, shifts: DoctorShifts) => {
