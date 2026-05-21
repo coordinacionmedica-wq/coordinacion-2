@@ -35,7 +35,7 @@ import {
   firebaseConfig
 } from '../firebase';
 import {
-  signInWithRedirect,
+  signInWithPopup,
   getRedirectResult,
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -426,7 +426,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const handleGoogleLogin = useCallback(async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithRedirect(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      if (result?.user?.email) {
+        const email = result.user.email;
+        if (ADMIN_EMAILS.includes(email)) {
+          const sess: UserSession = { r: 'admin', n: result.user.displayName || email };
+          setSession(sess);
+          localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
+        }
+      }
     } catch (err) {
       console.error('Google login error:', err);
     }
