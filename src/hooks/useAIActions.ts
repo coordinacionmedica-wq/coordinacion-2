@@ -3,7 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import { AIEngineSettings, MonthlyData, AuditEntry, SlotType } from '../types';
 import { MONTH_NAMES } from '../constants';
 
-const AI_MODEL = 'gemini-2.5-flash-preview-05-20';
+const AI_MODEL = 'gemini-1.5-flash-latest';
 
 export function useAIActions() {
   const {
