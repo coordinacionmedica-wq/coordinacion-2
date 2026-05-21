@@ -1,9 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 0. Global Safety Net
+    // 0. Open access for internal hospital app (auth handled at app level)
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
 
     // --- Helpers ---
