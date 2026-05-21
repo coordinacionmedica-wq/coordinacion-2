@@ -13,7 +13,7 @@ export function useAIActions() {
     setIsGeneratingAI, setAiReport, notify,
   } = useAppContext();
 
-  const getAI = () => new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const getAI = () => new GoogleGenAI({ apiKey: 'AIzaSyB595kbN6QAgIkmHGc5BRKelwhwR-fkPKY' });
 
   const generateAISchedulingProposal = async (settings: AIEngineSettings) => {
     setIsGeneratingAI(true);
