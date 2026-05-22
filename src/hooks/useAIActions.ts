@@ -4,7 +4,7 @@ import { AIEngineSettings, MonthlyData, AuditEntry, SlotType } from '../types';
 import { MONTH_NAMES } from '../constants';
 
 const AI_MODEL = 'gemini-2.5-flash';
-const API_KEY = 'AIzaSyB595kbN6QAgIkmHGc5BRKelwhwR-fkPKY';
+const API_KEY = (process as any).env?.GEMINI_API_KEY || '';
 
 export function useAIActions() {
   const {
