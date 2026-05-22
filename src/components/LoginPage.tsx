@@ -124,11 +124,11 @@ export function LoginPage() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white p-6 md:p-10 rounded-[32px] border border-emerald-100 w-full max-w-md text-center shadow-2xl relative my-4 md:my-8"
       >
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-6">
           <img
             src="/Logo_HDSA.jpg"
             alt="Logo HDSA"
-            className="h-20 w-auto object-contain rounded-xl"
+            className="h-32 w-auto object-contain rounded-2xl shadow-lg border-2 border-emerald-100"
           />
         </div>
         <h2 className="text-2xl font-bold text-emerald-700 mb-8 uppercase tracking-widest">COORDINACION MEDICA HDSAR</h2>

@@ -60,7 +60,7 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
           <div className="flex items-center gap-4">
             <div>
               <h1 className="font-black text-emerald-700 tracking-tighter flex items-center gap-2">
-                <img src="/Logo_HDSA.jpg" alt="Logo" className="h-8 w-auto object-contain rounded-lg" />
+                <img src="/Logo_HDSA.jpg" alt="Logo" className="h-12 w-auto object-contain rounded-xl shadow-md border border-emerald-100" />
                 COORDINACIÓN MÉDICA HDSAR
               </h1>
               <p className="text-[10px] text-stone-500 font-mono italic">Julián Humberto Vélez Varela Md - Coordinador Médico</p>
