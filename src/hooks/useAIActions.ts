@@ -3,7 +3,13 @@ import { useAppContext } from '../context/AppContext';
 import { AIEngineSettings, MonthlyData, AuditEntry, SlotType } from '../types';
 import { MONTH_NAMES } from '../constants';
 
-const AI_MODEL = 'gemini-2.5-flash';
+const FALLBACK_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-3.5-flash',
+  'gemini-3.1-flash-lite',
+  'gemini-2.5-flash-lite',
+  'gemini-3-flash',
+];
 const API_KEY = (process as any).env?.GEMINI_API_KEY || '';
 
 export function useAIActions() {
@@ -14,9 +20,29 @@ export function useAIActions() {
     setIsGeneratingAI, setAiReport, notify,
   } = useAppContext();
 
-  const getModel = () => {
+  const getModel = (modelName: string) => {
     const genAI = new GoogleGenerativeAI(API_KEY);
-    return genAI.getGenerativeModel({ model: AI_MODEL });
+    return genAI.getGenerativeModel({ model: modelName });
+  };
+
+  const generateWithFallback = async (prompt: string, config?: any) => {
+    let lastError = '';
+    for (const modelName of FALLBACK_MODELS) {
+      try {
+        const model = getModel(modelName);
+        const result = config
+          ? await model.generateContent({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: config })
+          : await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        if (text) return text;
+      } catch (err: any) {
+        lastError = err?.message || String(err);
+        console.warn(`[AI Fallback] ${modelName} failed:`, lastError);
+        continue;
+      }
+    }
+    throw new Error(`Todos los modelos fallaron. Último error: ${lastError}`);
   };
 
   const generateAISchedulingProposal = async (settings: AIEngineSettings) => {
@@ -47,10 +73,8 @@ export function useAIActions() {
       ${settings.customRules ? `OTRAS REGLAS:\n${settings.customRules}` : ''}
       TAREA: Genera una PROPUESTA DE PROGRAMACIÓN lógica y optimizada en Markdown profesional con tablas y secciones de "Razonamiento del Algoritmo".`;
 
-      const model = getModel();
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      setAiReport(response.text() || 'No se pudo generar la propuesta.');
+      const text = await generateWithFallback(prompt);
+      setAiReport(text || 'No se pudo generar la propuesta.');
     } catch (err) {
       console.error(err);
       setAiReport('Error al generar propuesta con el Engine V3. Verifica el API Key de Gemini.');
@@ -108,10 +132,8 @@ export function useAIActions() {
       - Médicos activos: ${activeDoctors.length}
       Genera un análisis estadístico gerencial estructurado. Usa solo negritas y viñetas en Markdown.`;
 
-      const model = getModel();
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      setAiReport(response.text() || 'No se pudo generar el reporte.');
+      const text = await generateWithFallback(prompt);
+      setAiReport(text || 'No se pudo generar el reporte.');
     } catch (err) {
       console.error(err);
       setAiReport('Error al generar reporte IA.');
@@ -140,14 +162,8 @@ Responde ÚNICAMENTE con JSON (sin markdown):
 {"doctorId":{"m":{"1":"SIGLA","2":"SIGLA"},"t":{},"n":{}}}
 Donde los días son del 1 al ${daysCount}.`;
 
-      const model = getModel();
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: 'application/json' },
-      });
-      const response = await result.response;
-
-      return JSON.parse(response.text()) as MonthlyData;
+      const text = await generateWithFallback(prompt, { responseMimeType: 'application/json' });
+      return JSON.parse(text) as MonthlyData;
     } catch (error) {
       console.error('AI Error:', error);
       notify('Error al generar sugerencias con IA.', 'error');
@@ -221,10 +237,8 @@ Donde los días son del 1 al ${daysCount}.`;
       - Médicos con mayor carga: ${topWorkload}
       - Total médicos activos: ${doctors.filter(d => d.st === 'activo').length}
       Genera un reporte gerencial conciso en español: 1. Resumen de capacidad 2. Análisis de riesgos 3. Recomendaciones estratégicas. Tono profesional y directo.`;
-      const model = getModel();
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      setAiReport(response.text() || 'No se pudo generar el reporte.');
+      const text = await generateWithFallback(prompt);
+      setAiReport(text || 'No se pudo generar el reporte.');
     } catch (err) {
       console.error(err);
       setAiReport('Error al contactar con la IA. Verifica tu conexión.');
@@ -275,10 +289,8 @@ DATOS GLOBALES:
 - Slots Utilizados: ${globalUsedSlots} de ${totalCapacityPossible} (${((globalUsedSlots/totalCapacityPossible)*100).toFixed(1)}%)
 - Novedades/Cambios: ${auditLogs.filter(l => l.targetMonth === selectedMonth).length}
 Genera un INFORME GERENCIAL que incluya: 1. ANÁLISIS DE OCUPACIÓN 2. PATRONES DE USO 3. CAPACIDAD INSTALADA 4. RECOMENDACIONES ESTRATÉGICAS. Tono directivo, formal y conciso en español.`;
-      const model = getModel();
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      setAiReport(response.text() || 'No se pudo generar el reporte.');
+      const text = await generateWithFallback(prompt);
+      setAiReport(text || 'No se pudo generar el reporte.');
     } catch (err) {
       console.error(err);
       setAiReport('Error al generar análisis de servicios. Intente nuevamente.');
