@@ -8,6 +8,17 @@ import {
   MessageCircle,
   Menu,
   X,
+  ChevronRight,
+  Calendar,
+  Send,
+  MapPin,
+  ClipboardList,
+  Settings,
+  Database,
+  FileText,
+  BrainCircuit,
+  BookOpen,
+  BarChart3,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
@@ -20,6 +31,8 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const {
     session,
+    activeTab,
+    setActiveTab,
     shiftRequests,
     userNotifications,
     markNotificationRead,
@@ -160,6 +173,43 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Top Tab Navigation */}
+        <div className="max-w-7xl mx-auto mt-3 overflow-x-auto no-scrollbar">
+          <div className="flex gap-1.5 min-w-max">
+            {[
+              { id: 'home', label: 'Inicio', icon: ChevronRight },
+              { id: 'turnos', label: 'Turnos', icon: Calendar },
+              { id: 'pic', label: 'PIC', icon: BrainCircuit },
+              { id: 'solicitudes', label: 'Solicita', icon: Send },
+              { id: 'rural', label: 'Rural', icon: MapPin },
+              ...((session.r === 'admin' || session.r === 'root') ? [
+                { id: 'stats', label: 'Stats', icon: BarChart3 }
+              ] : []),
+              { id: 'novedades', label: 'Novedades', icon: ClipboardList },
+              { id: 'bd', label: 'TH', icon: Database },
+              { id: 'docs', label: 'Guías', icon: FileText },
+              ...(session.r === 'admin' ? [
+                { id: 'admin', label: 'Admin', icon: Settings },
+                { id: 'toolbox', label: 'AI', icon: Database },
+                { id: 'ayuda', label: 'Órdenes', icon: BookOpen }
+              ] : [])
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-all whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'bg-emerald-600 text-white shadow-md'
+                    : 'bg-white/60 text-emerald-700 hover:bg-emerald-50 border border-emerald-100'
+                }`}
+              >
+                <tab.icon className="w-3.5 h-3.5" />
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
       </header>

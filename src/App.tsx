@@ -20,7 +20,6 @@ import { AppProvider } from './context/AppContext';
 import { BootScreen } from './components/BootScreen';
 import { LoginPage } from './components/LoginPage';
 import { AppHeader } from './components/AppHeader';
-import { BottomNav } from './components/BottomNav';
 import { AyudaView } from './components/AyudaView';
 import { DocsView } from './components/DocsView';
 import { TurneroView } from './components/TurneroView';
@@ -359,7 +358,7 @@ const handleSubmitShiftRequest = async () => {
       <AppHeader isAdminUser={isAdminUser} showAuthInbox={() => setShowAuthInbox(true)} />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-[100vw] overflow-x-hidden p-4 pb-24 md:pb-32">
+      <main className="flex-1 max-w-[100vw] overflow-x-hidden p-4 pb-8">
         <AnimatePresence mode="wait">
           {activeTab === 'home' && (
             <HomeView
@@ -567,8 +566,6 @@ const handleSubmitShiftRequest = async () => {
           )}
         </AnimatePresence>
       </main>
-
-      <BottomNav />
 
       {editingDoc && (
         <EditDoctorModal
