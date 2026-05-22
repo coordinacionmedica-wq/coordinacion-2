@@ -184,20 +184,20 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
 
   // ── Render ──
   return (
-    <motion.div key="turnos" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 md:space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 md:p-6 rounded-2xl md:rounded-[24px] border border-slate-200 shadow-sm no-print">
+    <motion.div key="turnos" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 md:space-y-3">
+      {/* Compact Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-white p-3 md:p-4 rounded-xl border border-slate-200 shadow-sm no-print">
         <div>
-          <h2 className="text-lg md:text-2xl font-black text-slate-800">Turnero Hospitalario</h2>
-          <p className="text-[10px] md:text-xs text-stone-500 font-mono italic">Sistema de Gestión de Talento Humano</p>
+          <h2 className="text-base md:text-lg font-black text-slate-800">Turnero Hospitalario</h2>
+          <p className="text-[9px] text-stone-500 font-mono italic">Sistema de Gestión de Talento Humano</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           {(session?.r === 'admin' || (session?.doctorId && doctors.find(d => d.id === session.doctorId)?.permissions?.includes('call_availability'))) && (
             <button
               onClick={onOpenCallModal}
-              className="bg-rose-500 text-white px-3 py-2 rounded-xl font-black flex items-center gap-2 hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20 text-[10px] sm:text-xs flex-1 sm:flex-none justify-center"
+              className="bg-rose-500 text-white px-2.5 py-1.5 rounded-lg font-black flex items-center gap-1.5 hover:bg-rose-600 transition-all shadow-md text-[9px] sm:text-[10px] flex-1 sm:flex-none justify-center"
             >
-              <PhoneIncoming className="w-4 h-4 animate-pulse" />
+              <PhoneIncoming className="w-3.5 h-3.5 animate-pulse" />
               <span className="hidden sm:inline">LLAMAR DISPONIBILIDAD</span>
               <span className="sm:hidden">DISPONIBILIDAD</span>
             </button>
@@ -205,35 +205,34 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
         </div>
       </div>
 
-      {/* Status Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 no-print">
-        <div className="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <p className="text-[9px] md:text-[10px] text-emerald-600 uppercase font-black mb-1">Último Llamado</p>
-          <div className="text-[10px] md:text-[11px] font-bold text-slate-800 truncate">
+      {/* Compact Status Cards */}
+      <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5 md:gap-2 no-print">
+        <div className="bg-white p-2 rounded-xl border border-slate-200">
+          <p className="text-[7px] md:text-[8px] text-emerald-600 uppercase font-black">Último Llamado</p>
+          <div className="text-[9px] md:text-[10px] font-bold text-slate-800 truncate">
             {availabilityCalls[0] ? `${availabilityCalls[0].doctorName} (${new Date(availabilityCalls[0].timestamp).toLocaleTimeString()})` : 'Sin llamados'}
           </div>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <p className="text-[9px] md:text-[10px] text-sky-600 uppercase font-black mb-1">Personal Planta</p>
-          <div className="text-lg md:text-xl font-black text-slate-800">{doctors.filter(d => d.cat === 'Planta' && d.st === 'activo').length}</div>
+        <div className="bg-white p-2 rounded-xl border border-slate-200 text-center">
+          <p className="text-[7px] md:text-[8px] text-sky-600 uppercase font-black">Personal Planta</p>
+          <div className="text-base md:text-lg font-black text-slate-800">{doctors.filter(d => d.cat === 'Planta' && d.st === 'activo').length}</div>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <p className="text-[9px] md:text-[10px] text-rose-600 uppercase font-black mb-1">Personal Rural</p>
-          <div className="text-lg md:text-xl font-black text-slate-800">{doctors.filter(d => d.cat === 'Rural' && d.st === 'activo').length}</div>
+        <div className="bg-white p-2 rounded-xl border border-slate-200 text-center">
+          <p className="text-[7px] md:text-[8px] text-rose-600 uppercase font-black">Personal Rural</p>
+          <div className="text-base md:text-lg font-black text-slate-800">{doctors.filter(d => d.cat === 'Rural' && d.st === 'activo').length}</div>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <p className="text-[9px] md:text-[10px] text-amber-600 uppercase font-black mb-1">Novedades Mes</p>
-          <div className="text-lg md:text-xl font-black text-slate-800">{auditLogs.filter(l => l.targetMonth === selectedMonth).length}</div>
+        <div className="bg-white p-2 rounded-xl border border-slate-200 text-center">
+          <p className="text-[7px] md:text-[8px] text-amber-600 uppercase font-black">Novedades Mes</p>
+          <div className="text-base md:text-lg font-black text-slate-800">{auditLogs.filter(l => l.targetMonth === selectedMonth).length}</div>
         </div>
-        <div className={`p-3 md:p-4 rounded-2xl border shadow-sm ${conflictCounts.total > 0 ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-emerald-200'}`}>
-          <p className="text-[9px] md:text-[10px] uppercase font-black mb-1 flex items-center gap-1">
-            <AlertTriangle className="w-3 h-3" />
-            Alertas
+        <div className={`col-span-3 md:col-span-1 p-2 rounded-xl border text-center ${conflictCounts.total > 0 ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-emerald-200'}`}>
+          <p className="text-[7px] md:text-[8px] uppercase font-black flex items-center justify-center gap-1">
+            <AlertTriangle className="w-3 h-3" /> Alertas
           </p>
           {conflictCounts.total === 0 ? (
-            <div className="text-[10px] font-bold text-emerald-700">Sin conflictos</div>
+            <div className="text-[9px] font-bold text-emerald-700">Sin conflictos</div>
           ) : (
-            <div className="text-[9px] font-bold space-y-0.5">
+            <div className="text-[8px] font-bold space-y-0 leading-tight">
               {conflictCounts.overlaps > 0 && <div className="text-rose-600">{conflictCounts.overlaps} sobrecargas</div>}
               {conflictCounts.postTurno > 0 && <div className="text-amber-600">{conflictCounts.postTurno} post-turno</div>}
               {conflictCounts.noCoverage > 0 && <div className="text-red-700">{conflictCounts.noCoverage} sin cobertura</div>}
@@ -242,26 +241,26 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
         </div>
       </div>
 
-      {/* Who's on shift NOW */}
+      {/* Who's on shift NOW — compact */}
       {currentShiftInfo && (
-        <div className="bg-gradient-to-r from-indigo-50 to-sky-50 p-4 md:p-5 rounded-2xl border border-indigo-200 shadow-sm no-print">
-          <div className="flex items-center gap-2 mb-3">
-            <Clock className="w-4 h-4 text-indigo-600 animate-pulse" />
-            <h3 className="text-xs md:text-sm font-black text-indigo-800">
+        <div className="bg-gradient-to-r from-indigo-50 to-sky-50 p-2.5 md:p-3 rounded-xl border border-indigo-200 shadow-sm no-print">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Clock className="w-3.5 h-3.5 text-indigo-600 animate-pulse" />
+            <h3 className="text-[10px] md:text-xs font-black text-indigo-800">
               En Turno Ahora — {currentShiftInfo.slot === 'm' ? 'Mañana (7-13h)' : currentShiftInfo.slot === 't' ? 'Tarde (13-19h)' : 'Noche (19-7h)'} — Día {currentShiftInfo.today}
             </h3>
-            <span className="ml-auto bg-indigo-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+            <span className="ml-auto bg-indigo-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">
               {currentShiftInfo.onDuty.length} médicos
             </span>
           </div>
           {currentShiftInfo.onDuty.length === 0 ? (
-            <p className="text-xs text-rose-600 font-bold">⚠️ No hay médicos asignados en este momento</p>
+            <p className="text-[10px] text-rose-600 font-bold">⚠️ No hay médicos asignados en este momento</p>
           ) : (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {currentShiftInfo.onDuty.map(({ doctor, sigla }) => (
-                <div key={doctor.id} className="bg-white px-3 py-1.5 rounded-xl border border-indigo-100 shadow-sm">
-                  <span className="text-[10px] md:text-xs font-bold text-slate-800">{doctor.genero === 'F' ? 'Dra.' : 'Dr.'} {doctor.nombre}</span>
-                  <span className="ml-2 text-[9px] font-mono text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">{sigla}</span>
+                <div key={doctor.id} className="bg-white px-2 py-1 rounded-lg border border-indigo-100">
+                  <span className="text-[9px] md:text-[10px] font-bold text-slate-800">{doctor.genero === 'F' ? 'Dra.' : 'Dr.'} {doctor.nombre}</span>
+                  <span className="ml-1.5 text-[8px] font-mono text-indigo-600 bg-indigo-50 px-1 rounded">{sigla}</span>
                 </div>
               ))}
             </div>
@@ -269,40 +268,40 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
         </div>
       )}
 
-      {/* Daily Coverage Row */}
-      <div className="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm no-print">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-[10px] md:text-xs font-black text-slate-700 flex items-center gap-1">
-            <Users className="w-3.5 h-3.5" /> Cobertura Diaria
+      {/* Daily Coverage Row — compact */}
+      <div className="bg-white p-2 md:p-2.5 rounded-xl border border-slate-200 shadow-sm no-print">
+        <div className="flex items-center justify-between mb-1.5">
+          <h3 className="text-[9px] font-black text-slate-700 flex items-center gap-1">
+            <Users className="w-3 h-3" /> Cobertura Diaria
           </h3>
           <button
             onClick={() => setCompactView(!compactView)}
-            className="flex items-center gap-1 text-[9px] font-bold text-slate-500 hover:text-slate-800 transition-colors"
+            className="flex items-center gap-1 text-[8px] font-bold text-slate-500 hover:text-slate-800 transition-colors"
           >
             {compactView ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-            {compactView ? 'Vista Completa' : 'Vista Compacta'}
+            {compactView ? 'Completa' : 'Compacta'}
           </button>
         </div>
         <div className="overflow-x-auto">
-          <div className="flex gap-[2px] min-w-max">
+          <div className="flex gap-[1px] min-w-max">
             {dailyCoverage.map(dc => {
               const total = dc.m + dc.t + dc.n;
               const getColor = (count: number) => count === 0 ? 'bg-rose-500' : count <= 1 ? 'bg-amber-400' : 'bg-emerald-400';
               return (
                 <div key={dc.day} className="flex flex-col items-center gap-[1px]" title={`Día ${dc.day}: M=${dc.m} T=${dc.t} N=${dc.n}`}>
-                  <span className="text-[7px] text-slate-400 font-bold">{dc.day}</span>
-                  <div className={`w-3 h-2 rounded-sm ${getColor(dc.m)}`} />
-                  <div className={`w-3 h-2 rounded-sm ${getColor(dc.t)}`} />
-                  <div className={`w-3 h-2 rounded-sm ${getColor(dc.n)}`} />
-                  <span className="text-[6px] font-bold text-slate-500">{total}</span>
+                  <span className="text-[6px] text-slate-400 font-bold">{dc.day}</span>
+                  <div className={`w-2.5 h-1.5 rounded-[1px] ${getColor(dc.m)}`} />
+                  <div className={`w-2.5 h-1.5 rounded-[1px] ${getColor(dc.t)}`} />
+                  <div className={`w-2.5 h-1.5 rounded-[1px] ${getColor(dc.n)}`} />
+                  <span className="text-[5px] font-bold text-slate-500">{total}</span>
                 </div>
               );
             })}
           </div>
-          <div className="flex gap-3 mt-2 text-[8px] text-slate-500 font-bold">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-rose-500" /> Sin cobertura</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-400" /> 1 médico</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-400" /> 2+ médicos</span>
+          <div className="flex gap-2 mt-1 text-[7px] text-slate-500 font-bold">
+            <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-rose-500" /> Sin cobertura</span>
+            <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-amber-400" /> 1 médico</span>
+            <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-emerald-400" /> 2+ médicos</span>
           </div>
         </div>
       </div>
