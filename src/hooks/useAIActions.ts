@@ -17,7 +17,7 @@ export function useAIActions() {
     session, doctors, variables, currentMonthData, setCurrentMonthData,
     selectedMonth, selectedYear, daysInMonth, shiftRequests, activities,
     auditLogs, ruralAvailabilities, serviceMappings,
-    setIsGeneratingAI, setAiReport, notify,
+    setIsGeneratingAI, setAiReport, notify, updateMonthlyData,
   } = useAppContext();
 
   const getModel = (modelName: string) => {
@@ -175,10 +175,22 @@ Donde los días son del 1 al ${daysCount}.`;
     const now = Date.now();
     const entries: AuditEntry[] = [];
 
+    // Build a merged dataset: deep-merge AI suggestions into existing currentMonthData
+    const merged: MonthlyData = { ...currentMonthData };
+
     Object.entries(suggestions).forEach(([docIdStr, shifts]) => {
       const docId = parseInt(docIdStr);
       const doctor = doctors.find(d => d.id === docId);
       if (!doctor) return;
+
+      // Deep merge per doctor: keep existing days not overridden by AI
+      const existing = currentMonthData[docId] || { m: {}, t: {}, n: {} };
+      const mergedShifts = {
+        m: { ...existing.m, ...(shifts as any).m },
+        t: { ...existing.t, ...(shifts as any).t },
+        n: { ...existing.n, ...(shifts as any).n },
+      };
+      merged[docId] = mergedShifts;
 
       ['m', 't', 'n'].forEach(slot => {
         Object.entries((shifts as any)[slot] || {}).forEach(([dayStr, sigla]) => {
@@ -197,8 +209,18 @@ Donde los días son del 1 al ${daysCount}.`;
       });
     });
 
-    setCurrentMonthData(prev => ({ ...prev, ...suggestions }));
-    notify('Sugerencias aplicadas correctamente.', 'success');
+    // Update local state immediately (optimistic)
+    setCurrentMonthData(merged);
+
+    // Persist to Firebase so Firestore listener doesn't overwrite the AI data
+    try {
+      await updateMonthlyData(merged);
+      notify('Malla IA aplicada y guardada correctamente.', 'success');
+    } catch (err) {
+      console.error('Error saving AI malla to Firebase:', err);
+      notify('Malla aplicada localmente. Reconectar para guardar en la nube.', 'info');
+    }
+
     return entries;
   };
 
