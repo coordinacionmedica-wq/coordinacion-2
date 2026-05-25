@@ -273,8 +273,8 @@ export function AdminView({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {doctors.map(d => (
             <div key={d.id} className={`p-3 rounded-xl border transition-all ${d.st === 'activo' ? 'bg-stone-50 border-emerald-100 shadow-sm' : 'bg-rose-50 border-rose-100 opacity-50'}`}>
-              <div className="flex justify-between items-start mb-2">
-                <div>
+              <div className="flex justify-between items-start mb-2 gap-2">
+                <div className="min-w-0 flex-1">
                   <div className="font-bold text-slate-800 leading-tight">{d.nombre}</div>
                   <div className="flex items-center gap-2">
                     <div className="text-[10px] text-emerald-600 uppercase font-black">{d.cat}</div>
@@ -288,7 +288,7 @@ export function AdminView({
                     User: <span className="text-emerald-700 font-bold">{d.username}</span> | Pass: <span className="text-emerald-700 font-bold">{d.password}</span>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1 shrink-0">
                   <button
                     onClick={() => onEditDoctor(d)}
                     className="p-2 rounded-lg border bg-white border-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
@@ -305,12 +305,14 @@ export function AdminView({
                   </button>
                   <button
                     onClick={() => toggleDoctorStatus(d.id)}
+                    title={d.st === 'activo' ? 'Desactivar médico' : 'Reactivar médico'}
                     className={`p-2 rounded-lg border transition-all shadow-sm ${d.st === 'activo' ? 'bg-white border-emerald-500 text-emerald-600 hover:bg-emerald-500 hover:text-white' : 'bg-white border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white'}`}
                   >
                     <Power className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => deleteDoctor(d.id)}
+                    title="Eliminar médico del sistema"
                     className="p-2 rounded-lg border bg-white border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

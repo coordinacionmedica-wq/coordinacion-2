@@ -183,10 +183,12 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                     })}
                     {weeklyAcc.map((wv, wi) => {
                       let colorClass = 'bg-emerald-100 text-emerald-800';
-                      if (wv >= 42) colorClass = 'bg-emerald-500 text-white';
-                      if (wv >= 66) colorClass = 'bg-rose-500 text-white shadow-inner';
+                      let weekLabel = 'Semana normal';
+                      if (wv >= 42) { colorClass = 'bg-emerald-500 text-white'; weekLabel = 'Semana en límite'; }
+                      if (wv >= 66) { colorClass = 'bg-rose-500 text-white shadow-inner'; weekLabel = 'Semana excedida'; }
                       return (
-                        <td key={wi} className={`border border-slate-200 font-black text-[8px] md:text-xs ${colorClass}`}>
+                        <td key={wi} className={`border border-slate-200 font-black text-[8px] md:text-xs ${colorClass}`}
+                          title={`Semana ${wi + 1}: ${wv}h — ${weekLabel} (límite normal <42h, máx 66h)`}>
                           {wv}h
                         </td>
                       );
@@ -195,7 +197,11 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                       hourStatus === 'low' ? 'bg-amber-500 text-white' :
                       hourStatus === 'high' ? 'bg-rose-500 text-white' :
                       'bg-sky-500 text-white'
-                    }`} title={`Mín: ${limits.min}h | Máx: ${limits.max}h`}>
+                    }`} title={`Total mes: ${medTotalMonth}h — Rango aceptado: ${limits.min}h–${limits.max}h | ${
+                      hourStatus === 'low' ? '⚠️ Bajo el mínimo requerido' :
+                      hourStatus === 'high' ? '🔴 Supera el máximo' :
+                      '✅ Dentro del rango'
+                    }`}>
                       {medTotalMonth}h
                     </td>
                   </tr>
@@ -276,10 +282,12 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                     <>
                       {weeklyAcc.map((wv, wi) => {
                         let colorClass = 'bg-emerald-100 text-emerald-800';
-                        if (wv >= 42) colorClass = 'bg-emerald-500 text-white';
-                        if (wv >= 66) colorClass = 'bg-rose-500 text-white shadow-inner';
+                        let weekLabel = 'Semana normal';
+                        if (wv >= 42) { colorClass = 'bg-emerald-500 text-white'; weekLabel = 'Semana en límite'; }
+                        if (wv >= 66) { colorClass = 'bg-rose-500 text-white shadow-inner'; weekLabel = 'Semana excedida'; }
                         return (
-                          <td key={wi} rowSpan={3} className={`border border-slate-200 font-black text-[8px] md:text-xs ${colorClass}`}>
+                          <td key={wi} rowSpan={3} className={`border border-slate-200 font-black text-[8px] md:text-xs ${colorClass}`}
+                            title={`Semana ${wi + 1}: ${wv}h — ${weekLabel} (límite normal <42h, máx 66h)`}>
                             {wv}h
                           </td>
                         );
@@ -288,7 +296,11 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                         hourStatus === 'low' ? 'bg-amber-500 text-white' :
                         hourStatus === 'high' ? 'bg-rose-500 text-white' :
                         'bg-sky-500 text-white'
-                      }`} title={`Mín: ${limits.min}h | Máx: ${limits.max}h`}>
+                      }`} title={`Total mes: ${medTotalMonth}h — Rango: ${limits.min}h–${limits.max}h | ${
+                        hourStatus === 'low' ? '⚠️ Bajo el mínimo' :
+                        hourStatus === 'high' ? '🔴 Supera el máximo' :
+                        '✅ Dentro del rango'
+                      }`}>
                         {medTotalMonth}h
                       </td>
                     </>

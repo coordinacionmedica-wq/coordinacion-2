@@ -259,10 +259,35 @@ export function TurneroFilterPanel(props: TurneroFilterPanelProps) {
           </>
         )}
 
-        <div className="ml-auto flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 bg-white rounded-lg md:rounded-xl border border-slate-200 text-emerald-600 font-black shadow-sm text-[9px] md:text-[10px]">
+        <div className="ml-auto flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 bg-white rounded-lg md:rounded-xl border border-slate-200 text-emerald-600 font-black shadow-sm text-[9px] md:text-[10px]" title="Total de horas programadas en el mes para todos los médicos">
           <span className="text-slate-400 hidden sm:inline">TOTAL:</span>
           {globalTotalHours}h
         </div>
+      </div>
+
+      {/* Color legend */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 pt-1 border-t border-slate-100 mt-1">
+        <span className="text-[8px] text-slate-400 font-black uppercase tracking-widest hidden sm:inline">Leyenda:</span>
+        <span className="flex items-center gap-1 text-[8px] text-slate-500">
+          <span className="w-3 h-3 rounded bg-emerald-100 border border-emerald-200 shrink-0" />
+          Semana normal (&lt;42h)
+        </span>
+        <span className="flex items-center gap-1 text-[8px] text-slate-500">
+          <span className="w-3 h-3 rounded bg-emerald-500 shrink-0" />
+          Semana en límite (≥42h)
+        </span>
+        <span className="flex items-center gap-1 text-[8px] text-slate-500">
+          <span className="w-3 h-3 rounded bg-rose-500 shrink-0" />
+          Semana excedida (≥66h)
+        </span>
+        <span className="flex items-center gap-1 text-[8px] text-slate-500">
+          <span className="w-3 h-3 rounded bg-sky-500 shrink-0" />
+          Total mes OK
+        </span>
+        <span className="flex items-center gap-1 text-[8px] text-slate-500">
+          <span className="w-3 h-3 rounded bg-amber-500 shrink-0" />
+          Bajo mínimo de horas
+        </span>
       </div>
     </div>
   );
