@@ -121,10 +121,10 @@ export function RuralView() {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-6xl mx-auto space-y-6 pb-20"
     >
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm">
+      <div className="flex flex-wrap justify-between items-center gap-2 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
-          <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3">
-            <MapPin className="w-8 h-8 text-rose-500" />
+          <h2 className="text-sm font-black text-slate-800 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-rose-500" />
             Disponibilidades Médicos Rurales
           </h2>
           <p className="text-xs text-slate-500 font-mono">Reporte de traslados, remisiones y actividades de personal rural</p>
@@ -132,7 +132,7 @@ export function RuralView() {
         {isAdminUser && (
           <button
             onClick={exportCSV}
-            className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-black flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-emerald-500/20"
+            className="bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-black text-xs flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all shadow-sm"
           >
             <FileSpreadsheet className="w-5 h-5" />
             EXPORTAR EXCEL (CSV)
@@ -143,9 +143,9 @@ export function RuralView() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form Section */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-xl">
-            <h3 className="text-lg font-bold text-sky-600 mb-6 flex items-center gap-2">
-              <Plus className="w-5 h-5" /> Nuevo Reporte de Disponibilidad
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 className="text-sm font-black text-sky-600 mb-3 flex items-center gap-2">
+              <Plus className="w-4 h-4" /> Nuevo Reporte de Disponibilidad
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -153,8 +153,8 @@ export function RuralView() {
                 <div>
                   <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Fecha y Hora del Llamado *</label>
                   <div className="flex gap-2">
-                    <input type="date" className="flex-1 bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none" value={ruralCallDate} onChange={e => setRuralCallDate(e.target.value)} />
-                    <input type="time" className="w-32 bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none" value={ruralCallTime} onChange={e => setRuralCallTime(e.target.value)} />
+                    <input type="date" className="flex-1 bg-slate-50 border border-slate-200 px-2 py-1.5 rounded-lg text-sm text-slate-800 outline-none" value={ruralCallDate} onChange={e => setRuralCallDate(e.target.value)} />
+                    <input type="time" className="w-28 bg-slate-50 border border-slate-200 px-2 py-1.5 rounded-lg text-sm text-slate-800 outline-none" value={ruralCallTime} onChange={e => setRuralCallTime(e.target.value)} />
                   </div>
                 </div>
                 <div>
@@ -212,16 +212,16 @@ export function RuralView() {
 
             <button
               onClick={submitRuralAvailability}
-              className="w-full mt-8 bg-emerald-600 text-white font-black h-16 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-500/20"
+              className="w-full mt-4 bg-emerald-600 text-white font-black py-2.5 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs shadow-md shadow-emerald-500/20"
             >
-              <Send className="w-6 h-6" /> GUARDAR REPORTE DE DISPONIBILIDAD
+              <Send className="w-4 h-4" /> Guardar Reporte
             </button>
           </div>
 
           {/* History List */}
-          <div className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-xl">
-            <h3 className="text-lg font-bold text-emerald-600 mb-6 flex items-center gap-2">
-              <Clock className="w-5 h-5" /> Mi Historial de Disponibilidades
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 className="text-sm font-black text-emerald-600 mb-3 flex items-center gap-2">
+              <Clock className="w-4 h-4" /> Mi Historial de Disponibilidades
             </h3>
             <div className="space-y-4">
               {ruralAvailabilities
@@ -261,11 +261,8 @@ export function RuralView() {
 
         {/* Dashboard / Stats Section */}
         <div className="space-y-6">
-          <div className="bg-white p-8 rounded-[32px] border border-emerald-100 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-              <BrainIcon className="w-32 h-32 text-emerald-600" />
-            </div>
-            <div className="space-y-6 relative z-10">
+          <div className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm">
+            <div className="space-y-4">
               <div>
                 <p className="text-[10px] text-emerald-600 uppercase font-black mb-2 flex justify-between">Horas Totales (Mes) <Clock className="w-3 h-3" /></p>
                 <div className="text-4xl font-black text-slate-800">

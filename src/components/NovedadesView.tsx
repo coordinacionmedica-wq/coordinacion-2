@@ -33,9 +33,9 @@ export function NovedadesView({
       animate={{ opacity: 1, scale: 1 }}
       className="max-w-4xl mx-auto space-y-6"
     >
-      <div className="flex justify-between items-center bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm">
+      <div className="flex flex-wrap justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm gap-2">
         <div>
-          <h2 className="text-2xl font-black text-slate-800">Novedades de {monthName} {selectedYear}</h2>
+          <h2 className="text-base font-black text-slate-800">Novedades — {monthName} {selectedYear}</h2>
           <p className="text-xs text-slate-500 font-mono">Registro oficial de cambios en el turnero</p>
         </div>
         <div className="flex gap-3 no-print">
@@ -52,9 +52,9 @@ export function NovedadesView({
       </div>
 
       {isGeneratingAI && (
-        <div className="bg-white p-12 rounded-[32px] border border-violet-100 text-center space-y-4">
+        <div className="bg-white p-6 rounded-xl border border-violet-100 text-center space-y-3">
           <div className="flex justify-center">
-            <Sparkles className="w-12 h-12 text-violet-500 animate-spin" />
+            <Sparkles className="w-8 h-8 text-violet-500 animate-spin" />
           </div>
           <p className="text-violet-600 font-black animate-pulse uppercase tracking-widest text-xs">Analizando indicadores con IA...</p>
         </div>
@@ -64,13 +64,13 @@ export function NovedadesView({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-900 border-l-4 border-violet-500 p-8 rounded-3xl text-white shadow-2xl relative overflow-hidden"
+          className="bg-slate-900 border-l-4 border-violet-500 p-5 rounded-2xl text-white shadow-lg relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <Sparkles className="w-32 h-32" />
           </div>
-          <div className="flex justify-between items-start mb-6 border-b border-white/10 pb-4">
-            <h3 className="text-xl font-bold flex items-center gap-2">
+          <div className="flex justify-between items-start mb-3 border-b border-white/10 pb-3">
+            <h3 className="text-sm font-black flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-violet-400" /> Dashboard Estadístico IA
             </h3>
             <button onClick={() => setAiReport(null)} className="text-white/40 hover:text-white transition-colors">
@@ -80,7 +80,7 @@ export function NovedadesView({
           <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-li:my-1">
             <Markdown>{aiReport}</Markdown>
           </div>
-          <div className="mt-8 pt-4 border-t border-white/10 flex justify-between items-center">
+          <div className="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
             <p className="text-[9px] text-white/40 uppercase font-mono italic">Generado el {new Date().toLocaleString()}</p>
             <button
               onClick={() => {
@@ -97,8 +97,8 @@ export function NovedadesView({
 
       <div className="space-y-3">
         {monthLogs.length === 0 ? (
-          <div className="bg-stone-100/50 border border-emerald-100 p-12 rounded-3xl text-center">
-            <Info className="w-12 h-12 text-emerald-200 mx-auto mb-4" />
+          <div className="bg-stone-100/50 border border-emerald-100 p-8 rounded-2xl text-center">
+            <Info className="w-8 h-8 text-emerald-200 mx-auto mb-2" />
             <p className="text-slate-400 uppercase font-black tracking-widest text-xs italic">No hay movimientos registrados para este mes</p>
           </div>
         ) : (

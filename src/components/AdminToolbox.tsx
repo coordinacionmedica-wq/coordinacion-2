@@ -260,34 +260,30 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
     e.target.value = '';
   };
 
-  if (isLoading) return <div className="p-8 text-center animate-pulse">Cargando Caja de Herramientas...</div>;
+  if (isLoading) return <div className="p-4 text-center text-sm animate-pulse">Cargando...</div>;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* AI ENGINE V3 SETTINGS */}
-      <div className="bg-white rounded-[32px] p-8 border border-emerald-100 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-5">
-          <BrainCircuit className="w-32 h-32 text-emerald-600" />
-        </div>
-        
-        <div className="flex items-center gap-4 mb-8">
-          <div className="p-4 bg-emerald-50 rounded-2xl text-emerald-600">
-             <BrainCircuit className="w-8 h-8" />
+      <div className="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm relative overflow-hidden">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
+             <BrainCircuit className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-2xl font-black text-slate-800 tracking-tight">IA SHIFT ENGINE V3</h3>
+            <h3 className="text-sm font-black text-slate-800">IA Shift Engine V3</h3>
             <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Configuración de Reglas Institucionales</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
            <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase ml-2 flex items-center gap-1">
                 <Clock className="w-3 h-3" /> Máx. Noches Consecutivas
               </label>
               <input 
                 type="number"
-                className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl font-bold outline-none focus:border-emerald-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm outline-none focus:border-emerald-500 transition-all"
                 value={aiSettings.maxConsecutiveNights}
                 onChange={e => setAiSettings({...aiSettings, maxConsecutiveNights: Number(e.target.value)})}
               />
@@ -298,7 +294,7 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
               </label>
               <input 
                 type="number"
-                className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl font-bold outline-none focus:border-emerald-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm outline-none focus:border-emerald-500 transition-all"
                 value={aiSettings.minRestHoursBetweenShifts}
                 onChange={e => setAiSettings({...aiSettings, minRestHoursBetweenShifts: Number(e.target.value)})}
               />
@@ -309,7 +305,7 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
               </label>
               <input 
                 type="number"
-                className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl font-bold outline-none focus:border-emerald-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm outline-none focus:border-emerald-500 transition-all"
                 value={aiSettings.maxShiftsPerMonth}
                 onChange={e => setAiSettings({...aiSettings, maxShiftsPerMonth: Number(e.target.value)})}
               />
@@ -320,7 +316,7 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
               </label>
               <input 
                 type="number"
-                className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl font-bold outline-none focus:border-emerald-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm outline-none focus:border-emerald-500 transition-all"
                 value={aiSettings.weekendSpacingWeeks}
                 onChange={e => setAiSettings({...aiSettings, weekendSpacingWeeks: Number(e.target.value)})}
               />
@@ -331,14 +327,14 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
               </label>
               <input 
                 type="number"
-                className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl font-bold outline-none focus:border-emerald-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm outline-none focus:border-emerald-500 transition-all"
                 value={aiSettings.mandatoryFreeWeekends}
                 onChange={e => setAiSettings({...aiSettings, mandatoryFreeWeekends: Number(e.target.value)})}
               />
            </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
            {[
              { key: 'priorityRuralD1', label: 'Priorizar Rurales para Disponibilidad (D1/D2/D3)', icon: Sparkles },
              { key: 'blockTriplets', label: 'Bloquear Tripletes (No más de 3 turnos seguidos)', icon: Info },
@@ -355,58 +351,58 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
            ))}
         </div>
 
-        <div className="mb-8">
+        <div className="mb-4">
            <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block">Reglas Personalizadas (Prompt Directo para IA)</label>
            <textarea 
-             className="w-full bg-slate-50 border border-slate-100 p-6 rounded-[24px] font-bold text-sm outline-none focus:border-emerald-500 transition-all min-h-[150px]"
+             className="w-full bg-slate-50 border border-slate-100 px-3 py-2 rounded-xl font-bold text-sm outline-none focus:border-emerald-500 transition-all min-h-[100px]"
              placeholder="Ej: El Dr. X no hace noches los jueves. Las vacaciones de la Dra. Y del 10 al 15..."
              value={aiSettings.customRules}
              onChange={e => setAiSettings({...aiSettings, customRules: e.target.value})}
            />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-2">
           <button 
             onClick={saveSettings}
-            className="flex-1 bg-slate-800 text-white font-black py-5 rounded-[24px] hover:bg-slate-900 active:scale-95 transition-all shadow-xl shadow-slate-900/10 uppercase tracking-widest text-sm flex items-center justify-center gap-3"
+            className="flex-1 bg-slate-800 text-white font-black py-2.5 rounded-xl hover:bg-slate-900 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 shadow-sm"
           >
-            <Save className="w-5 h-5" /> GUARDAR REGLAS
+            <Save className="w-4 h-4" /> Guardar Reglas
           </button>
           
           <button 
             onClick={() => onGenerateProposal(aiSettings)}
             disabled={isGenerating}
-            className="flex-[2] bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black py-5 rounded-[24px] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-emerald-600/20 uppercase tracking-widest text-sm flex items-center justify-center gap-3 disabled:opacity-50"
+            className="flex-[2] bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black py-2.5 rounded-xl hover:scale-[1.02] active:scale-95 transition-all text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
           >
             {isGenerating ? (
-              <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <Sparkles className="w-5 h-5 animate-pulse" />
+              <Sparkles className="w-4 h-4 animate-pulse" />
             )}
-            GENERAR PROPUESTA MES ACTUAL (V3 ENGINE)
+            Generar Propuesta (V3 Engine)
           </button>
         </div>
       </div>
 
       {/* IMPORT TEMPLATES */}
-      <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-xl">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="p-4 bg-blue-50 rounded-2xl text-blue-600">
-             <FileSpreadsheet className="w-8 h-8" />
+      <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2.5 bg-blue-50 rounded-xl text-blue-600">
+             <FileSpreadsheet className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-2xl font-black text-slate-800 tracking-tight">CENTRO DE PLANTILLAS</h3>
+            <h3 className="text-sm font-black text-slate-800">Centro de Plantillas</h3>
             <p className="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Descarga de Estructuras para Importación Masiva</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
            <div className="flex flex-col gap-4">
             <button 
               onClick={() => downloadTableTemplate('shifts')}
-              className="group bg-slate-50 p-8 rounded-[32px] border border-slate-100 hover:border-blue-500 transition-all text-left space-y-4 w-full"
+              className="group bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-blue-500 transition-all text-left space-y-3 w-full"
             >
-                <div className="w-12 h-12 bg-white rounded-2xl border border-slate-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+                <div className="w-9 h-9 bg-white rounded-xl border border-slate-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
                   <FileDown className="w-6 h-6" />
                 </div>
                 <h4 className="font-black text-slate-800 uppercase text-sm tracking-tight">Plantilla de Turnos</h4>
@@ -421,9 +417,9 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
            <div className="flex flex-col gap-4">
             <button 
               onClick={() => downloadTableTemplate('users')}
-              className="group bg-slate-50 p-8 rounded-[32px] border border-slate-100 hover:border-blue-500 transition-all text-left space-y-4 w-full"
+              className="group bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-blue-500 transition-all text-left space-y-3 w-full"
             >
-                <div className="w-12 h-12 bg-white rounded-2xl border border-slate-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+                <div className="w-9 h-9 bg-white rounded-xl border border-slate-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
                   <UsersIcon className="w-6 h-6" />
                 </div>
                 <h4 className="font-black text-slate-800 uppercase text-sm tracking-tight">Carga Talento Humano</h4>
@@ -438,9 +434,9 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
            <div className="flex flex-col gap-4">
             <button 
               onClick={() => downloadTableTemplate('siglas')}
-              className="group bg-slate-50 p-8 rounded-[32px] border border-slate-100 hover:border-blue-500 transition-all text-left space-y-4 w-full"
+              className="group bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-blue-500 transition-all text-left space-y-3 w-full"
             >
-                <div className="w-12 h-12 bg-white rounded-2xl border border-slate-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+                <div className="w-9 h-9 bg-white rounded-xl border border-slate-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
                   <Clock className="w-6 h-6" />
                 </div>
                 <h4 className="font-black text-slate-800 uppercase text-sm tracking-tight">Catálogo de Siglas</h4>

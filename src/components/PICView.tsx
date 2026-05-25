@@ -31,14 +31,14 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-[40px] shadow-xl p-8 border border-amber-100"
+      className="bg-white rounded-2xl shadow-sm p-5 border border-amber-100"
     >
-      <div className="mb-8 flex flex-col md:flex-row md:items-center gap-4">
-        <div className="p-4 bg-amber-50 rounded-3xl text-amber-600 w-fit">
-          <Calendar className="w-8 h-8" />
+      <div className="mb-4 flex flex-col md:flex-row md:items-center gap-3">
+        <div className="p-2.5 bg-amber-50 rounded-xl text-amber-600 w-fit">
+          <Calendar className="w-5 h-5" />
         </div>
         <div className="flex-1">
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight">PIC - Programa Institucional de Capacitaciones</h2>
+          <h2 className="text-sm font-black text-slate-800">PIC — Programa Institucional de Capacitaciones</h2>
           <p className="text-[10px] text-amber-600 font-bold uppercase tracking-widest tracking-tighter">Plan de Capacitación HDSAR - {MONTH_NAMES[selectedMonth]} {selectedYear}</p>
         </div>
         <div className="flex gap-2">
@@ -57,16 +57,16 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        <div className="space-y-6">
-          <div className="bg-amber-50/30 p-6 rounded-[32px] border border-amber-100">
-            <h4 className="text-xs font-black text-amber-700 uppercase mb-4 tracking-widest">Información de la Actividad</h4>
-            <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div className="space-y-3">
+          <div className="bg-amber-50/30 p-4 rounded-xl border border-amber-100">
+            <h4 className="text-xs font-black text-amber-700 uppercase mb-3">Información de la Actividad</h4>
+            <div className="space-y-3">
               <div>
                 <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Nombre de la Actividad</label>
                 <input
                   placeholder="Nombre de la capacitación"
-                  className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold"
+                  className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm"
                   value={newActivity.activityName || ''}
                   onChange={e => setNewActivity({ ...newActivity, activityName: e.target.value })}
                 />
@@ -74,21 +74,21 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Día</label>
-                  <input type="number" min={1} max={31} value={newActivity.day || ''} onChange={e => setNewActivity({ ...newActivity, day: Number(e.target.value) })} className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" />
+                  <input type="number" min={1} max={31} value={newActivity.day || ''} onChange={e => setNewActivity({ ...newActivity, day: Number(e.target.value) })} className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm" />
                 </div>
                 <div>
                   <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Horas</label>
-                  <input type="number" value={newActivity.hours || ''} onChange={e => setNewActivity({ ...newActivity, hours: Number(e.target.value) })} className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" />
+                  <input type="number" value={newActivity.hours || ''} onChange={e => setNewActivity({ ...newActivity, hours: Number(e.target.value) })} className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm" />
                 </div>
               </div>
               <div>
                 <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Lugar / Ubicación</label>
-                <input placeholder="Ej: Auditorio HSE" className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" value={newActivity.place || ''} onChange={e => setNewActivity({ ...newActivity, place: e.target.value })} />
+                <input placeholder="Ej: Auditorio HSE" className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm" value={newActivity.place || ''} onChange={e => setNewActivity({ ...newActivity, place: e.target.value })} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Modalidad</label>
-                  <select value={newActivity.modality} onChange={e => setNewActivity({ ...newActivity, modality: e.target.value as any })} className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold">
+                  <select value={newActivity.modality} onChange={e => setNewActivity({ ...newActivity, modality: e.target.value as any })} className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm">
                     <option value="presencial">Presencial</option>
                     <option value="virtual">Virtual</option>
                     <option value="mixta">Mixta</option>
@@ -96,17 +96,17 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
                 </div>
                 <div>
                   <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Dirigida a</label>
-                  <input placeholder="Personal" className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" value={newActivity.targetGroup || ''} onChange={e => setNewActivity({ ...newActivity, targetGroup: e.target.value })} />
+                  <input placeholder="Personal" className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm" value={newActivity.targetGroup || ''} onChange={e => setNewActivity({ ...newActivity, targetGroup: e.target.value })} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Responsable</label>
-                  <input placeholder="Nombre" className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" value={newActivity.responsible || ''} onChange={e => setNewActivity({ ...newActivity, responsible: e.target.value })} />
+                  <input placeholder="Nombre" className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm" value={newActivity.responsible || ''} onChange={e => setNewActivity({ ...newActivity, responsible: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Población Objetivo</label>
-                  <input placeholder="Ej: Médicos" className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" value={newActivity.targetPopulation || ''} onChange={e => setNewActivity({ ...newActivity, targetPopulation: e.target.value })} />
+                  <input placeholder="Ej: Médicos" className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm" value={newActivity.targetPopulation || ''} onChange={e => setNewActivity({ ...newActivity, targetPopulation: e.target.value })} />
                 </div>
               </div>
             </div>
@@ -114,14 +114,14 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
 
           <button
             onClick={onAddActivity}
-            className="w-full bg-amber-600 text-white font-black py-5 rounded-[24px] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-amber-600/20 uppercase tracking-widest text-sm"
+            className="w-full bg-amber-600 text-white font-black py-2.5 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-md text-xs uppercase"
           >
             CONFIRMAR Y GUARDAR ACTIVIDAD
           </button>
         </div>
 
-        <div className="space-y-6">
-          <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-200 h-full flex flex-col">
+        <div className="space-y-3">
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 h-full flex flex-col">
             <h4 className="text-xs font-black text-slate-400 uppercase mb-4 tracking-widest">Documentación y Soportes</h4>
             <div className="space-y-3 flex-1 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
               {[
@@ -130,7 +130,7 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
                 { key: 'attendance', label: 'Asistencia Digital Firmada', icon: ClipboardList },
                 { key: 'postTest', label: 'Post-test / Evaluación', icon: FileText }
               ].map((item) => (
-                <div key={item.key} className="bg-white p-4 rounded-[20px] border border-slate-100 group shadow-sm">
+                <div key={item.key} className="bg-white p-3 rounded-lg border border-slate-100 group shadow-sm">
                   <p className="text-[9px] uppercase font-black text-slate-400 mb-2">{item.label}</p>
                   <div className="flex items-center gap-3">
                     <label className="flex-1 flex items-center justify-between px-4 py-3 bg-stone-50 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-amber-50 hover:border-amber-500 transition-all">
@@ -163,12 +163,12 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
         <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Cronograma del Mes</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {activities.filter(a => a.month === selectedMonth && a.year === selectedYear).length === 0 ? (
-            <div className="col-span-full py-12 text-center bg-slate-50 rounded-[32px] border-2 border-dashed border-slate-200">
+            <div className="col-span-full py-8 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
               <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">No hay actividades programadas para este mes</p>
             </div>
           ) : (
             activities.filter(a => a.month === selectedMonth && a.year === selectedYear).map(a => (
-              <div key={a.id} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm relative group overflow-hidden">
+              <div key={a.id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm relative group overflow-hidden">
                 <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={async () => {
@@ -185,8 +185,8 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 font-black text-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 font-black text-xs">
                     {a.day}
                   </div>
                   <div className="flex-1">

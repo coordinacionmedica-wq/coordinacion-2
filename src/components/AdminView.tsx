@@ -108,26 +108,26 @@ export function AdminView({
       key="admin"
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="space-y-8 max-w-5xl mx-auto"
+      className="space-y-4 max-w-5xl mx-auto"
     >
-      <div className="flex gap-4 mb-4 no-print">
+      <div className="flex gap-2 no-print">
         <button
           onClick={() => setActiveTab('toolbox')}
-          className="flex-1 bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-6 rounded-[32px] font-black flex items-center justify-center gap-3 shadow-xl shadow-emerald-600/20 hover:scale-[1.02] active:scale-95 transition-all"
+          className="flex items-center gap-2 bg-gradient-to-br from-emerald-600 to-teal-700 text-white px-4 py-2.5 rounded-xl font-black text-xs shadow-md shadow-emerald-600/20 hover:scale-[1.02] active:scale-95 transition-all"
         >
-          <Settings className="w-6 h-6" /> CONFIGURAR REGLAS SHIFT ENGINE V3
+          <Settings className="w-4 h-4" /> Configurar Reglas Shift Engine V3
         </button>
       </div>
 
       {/* Variable Management */}
-      <div className="bg-white rounded-[32px] p-8 border border-emerald-100 shadow-xl">
-        <h3 className="text-xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
-          <Settings className="w-6 h-6" /> Gestión de Siglas Horarias
+      <div className="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm">
+        <h3 className="text-sm font-black text-emerald-700 mb-3 flex items-center gap-2">
+          <Settings className="w-4 h-4" /> Gestión de Siglas Horarias
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 bg-emerald-50 rounded-2xl mb-8 border border-emerald-100">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-emerald-50 rounded-xl mb-4 border border-emerald-100">
           <input
-            className="bg-white border border-emerald-100 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold"
-            placeholder="Sigla (Eje: N, M, T)"
+            className="bg-white border border-emerald-200 px-3 py-2 rounded-lg outline-none focus:border-emerald-500 font-bold text-sm"
+            placeholder="Sigla (N, M, T…)"
             value={newVarCode}
             onChange={(e) => setNewVarCode(e.target.value)}
           />
@@ -135,13 +135,13 @@ export function AdminView({
             type="number"
             step="0.1"
             min="0"
-            className="bg-white border border-emerald-100 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold"
+            className="bg-white border border-emerald-200 px-3 py-2 rounded-lg outline-none focus:border-emerald-500 font-bold text-sm"
             placeholder="Horas"
             value={newVarHour}
             onChange={(e) => setNewVarHour(e.target.value)}
           />
           <select
-            className="bg-white border border-emerald-100 p-4 rounded-xl outline-none font-bold"
+            className="bg-white border border-emerald-200 px-3 py-2 rounded-lg outline-none font-bold text-sm"
             value={newVarSlot}
             onChange={(e) => setNewVarSlot(e.target.value as SlotType)}
           >
@@ -151,19 +151,19 @@ export function AdminView({
           </select>
           <button
             onClick={handleAddVariable}
-            className="bg-emerald-600 text-white font-black rounded-xl hover:scale-105 active:scale-95 transition-transform shadow-lg shadow-emerald-500/20"
+            className="bg-emerald-600 text-white font-black rounded-lg text-xs hover:bg-emerald-700 active:scale-95 transition-all shadow-sm px-3 py-2"
           >
-            {editingVar ? 'ACTUALIZAR' : 'GUARDAR SIGLA'}
+            {editingVar ? 'Actualizar' : 'Guardar Sigla'}
           </button>
           {editingVar && (
-            <button onClick={() => { setEditingVar(null); setNewVarCode(''); setNewVarHour(''); }} className="text-[10px] text-rose-500 mt-1 font-bold underline text-center">Cancelar</button>
+            <button onClick={() => { setEditingVar(null); setNewVarCode(''); setNewVarHour(''); }} className="col-span-2 sm:col-span-4 text-[10px] text-rose-500 font-bold underline text-center">Cancelar edición</button>
           )}
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-3">
           {(['m', 't', 'n'] as SlotType[]).map(slot => (
-            <div key={slot} className="border-t border-emerald-50 pt-4">
-              <p className="text-[10px] text-emerald-600 uppercase font-bold mb-3">{slot === 'm' ? 'Jornada Mañana' : slot === 't' ? 'Jornada Tarde' : 'Jornada Noche'}</p>
+            <div key={slot} className="border-t border-emerald-50 pt-3">
+              <p className="text-[10px] text-emerald-600 uppercase font-bold mb-2">{slot === 'm' ? 'Jornada Mañana' : slot === 't' ? 'Jornada Tarde' : 'Jornada Noche'}</p>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(variables[slot]).map(([k, v]) => (
                   <div key={k} className="group relative bg-stone-50 pl-3 pr-8 py-2 rounded-lg border border-emerald-100 text-[10px] flex gap-2 hover:border-emerald-500 transition-all cursor-pointer shadow-sm" onClick={() => {
@@ -189,76 +189,74 @@ export function AdminView({
       </div>
 
       {/* Staff Management */}
-      <div className="bg-white rounded-[32px] p-8 border border-emerald-100 shadow-xl">
-        <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
-          <h3 className="text-xl font-bold text-emerald-700 flex items-center gap-2">
-            <UserPlus className="w-6 h-6" /> Nómina Médica
+      <div className="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm">
+        <div className="flex flex-wrap justify-between items-center mb-3 gap-2">
+          <h3 className="text-sm font-black text-emerald-700 flex items-center gap-2">
+            <UserPlus className="w-4 h-4" /> Nómina Médica
           </h3>
           <div className="flex gap-2">
             <button
               onClick={onDownloadTemplate}
-              className="bg-stone-50 text-slate-600 border border-slate-200 px-4 py-2 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 hover:bg-slate-100 transition-all shadow-sm"
+              className="bg-slate-50 text-slate-600 border border-slate-200 px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase flex items-center gap-1.5 hover:bg-slate-100 transition-all"
             >
-              <FileDown className="w-4 h-4" /> Plantilla
+              <FileDown className="w-3.5 h-3.5" /> Plantilla
             </button>
-            <label className="cursor-pointer bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 hover:bg-blue-600 hover:text-white transition-all shadow-sm">
-              <FileSpreadsheet className="w-4 h-4" /> Importar Turnos
+            <label className="cursor-pointer bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase flex items-center gap-1.5 hover:bg-blue-600 hover:text-white transition-all">
+              <FileSpreadsheet className="w-3.5 h-3.5" /> Importar
               <input type="file" accept=".xlsx, .xls" className="hidden" onChange={onImportExcel} />
             </label>
+            <button
+              onClick={assignFreeDaysToPlanta}
+              className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase flex items-center gap-1.5 hover:bg-emerald-600 hover:text-white transition-all"
+            >
+              <Clock className="w-3.5 h-3.5" /> Día Libre
+            </button>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          <button
-            onClick={assignFreeDaysToPlanta}
-            className="bg-emerald-50 text-emerald-700 border border-emerald-100 p-4 rounded-xl font-black text-xs uppercase flex items-center justify-center gap-2 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
-          >
-            <Clock className="w-4 h-4" /> Asignar Día Libre Semanal (Planta)
-          </button>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-8 bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-4 bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
           <input
-            className="bg-white border border-emerald-100 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold"
+            className="bg-white border border-emerald-200 px-3 py-2 rounded-lg outline-none focus:border-emerald-500 font-bold text-sm col-span-2 sm:col-span-1"
             placeholder="Nombre Completo"
             value={newDocName}
             onChange={(e) => setNewDocName(e.target.value)}
           />
           <input
-            className="bg-white border border-emerald-100 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold"
-            placeholder="Email de Notificación"
+            className="bg-white border border-emerald-200 px-3 py-2 rounded-lg outline-none focus:border-emerald-500 font-bold text-sm"
+            placeholder="Email"
             type="email"
             value={newDocEmail}
             onChange={(e) => setNewDocEmail(e.target.value)}
           />
           <input
-            className="bg-white border border-emerald-100 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold"
-            placeholder="WhatsApp / Contacto"
+            className="bg-white border border-emerald-200 px-3 py-2 rounded-lg outline-none focus:border-emerald-500 font-bold text-sm"
+            placeholder="WhatsApp"
             value={newDocContact}
             onChange={(e) => setNewDocContact(e.target.value)}
           />
           <select
-            className="bg-white border border-emerald-100 p-4 rounded-xl outline-none font-bold"
+            className="bg-white border border-emerald-200 px-3 py-2 rounded-lg outline-none font-bold text-sm"
             value={newDocCat}
             onChange={(e) => setNewDocCat(e.target.value as any)}
           >
-            <option value="Planta">PLANTA</option>
+            <option value="Planta">Planta</option>
             <option value="CTA">CTA</option>
             <option value="APS">APS</option>
-            <option value="Rural">RURAL</option>
-            <option value="Disponibilidad">DISPONIBILIDAD</option>
+            <option value="Rural">Rural</option>
+            <option value="Disponibilidad">Disponibilidad</option>
           </select>
           <select
-            className="bg-white border border-emerald-100 p-4 rounded-xl outline-none font-bold"
+            className="bg-white border border-emerald-200 px-3 py-2 rounded-lg outline-none font-bold text-sm"
             value={newDocRol}
             onChange={(e) => setNewDocRol(e.target.value as any)}
           >
             <option value="Médico General">Médico General</option>
-            <option value="Médico Especialista">Médico Especialista</option>
-            <option value="Médico Rural">Médico Rural</option>
+            <option value="Médico Especialista">Especialista</option>
+            <option value="Médico Rural">Rural</option>
             <option value="Enfermero Jefe">Enfermera(o) Jefe</option>
-            <option value="Auxiliar Enfermería">Auxiliar de Enf.</option>
-            <option value="Interno">Médico Interno</option>
-            <option value="Triage">Triage / Urgencias</option>
+            <option value="Auxiliar Enfermería">Aux. Enf.</option>
+            <option value="Interno">Interno</option>
+            <option value="Triage">Triage</option>
             <option value="Laboratorio">Laboratorio</option>
             <option value="Odontólogo">Odontólogo</option>
             <option value="Fisioterapeuta">Fisioterapeuta</option>
@@ -266,15 +264,15 @@ export function AdminView({
           </select>
           <button
             onClick={onAddDoctor}
-            className="bg-emerald-700 text-white font-black rounded-xl hover:scale-105 active:scale-95 transition-transform shadow-lg shadow-emerald-700/20 col-span-1 sm:col-span-5 py-4"
+            className="bg-emerald-700 text-white font-black rounded-lg text-xs hover:bg-emerald-800 active:scale-95 transition-all shadow-sm col-span-2 sm:col-span-1 py-2"
           >
-            AÑADIR AL EQUIPO MÉDICO
+            + Añadir
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {doctors.map(d => (
-            <div key={d.id} className={`p-4 rounded-2xl border transition-all ${d.st === 'activo' ? 'bg-stone-50 border-emerald-100 shadow-sm' : 'bg-rose-50 border-rose-100 opacity-50'}`}>
+            <div key={d.id} className={`p-3 rounded-xl border transition-all ${d.st === 'activo' ? 'bg-stone-50 border-emerald-100 shadow-sm' : 'bg-rose-50 border-rose-100 opacity-50'}`}>
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <div className="font-bold text-slate-800 leading-tight">{d.nombre}</div>
@@ -326,32 +324,32 @@ export function AdminView({
       </div>
 
       {/* Theme Settings */}
-      <div className="bg-white rounded-[32px] p-8 border border-emerald-100 shadow-xl">
-        <h3 className="text-xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
-          <Palette className="w-6 h-6 text-emerald-600" /> Personalización Visual
+      <div className="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm">
+        <h3 className="text-sm font-black text-emerald-700 mb-3 flex items-center gap-2">
+          <Palette className="w-4 h-4 text-emerald-600" /> Personalización Visual
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="text-xs text-emerald-600 uppercase font-black block mb-4">Color Principal</label>
-            <div className="grid grid-cols-5 gap-3">
+            <label className="text-[10px] text-emerald-600 uppercase font-black block mb-2">Color Principal</label>
+            <div className="grid grid-cols-5 gap-2">
               {['#00c8f0', '#00e5a0', '#ff7d33', '#f43f5e', '#a855f7', '#eab308', '#22c55e', '#3b82f6', '#ec4899', '#f97316'].map(c => (
                 <button
                   key={c}
                   onClick={() => updateTheme({ ...theme, primary: c })}
-                  className={`w-10 h-10 rounded-full border-2 transition-transform hover:scale-110 ${theme.primary === c ? 'border-white' : 'border-transparent'}`}
+                  className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${theme.primary === c ? 'border-slate-400 scale-110' : 'border-transparent'}`}
                   style={{ backgroundColor: c }}
                 />
               ))}
             </div>
           </div>
           <div>
-            <label className="text-xs text-emerald-600 uppercase font-black block mb-4">Fuente del Sistema</label>
-            <div className="flex flex-col gap-2">
+            <label className="text-[10px] text-emerald-600 uppercase font-black block mb-2">Fuente del Sistema</label>
+            <div className="flex flex-col gap-1.5">
               {(['sans', 'serif', 'mono'] as const).map(f => (
                 <button
                   key={f}
                   onClick={() => updateTheme({ ...theme, font: f })}
-                  className={`px-4 py-3 rounded-xl border text-left flex justify-between items-center transition-all ${theme.font === f ? 'bg-emerald-600 text-white border-white' : 'bg-stone-50 border-emerald-100 text-slate-600'}`}
+                  className={`px-3 py-2 rounded-lg border text-left flex justify-between items-center transition-all text-sm ${theme.font === f ? 'bg-emerald-600 text-white border-white' : 'bg-stone-50 border-emerald-100 text-slate-600'}`}
                   style={f === 'serif' ? { fontFamily: 'serif' } : f === 'mono' ? { fontFamily: 'monospace' } : { fontFamily: 'sans-serif' }}
                 >
                   <span>
@@ -366,24 +364,24 @@ export function AdminView({
       </div>
 
       {/* Productividad - Gestión de Mapeos */}
-      <div className="bg-white rounded-[32px] p-8 border border-emerald-100 shadow-xl">
-        <div className="flex justify-between items-center mb-6">
+      <div className="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm">
+        <div className="flex justify-between items-center mb-3">
           <div className="flex items-center gap-2">
-            <Database className="w-6 h-6 text-emerald-700" />
-            <h3 className="text-xl font-bold text-emerald-700">Mapeo de Servicios (Productividad)</h3>
+            <Database className="w-4 h-4 text-emerald-700" />
+            <h3 className="text-sm font-black text-emerald-700">Mapeo de Servicios</h3>
           </div>
           <button
             onClick={addServiceMapping}
-            className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl border border-emerald-200 font-bold text-[10px] uppercase flex items-center gap-2 hover:bg-emerald-100 transition-all"
+            className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200 font-bold text-[10px] uppercase flex items-center gap-1.5 hover:bg-emerald-100 transition-all"
           >
-            <Plus className="w-4 h-4" /> Añadir Servicio
+            <Plus className="w-3.5 h-3.5" /> Añadir
           </button>
         </div>
-        <p className="text-[10px] text-slate-400 mb-6 uppercase font-bold">Asigne las siglas que corresponden a cada servicio hospitalario para el cálculo de productividad.</p>
+        <p className="text-[10px] text-slate-400 mb-3 uppercase font-bold">Asigne las siglas a cada servicio para el cálculo de productividad.</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {serviceMappings.map((m, idx) => (
-            <div key={m.id} className="bg-stone-50 p-6 rounded-2xl border border-emerald-100 flex flex-col gap-2 relative group">
+            <div key={m.id} className="bg-stone-50 p-4 rounded-xl border border-emerald-100 flex flex-col gap-2 relative group">
               <button
                 onClick={() => deleteServiceMapping(m.id)}
                 className="absolute top-4 right-4 text-slate-300 hover:text-rose-500 transition-colors"
@@ -424,127 +422,104 @@ export function AdminView({
           )}
           <button
             onClick={() => saveServiceMappings(serviceMappings)}
-            className="col-span-1 md:col-span-2 bg-emerald-700 text-white font-black py-4 rounded-2xl hover:bg-emerald-800 transition-all shadow-lg flex items-center justify-center gap-2 mt-4"
+            className="col-span-1 md:col-span-2 bg-emerald-700 text-white font-black py-2.5 rounded-xl hover:bg-emerald-800 transition-all shadow-sm flex items-center justify-center gap-2 text-xs mt-2"
           >
-            <Save className="w-5 h-5" /> GUARDAR MAPEOS DE PRODUCTIVIDAD
+            <Save className="w-4 h-4" /> Guardar Mapeos
           </button>
         </div>
       </div>
 
       {/* AI Capacity Report */}
-      <div className="bg-white rounded-[32px] p-8 border border-emerald-100 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-5">
-          <BrainCircuit className="w-24 h-24 text-emerald-600" />
-        </div>
-        <h3 className="text-xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-emerald-500" /> Reporte de Capacidad IA
+      <div className="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm">
+        <h3 className="text-sm font-black text-emerald-700 mb-3 flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-emerald-500" /> Reporte de Capacidad IA
         </h3>
 
-        <div className="flex flex-wrap gap-4 mb-8">
-          <button
-            onClick={() => onGenerateCapacityReport('semanal')}
-            disabled={isGeneratingAI}
-            className="flex-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 p-6 rounded-2xl flex flex-col items-center gap-2 transition-all disabled:opacity-50 shadow-sm"
-          >
-            <span className="text-emerald-700 font-black text-sm uppercase tracking-tight">SEMANAL</span>
-            <span className="text-[10px] text-slate-400">Días 1 a 7</span>
-          </button>
-          <button
-            onClick={() => onGenerateCapacityReport('quincenal')}
-            disabled={isGeneratingAI}
-            className="flex-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 p-6 rounded-2xl flex flex-col items-center gap-2 transition-all disabled:opacity-50 shadow-sm"
-          >
-            <span className="text-emerald-700 font-black text-sm uppercase tracking-tight">QUINCENAL</span>
-            <span className="text-[10px] text-slate-400">Días 1 a 15</span>
-          </button>
-          <button
-            onClick={() => onGenerateCapacityReport('mensual')}
-            disabled={isGeneratingAI}
-            className="flex-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 p-6 rounded-2xl flex flex-col items-center gap-2 transition-all disabled:opacity-50 shadow-sm"
-          >
-            <span className="text-emerald-700 font-black text-sm uppercase tracking-tight">MENSUAL</span>
-            <span className="text-[10px] text-slate-400">Mes completo</span>
-          </button>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {(['semanal', 'quincenal', 'mensual'] as const).map((p) => (
+            <button
+              key={p}
+              onClick={() => onGenerateCapacityReport(p)}
+              disabled={isGeneratingAI}
+              className="flex-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-4 py-2.5 rounded-lg flex flex-col items-center gap-0.5 transition-all disabled:opacity-50"
+            >
+              <span className="text-emerald-700 font-black text-xs uppercase">{p}</span>
+              <span className="text-[9px] text-slate-400">{p === 'semanal' ? 'Días 1–7' : p === 'quincenal' ? 'Días 1–15' : 'Mes completo'}</span>
+            </button>
+          ))}
         </div>
 
         {isGeneratingAI && (
-          <div className="flex flex-col items-center gap-4 py-8 bg-emerald-50/50 rounded-2xl border border-emerald-100 animate-pulse mb-8">
-            <BrainCircuit className="w-12 h-12 text-emerald-500 animate-spin" />
-            <p className="text-sm font-black text-emerald-800 uppercase italic">Gemini está analizando la cobertura...</p>
+          <div className="flex items-center gap-3 py-3 px-4 bg-emerald-50 rounded-xl border border-emerald-100 animate-pulse">
+            <BrainCircuit className="w-5 h-5 text-emerald-500 animate-spin shrink-0" />
+            <p className="text-xs font-bold text-emerald-700">Gemini analizando cobertura...</p>
           </div>
         )}
 
         {aiReport && (
-          <div className="bg-slate-900 text-emerald-400 p-8 rounded-3xl border-4 border-emerald-500/20 shadow-2xl overflow-x-auto text-xs font-mono mb-8">
+          <div className="bg-slate-900 text-emerald-400 p-4 rounded-xl border border-emerald-500/20 overflow-x-auto text-xs font-mono">
             <pre className="whitespace-pre-wrap">{aiReport}</pre>
           </div>
         )}
       </div>
 
       {/* Session Security Settings */}
-      <div className="bg-white rounded-[32px] p-8 border border-emerald-100 shadow-xl">
-        <h3 className="text-xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
-          <ShieldCheck className="w-6 h-6 text-emerald-600" /> Seguridad de Sesión
+      <div className="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm">
+        <h3 className="text-sm font-black text-emerald-700 mb-3 flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-emerald-600" /> Seguridad de Sesión
         </h3>
-        <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 flex flex-wrap justify-between items-center gap-4">
-          <div className="flex-1">
-            <h4 className="font-black text-emerald-900 uppercase text-sm mb-1 tracking-tight">Auto-Cierre por Inactividad</h4>
-            <p className="text-[10px] text-slate-500 font-bold uppercase opacity-60">Cierra la sesión automáticamente tras el tiempo seleccionado sin actividad del mouse o teclado.</p>
+        <div className="bg-emerald-50 px-4 py-3 rounded-xl border border-emerald-100 flex flex-wrap justify-between items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="font-black text-emerald-900 text-xs mb-0.5">Auto-Cierre por Inactividad</p>
+            <p className="text-[10px] text-slate-500">Cierra sesión automáticamente tras inactividad del mouse o teclado.</p>
           </div>
-          <div className="flex items-center gap-3">
-            <select
-              value={idleTimeout}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                setIdleTimeout(val);
-                localStorage.setItem('idleTimeout', val.toString());
-                setNotification({ message: `Cierre automático actualizado: ${val} minutos`, type: 'success' });
-              }}
-              className="bg-white border-2 border-emerald-200 text-emerald-800 font-black p-3 rounded-xl outline-none focus:border-emerald-500 text-sm shadow-sm"
-            >
-              {[5, 10, 15, 20, 30].map(t => (
-                <option key={t} value={t}>{t} Minutos</option>
-              ))}
-            </select>
-          </div>
+          <select
+            value={idleTimeout}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setIdleTimeout(val);
+              localStorage.setItem('idleTimeout', val.toString());
+              setNotification({ message: `Cierre automático: ${val} min`, type: 'success' });
+            }}
+            className="bg-white border border-emerald-200 text-emerald-800 font-bold px-3 py-2 rounded-lg outline-none text-sm shrink-0"
+          >
+            {[5, 10, 15, 20, 30].map(t => (
+              <option key={t} value={t}>{t} min</option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <div className="mb-8">
+      <div>
         <button
           onClick={onGenerateServiceReport}
           disabled={isGeneratingAI}
-          className="w-full bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-5 rounded-2xl flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-emerald-500/20"
+          className="w-full bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 shadow-md"
         >
-          <div className="bg-white/20 p-2 rounded-xl">
-            <Activity className="w-5 h-5 text-white" />
-          </div>
+          <Activity className="w-4 h-4 text-white shrink-0" />
           <div className="text-left">
-            <span className="block font-black text-sm uppercase tracking-wider">Análisis Profundo de Servicios (Gerencia IA)</span>
-            <span className="block text-[10px] text-white/70">Ocupación, patrones de uso y capacidad instalada</span>
+            <span className="block font-black text-xs">Análisis Profundo de Servicios (IA Gerencia)</span>
+            <span className="block text-[9px] text-white/70">Ocupación, patrones de uso y capacidad instalada</span>
           </div>
-          <Sparkles className="w-5 h-5 ml-auto text-emerald-200 animate-pulse" />
+          <Sparkles className="w-4 h-4 ml-auto text-emerald-200 animate-pulse shrink-0" />
         </button>
       </div>
 
       {isGeneratingAI ? (
-        <div className="py-20 flex flex-col items-center justify-center gap-4">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          >
-            <Wand2 className="w-12 h-12 text-emerald-600" />
+        <div className="py-8 flex items-center justify-center gap-3">
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
+            <Wand2 className="w-6 h-6 text-emerald-600" />
           </motion.div>
-          <p className="text-emerald-700/40 text-sm font-black animate-pulse">GENERANDO ANÁLISIS ESTRATÉGICO...</p>
+          <p className="text-emerald-700/60 text-xs font-black animate-pulse uppercase">Generando análisis estratégico...</p>
         </div>
       ) : aiReport ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-stone-50 p-8 rounded-3xl border border-emerald-100"
+          className="bg-stone-50 p-4 rounded-2xl border border-emerald-100"
         >
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-[10px] bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-black uppercase tracking-widest">Resultados de Inteligencia Artificial</span>
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-[9px] bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-black uppercase">Resultados IA</span>
             <button
               onClick={() => setAiReport(null)}
               className="text-slate-400 hover:text-rose-500 transition-colors"
@@ -552,11 +527,11 @@ export function AdminView({
               <XCircle className="w-5 h-5" />
             </button>
           </div>
-          <div className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap font-sans">
+          <div className="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap font-sans">
             {aiReport}
           </div>
-          <div className="mt-8 pt-6 border-t border-emerald-100 flex justify-between items-center">
-            <p className="text-[9px] text-slate-400 italic">Este reporte es generado automáticamente por el motor Gemini IA de Google.</p>
+          <div className="mt-4 pt-3 border-t border-emerald-100 flex justify-between items-center">
+            <p className="text-[9px] text-slate-400 italic">Generado por Gemini IA.</p>
             <button
               onClick={() => {
                 const blob = new Blob([aiReport], { type: 'text/plain' });
@@ -566,9 +541,9 @@ export function AdminView({
                 link.download = `Reporte_IA_Capacidad_${MONTH_NAMES[selectedMonth]}.txt`;
                 link.click();
               }}
-              className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-black shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all"
+              className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-black hover:scale-105 active:scale-95 transition-all"
             >
-              DESCARGAR REPORTE
+              Descargar
             </button>
           </div>
         </motion.div>
@@ -579,20 +554,20 @@ export function AdminView({
       )}
 
       {/* Audit Logs */}
-      <div className="bg-white rounded-[32px] p-8 border border-emerald-100 shadow-xl">
-        <h3 className="text-xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
-          <Bell className="w-6 h-6 text-emerald-500" /> Registro de Auditoría ({MONTH_NAMES[selectedMonth]} {selectedYear})
+      <div className="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm">
+        <h3 className="text-sm font-black text-emerald-700 mb-3 flex items-center gap-2">
+          <Bell className="w-4 h-4 text-emerald-500" /> Auditoría — {MONTH_NAMES[selectedMonth]} {selectedYear}
         </h3>
-        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="space-y-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
           {auditLogs.filter(log => log.targetMonth === selectedMonth && log.targetYear === selectedYear).length === 0 && (
-            <div className="text-center py-10 text-slate-300 font-mono text-sm italic">
-              No hay registros para este período.
+            <div className="text-center py-6 text-slate-300 font-mono text-xs italic">
+              Sin registros en este período.
             </div>
           )}
           {auditLogs
             .filter(log => log.targetMonth === selectedMonth && log.targetYear === selectedYear)
             .map(log => (
-              <div key={log.id} className="bg-stone-50 p-4 rounded-xl border border-emerald-100 flex justify-between items-center text-xs group hover:border-emerald-500/30 transition-colors shadow-sm">
+              <div key={log.id} className="bg-stone-50 px-3 py-2 rounded-lg border border-emerald-100 flex justify-between items-center text-xs group hover:border-emerald-300 transition-colors">
                 <div>
                   <div className="text-slate-800 font-bold mb-1">
                     Dr. {log.doctorName} <span className="text-emerald-600 ml-2 font-black">Día {log.day} ({log.slot.toUpperCase()})</span>

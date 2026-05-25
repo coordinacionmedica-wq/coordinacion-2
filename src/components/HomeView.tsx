@@ -139,7 +139,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
           <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">
             {MONTH_NAMES[selectedMonth]} {selectedYear}
           </p>
-          <h2 className="text-2xl font-black text-slate-800">Bienvenido, {session.n}</h2>
+          <h2 className="text-base font-black text-slate-800">Bienvenido, {session.n}</h2>
         </div>
         <div className="flex items-center gap-2">
           {isMonthPublished
@@ -190,7 +190,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
             {canSeeCodigoRojo && (
               <button
                 onClick={onShowCodigoRojo}
-                className="bg-gradient-to-br from-rose-600 to-rose-700 text-white p-5 rounded-2xl flex items-center gap-4 font-black hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-rose-500/25 border border-rose-400/30 group"
+                className="bg-gradient-to-br from-rose-600 to-rose-700 text-white p-3.5 rounded-xl flex items-center gap-3 font-black hover:scale-[1.02] active:scale-95 transition-all shadow-md shadow-rose-500/25 border border-rose-400/30 group"
               >
                 <div className="bg-white/20 p-3 rounded-xl group-hover:rotate-12 transition-transform shrink-0">
                   <Flame className="w-6 h-6" />
@@ -204,7 +204,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
             {canSeeCodigoAzul && (
               <button
                 onClick={onShowCodigoAzul}
-                className="bg-gradient-to-br from-blue-600 to-blue-700 text-white p-5 rounded-2xl flex items-center gap-4 font-black hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-blue-500/25 border border-blue-400/30 group"
+                className="bg-gradient-to-br from-blue-600 to-blue-700 text-white p-3.5 rounded-xl flex items-center gap-3 font-black hover:scale-[1.02] active:scale-95 transition-all shadow-md shadow-blue-500/25 border border-blue-400/30 group"
               >
                 <div className="bg-white/20 p-3 rounded-xl group-hover:animate-pulse shrink-0">
                   <Activity className="w-6 h-6" />
@@ -322,7 +322,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-6 rounded-2xl border border-emerald-100 shadow-xl overflow-hidden"
+          className="bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm overflow-hidden"
         >
           <div className="flex justify-between items-center mb-5">
             <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -390,7 +390,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
 
       {/* ── AI Report ── */}
       {isGeneratingAI && (
-        <div className="bg-white p-10 rounded-2xl border border-violet-100 text-center space-y-3">
+        <div className="bg-white p-6 rounded-xl border border-violet-100 text-center space-y-3">
           <Sparkles className="w-10 h-10 text-violet-500 animate-spin mx-auto" />
           <p className="text-violet-600 font-black animate-pulse uppercase tracking-widest text-xs">Analizando indicadores con IA...</p>
         </div>
