@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { motion } from 'motion/react';
-import { PhoneIncoming, AlertTriangle, Users, Clock, Eye, EyeOff } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { PhoneIncoming, Users, Clock, Eye, EyeOff } from 'lucide-react';
 import { SlotType, Doctor } from '../types';
 import { useAppContext } from '../context/AppContext';
 import { useShiftActions } from '../hooks/useShiftActions';
@@ -123,6 +123,8 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
 
   // ── Compact view toggle ──
   const [compactView, setCompactView] = useState(false);
+  const [showOnDuty, setShowOnDuty] = useState(false);
+  const [showCoverage, setShowCoverage] = useState(false);
 
   // ── Who's on shift NOW ──
   const currentShiftInfo = useMemo(() => {
@@ -184,126 +186,159 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
 
   // ── Render ──
   return (
-    <motion.div key="turnos" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 md:space-y-3">
-      {/* Compact Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-white p-3 md:p-4 rounded-xl border border-slate-200 shadow-sm no-print">
-        <div>
-          <h2 className="text-base md:text-lg font-black text-slate-800">Turnero Hospitalario</h2>
-          <p className="text-[9px] text-stone-500 font-mono italic">Sistema de Gestión de Talento Humano</p>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          {(session?.r === 'admin' || (session?.doctorId && doctors.find(d => d.id === session.doctorId)?.permissions?.includes('call_availability'))) && (
-            <button
-              onClick={onOpenCallModal}
-              className="bg-rose-500 text-white px-2.5 py-1.5 rounded-lg font-black flex items-center gap-1.5 hover:bg-rose-600 transition-all shadow-md text-[9px] sm:text-[10px] flex-1 sm:flex-none justify-center"
-            >
-              <PhoneIncoming className="w-3.5 h-3.5 animate-pulse" />
-              <span className="hidden sm:inline">LLAMAR DISPONIBILIDAD</span>
-              <span className="sm:hidden">DISPONIBILIDAD</span>
-            </button>
-          )}
-        </div>
-      </div>
+    <motion.div key="turnos" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-1.5 md:space-y-2">
 
-      {/* Compact Status Cards */}
-      <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5 md:gap-2 no-print">
-        <div className="bg-white p-2 rounded-xl border border-slate-200">
-          <p className="text-[7px] md:text-[8px] text-emerald-600 uppercase font-black">Último Llamado</p>
-          <div className="text-[9px] md:text-[10px] font-bold text-slate-800 truncate">
-            {availabilityCalls[0] ? `${availabilityCalls[0].doctorName} (${new Date(availabilityCalls[0].timestamp).toLocaleTimeString()})` : 'Sin llamados'}
-          </div>
-        </div>
-        <div className="bg-white p-2 rounded-xl border border-slate-200 text-center">
-          <p className="text-[7px] md:text-[8px] text-sky-600 uppercase font-black">Personal Planta</p>
-          <div className="text-base md:text-lg font-black text-slate-800">{doctors.filter(d => d.cat === 'Planta' && d.st === 'activo').length}</div>
-        </div>
-        <div className="bg-white p-2 rounded-xl border border-slate-200 text-center">
-          <p className="text-[7px] md:text-[8px] text-rose-600 uppercase font-black">Personal Rural</p>
-          <div className="text-base md:text-lg font-black text-slate-800">{doctors.filter(d => d.cat === 'Rural' && d.st === 'activo').length}</div>
-        </div>
-        <div className="bg-white p-2 rounded-xl border border-slate-200 text-center">
-          <p className="text-[7px] md:text-[8px] text-amber-600 uppercase font-black">Novedades Mes</p>
-          <div className="text-base md:text-lg font-black text-slate-800">{auditLogs.filter(l => l.targetMonth === selectedMonth).length}</div>
-        </div>
-        <div className={`col-span-3 md:col-span-1 p-2 rounded-xl border text-center ${conflictCounts.total > 0 ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-emerald-200'}`}>
-          <p className="text-[7px] md:text-[8px] uppercase font-black flex items-center justify-center gap-1">
-            <AlertTriangle className="w-3 h-3" /> Alertas
-          </p>
-          {conflictCounts.total === 0 ? (
-            <div className="text-[9px] font-bold text-emerald-700">Sin conflictos</div>
-          ) : (
-            <div className="text-[8px] font-bold space-y-0 leading-tight">
-              {conflictCounts.overlaps > 0 && <div className="text-rose-600">{conflictCounts.overlaps} sobrecargas</div>}
-              {conflictCounts.postTurno > 0 && <div className="text-amber-600">{conflictCounts.postTurno} post-turno</div>}
-              {conflictCounts.noCoverage > 0 && <div className="text-red-700">{conflictCounts.noCoverage} sin cobertura</div>}
-            </div>
-          )}
-        </div>
-      </div>
+      {/* ── Unified compact top bar ── */}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm no-print">
 
-      {/* Who's on shift NOW — compact */}
-      {currentShiftInfo && (
-        <div className="bg-gradient-to-r from-indigo-50 to-sky-50 p-2.5 md:p-3 rounded-xl border border-indigo-200 shadow-sm no-print">
-          <div className="flex items-center gap-2 mb-1.5">
-            <Clock className="w-3.5 h-3.5 text-indigo-600 animate-pulse" />
-            <h3 className="text-[10px] md:text-xs font-black text-indigo-800">
-              En Turno Ahora — {currentShiftInfo.slot === 'm' ? 'Mañana (7-13h)' : currentShiftInfo.slot === 't' ? 'Tarde (13-19h)' : 'Noche (19-7h)'} — Día {currentShiftInfo.today}
-            </h3>
-            <span className="ml-auto bg-indigo-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">
-              {currentShiftInfo.onDuty.length} médicos
+        {/* Row 1: title + stats chips + action button */}
+        <div className="flex flex-wrap items-center gap-1.5 px-3 py-2">
+          <h2 className="text-xs font-black text-slate-800 shrink-0">Turnero</h2>
+          <span className="text-[8px] text-slate-400 font-mono hidden sm:inline">|</span>
+
+          {/* Stats chips */}
+          <div className="flex flex-wrap gap-1 flex-1 min-w-0">
+            <span className="text-[8px] font-bold bg-sky-50 text-sky-700 border border-sky-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+              🏥 Planta: {doctors.filter(d => d.cat === 'Planta' && d.st === 'activo').length}
             </span>
+            <span className="text-[8px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+              🌿 Rural: {doctors.filter(d => d.cat === 'Rural' && d.st === 'activo').length}
+            </span>
+            <span className="text-[8px] font-bold bg-amber-50 text-amber-700 border border-amber-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+              📋 Nov: {auditLogs.filter(l => l.targetMonth === selectedMonth).length}
+            </span>
+            {conflictCounts.total > 0 ? (
+              <span className="text-[8px] font-bold bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                ⚠️ {conflictCounts.overlaps > 0 ? `${conflictCounts.overlaps} SC` : ''}{conflictCounts.postTurno > 0 ? ` ${conflictCounts.postTurno} PT` : ''}{conflictCounts.noCoverage > 0 ? ` ${conflictCounts.noCoverage} NC` : ''}
+              </span>
+            ) : (
+              <span className="text-[8px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">✓ Sin conflictos</span>
+            )}
+            {availabilityCalls[0] && (
+              <span className="text-[8px] font-bold bg-slate-50 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded-full truncate max-w-[140px]" title={availabilityCalls[0].doctorName}>
+                📞 {availabilityCalls[0].doctorName}
+              </span>
+            )}
           </div>
-          {currentShiftInfo.onDuty.length === 0 ? (
-            <p className="text-[10px] text-rose-600 font-bold">⚠️ No hay médicos asignados en este momento</p>
-          ) : (
-            <div className="flex flex-wrap gap-1.5">
-              {currentShiftInfo.onDuty.map(({ doctor, sigla }) => (
-                <div key={doctor.id} className="bg-white px-2 py-1 rounded-lg border border-indigo-100">
-                  <span className="text-[9px] md:text-[10px] font-bold text-slate-800">{doctor.genero === 'F' ? 'Dra.' : 'Dr.'} {doctor.nombre}</span>
-                  <span className="ml-1.5 text-[8px] font-mono text-indigo-600 bg-indigo-50 px-1 rounded">{sigla}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* Daily Coverage Row — compact */}
-      <div className="bg-white p-2 md:p-2.5 rounded-xl border border-slate-200 shadow-sm no-print">
-        <div className="flex items-center justify-between mb-1.5">
-          <h3 className="text-[9px] font-black text-slate-700 flex items-center gap-1">
-            <Users className="w-3 h-3" /> Cobertura Diaria
-          </h3>
-          <button
-            onClick={() => setCompactView(!compactView)}
-            className="flex items-center gap-1 text-[8px] font-bold text-slate-500 hover:text-slate-800 transition-colors"
-          >
-            {compactView ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-            {compactView ? 'Completa' : 'Compacta'}
-          </button>
+          {/* Expandable toggles */}
+          <div className="flex items-center gap-1 shrink-0">
+            {currentShiftInfo && (
+              <button
+                onClick={() => setShowOnDuty(v => !v)}
+                title="En turno ahora"
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[8px] font-bold border transition-all ${
+                  showOnDuty ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50'
+                }`}
+              >
+                <Clock className="w-3 h-3" />
+                <span className="hidden sm:inline">En turno</span>
+                <span className="bg-white/30 text-[7px] font-black px-1 rounded-full">{currentShiftInfo.onDuty.length}</span>
+              </button>
+            )}
+            <button
+              onClick={() => setShowCoverage(v => !v)}
+              title="Cobertura diaria"
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[8px] font-bold border transition-all ${
+                showCoverage ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <Users className="w-3 h-3" />
+              <span className="hidden sm:inline">Cobertura</span>
+            </button>
+            {(session?.r === 'admin' || (session?.doctorId && doctors.find(d => d.id === session.doctorId)?.permissions?.includes('call_availability'))) && (
+              <button
+                onClick={onOpenCallModal}
+                className="flex items-center gap-1 bg-rose-500 text-white px-2 py-1 rounded-lg font-black text-[8px] hover:bg-rose-600 transition-all shadow-sm"
+              >
+                <PhoneIncoming className="w-3 h-3 animate-pulse" />
+                <span className="hidden sm:inline">Disponibilidad</span>
+              </button>
+            )}
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <div className="flex gap-[1px] min-w-max">
-            {dailyCoverage.map(dc => {
-              const total = dc.m + dc.t + dc.n;
-              const getColor = (count: number) => count === 0 ? 'bg-rose-500' : count <= 1 ? 'bg-amber-400' : 'bg-emerald-400';
-              return (
-                <div key={dc.day} className="flex flex-col items-center gap-[1px]" title={`Día ${dc.day}: M=${dc.m} T=${dc.t} N=${dc.n}`}>
-                  <span className="text-[6px] text-slate-400 font-bold">{dc.day}</span>
-                  <div className={`w-2.5 h-1.5 rounded-[1px] ${getColor(dc.m)}`} />
-                  <div className={`w-2.5 h-1.5 rounded-[1px] ${getColor(dc.t)}`} />
-                  <div className={`w-2.5 h-1.5 rounded-[1px] ${getColor(dc.n)}`} />
-                  <span className="text-[5px] font-bold text-slate-500">{total}</span>
+
+        {/* Row 2 (collapsible): En turno ahora */}
+        <AnimatePresence>
+          {showOnDuty && currentShiftInfo && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="overflow-hidden border-t border-indigo-100"
+            >
+              <div className="px-3 py-2 bg-indigo-50/50">
+                <div className="flex items-center gap-2 mb-1">
+                  <Clock className="w-3 h-3 text-indigo-500 animate-pulse" />
+                  <span className="text-[9px] font-black text-indigo-800">
+                    {currentShiftInfo.slot === 'm' ? 'Mañana (7-13h)' : currentShiftInfo.slot === 't' ? 'Tarde (13-19h)' : 'Noche (19-7h)'} · Día {currentShiftInfo.today} · {currentShiftInfo.onDuty.length} médicos
+                  </span>
                 </div>
-              );
-            })}
-          </div>
-          <div className="flex gap-2 mt-1 text-[7px] text-slate-500 font-bold">
-            <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-rose-500" /> Sin cobertura</span>
-            <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-amber-400" /> 1 médico</span>
-            <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-emerald-400" /> 2+ médicos</span>
-          </div>
-        </div>
+                {currentShiftInfo.onDuty.length === 0 ? (
+                  <p className="text-[9px] text-rose-600 font-bold">⚠️ Sin asignaciones</p>
+                ) : (
+                  <div className="flex flex-wrap gap-1">
+                    {currentShiftInfo.onDuty.map(({ doctor, sigla }) => (
+                      <span key={doctor.id} className="bg-white text-[8px] font-bold text-slate-700 border border-indigo-100 px-2 py-0.5 rounded-full">
+                        {doctor.genero === 'F' ? 'Dra.' : 'Dr.'} {doctor.nombre.split(' ')[0]} <span className="text-indigo-600">{sigla}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Row 3 (collapsible): Cobertura diaria */}
+        <AnimatePresence>
+          {showCoverage && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="overflow-hidden border-t border-slate-200"
+            >
+              <div className="px-3 py-2">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[8px] font-black text-slate-600 flex items-center gap-1"><Users className="w-3 h-3" /> Cobertura Diaria</span>
+                  <button
+                    onClick={() => setCompactView(!compactView)}
+                    className="flex items-center gap-1 text-[7px] font-bold text-slate-400 hover:text-slate-700"
+                  >
+                    {compactView ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
+                    {compactView ? 'Completa' : 'Compacta'}
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <div className="flex gap-[1px] min-w-max">
+                    {dailyCoverage.map(dc => {
+                      const total = dc.m + dc.t + dc.n;
+                      const getColor = (count: number) => count === 0 ? 'bg-rose-500' : count <= 1 ? 'bg-amber-400' : 'bg-emerald-400';
+                      return (
+                        <div key={dc.day} className="flex flex-col items-center gap-[1px]" title={`Día ${dc.day}: M=${dc.m} T=${dc.t} N=${dc.n}`}>
+                          <span className="text-[5px] text-slate-400 font-bold">{dc.day}</span>
+                          <div className={`w-2 h-1.5 rounded-[1px] ${getColor(dc.m)}`} />
+                          <div className={`w-2 h-1.5 rounded-[1px] ${getColor(dc.t)}`} />
+                          <div className={`w-2 h-1.5 rounded-[1px] ${getColor(dc.n)}`} />
+                          <span className="text-[5px] font-bold text-slate-500">{total}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex gap-2 mt-1 text-[6px] text-slate-400 font-bold">
+                    <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-rose-500" /> Sin cob.</span>
+                    <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-amber-400" /> 1 méd.</span>
+                    <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-emerald-400" /> 2+</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </div>
 
       {/* AI Panel */}
