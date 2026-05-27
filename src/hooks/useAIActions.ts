@@ -175,6 +175,18 @@ Donde los días son del 1 al ${daysCount}.`;
     const now = Date.now();
     const entries: AuditEntry[] = [];
 
+    // Helper: normalize a sigla to match canonical case from variables
+    const normalizeSigla = (rawSigla: string, slot: SlotType): string => {
+      const trimmed = (rawSigla || '').toString().trim();
+      if (!trimmed || trimmed.toUpperCase() === 'X') return 'X';
+      const reserved = ['PT', 'L', 'CAP'];
+      const matchReserved = reserved.find(r => r === trimmed.toUpperCase());
+      if (matchReserved) return matchReserved;
+      const varKeys = Object.keys(variables[slot]);
+      const matchVar = varKeys.find(k => k.toUpperCase() === trimmed.toUpperCase());
+      return matchVar || trimmed;
+    };
+
     // Build a merged dataset: deep-merge AI suggestions into existing currentMonthData
     const merged: MonthlyData = { ...currentMonthData };
 
@@ -183,17 +195,28 @@ Donde los días son del 1 al ${daysCount}.`;
       const doctor = doctors.find(d => d.id === docId);
       if (!doctor) return;
 
+      // Normalize AI shift data: ensure day keys are integers and siglas match canonical case
+      const normalizedShifts: Record<string, Record<number, string>> = { m: {}, t: {}, n: {} };
+      (['m', 't', 'n'] as SlotType[]).forEach(slot => {
+        Object.entries((shifts as any)[slot] || {}).forEach(([dayStr, rawSigla]) => {
+          const day = parseInt(dayStr);
+          if (isNaN(day) || day < 1 || day > 31) return;
+          const sigla = normalizeSigla(rawSigla as string, slot);
+          if (sigla !== 'X') normalizedShifts[slot][day] = sigla;
+        });
+      });
+
       // Deep merge per doctor: keep existing days not overridden by AI
       const existing = currentMonthData[docId] || { m: {}, t: {}, n: {} };
       const mergedShifts = {
-        m: { ...existing.m, ...(shifts as any).m },
-        t: { ...existing.t, ...(shifts as any).t },
-        n: { ...existing.n, ...(shifts as any).n },
+        m: { ...existing.m, ...normalizedShifts.m },
+        t: { ...existing.t, ...normalizedShifts.t },
+        n: { ...existing.n, ...normalizedShifts.n },
       };
       merged[docId] = mergedShifts;
 
       ['m', 't', 'n'].forEach(slot => {
-        Object.entries((shifts as any)[slot] || {}).forEach(([dayStr, sigla]) => {
+        Object.entries(normalizedShifts[slot] || {}).forEach(([dayStr, sigla]) => {
           const day = parseInt(dayStr);
           const oldSigla = currentMonthData[docId]?.[slot as SlotType]?.[day] || '';
           if (oldSigla !== sigla) {

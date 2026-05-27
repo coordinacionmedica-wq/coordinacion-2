@@ -325,6 +325,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // ── Monthly data listener ──
   useEffect(() => {
+    // Reset data immediately on month/year change so counters start at 0
+    setCurrentMonthData({});
+    setIsMonthPublished(false);
+
     const monthKey = `${selectedYear}_${selectedMonth}`;
 
     const unsubMeta = onSnapshot(doc(db, 'monthlyData', monthKey), (snap) => {

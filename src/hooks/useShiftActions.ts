@@ -13,10 +13,15 @@ export function useShiftActions() {
 
   const setShift = async (doctorId: number, day: number, slot: SlotType, rawSigla: string) => {
     if (session?.r !== 'admin' && session?.r !== 'root') return;
-    const sigla = rawSigla.trim().toUpperCase() || 'X';
-    const allowed = ['X', 'PT', 'L', 'CAP', ...Object.keys(variables[slot])];
-    if (!allowed.includes(sigla)) {
-      notify(`Sigla "${sigla}" no válida para ${slot === 'm' ? 'Mañana' : slot === 't' ? 'Tarde' : 'Noche'}`, 'error');
+    const trimmed = rawSigla.trim() || 'X';
+    const reservedUpper = ['X', 'PT', 'L', 'CAP'];
+    const varKeys = Object.keys(variables[slot]);
+    // Case-insensitive match: find the canonical key from variables or reserved list
+    const matchedVar = varKeys.find(k => k.toUpperCase() === trimmed.toUpperCase());
+    const matchedReserved = reservedUpper.find(k => k === trimmed.toUpperCase());
+    const sigla = matchedVar || matchedReserved || null;
+    if (!sigla) {
+      notify(`Sigla "${trimmed}" no válida para ${slot === 'm' ? 'Mañana' : slot === 't' ? 'Tarde' : 'Noche'}`, 'error');
       return;
     }
     const docShifts = currentMonthData[doctorId]

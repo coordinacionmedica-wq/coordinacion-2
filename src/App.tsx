@@ -190,31 +190,191 @@ const handleSubmitShiftRequest = async () => {
         const data = new Uint8Array(evt.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
-        const headers = rows[0] as string[];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as any[][];
+        if (rows.length < 2) { setNotification({ message: "El archivo está vacío", type: 'error' }); return; }
+
         const newData: MonthlyData = { ...currentMonthData };
-        for (let ri = 1; ri < rows.length; ri++) {
-          const row = rows[ri];
-          const doctorName = row[0]?.toString().trim();
-          const slotStr = row[1]?.toString().trim()?.toLowerCase();
-          if (!doctorName || !slotStr) continue;
-          const doctor = doctors.find(d => d.nombre.toLowerCase().includes(doctorName.toLowerCase()));
-          if (!doctor) continue;
-          const slot: SlotType = slotStr.startsWith('ma') ? 'm' : slotStr.startsWith('ta') ? 't' : 'n';
-          if (!newData[doctor.id]) newData[doctor.id] = { m: {}, t: {}, n: {} };
-          for (let ci = 2; ci < headers.length; ci++) {
-            const day = parseInt(headers[ci]);
-            if (isNaN(day)) continue;
-            const value = row[ci]?.toString().trim().toUpperCase();
-            if (value) newData[doctor.id][slot][day] = value;
+        // All variable siglas for classification (case-insensitive lookup)
+        const allVarKeys = { m: Object.keys(variables.m), t: Object.keys(variables.t), n: Object.keys(variables.n) };
+        const allSiglasUpper = new Set([
+          ...allVarKeys.m, ...allVarKeys.t, ...allVarKeys.n, 'X', 'PT', 'L', 'CAP'
+        ].map(s => s.toUpperCase()));
+
+        // Helper: find canonical sigla case from variables
+        const canonicalize = (raw: string): string | null => {
+          const u = raw.toUpperCase();
+          if (['X', 'PT', 'L', 'CAP'].includes(u)) return u;
+          for (const slot of ['m', 't', 'n'] as SlotType[]) {
+            const match = allVarKeys[slot].find(k => k.toUpperCase() === u);
+            if (match) return match;
+          }
+          return allSiglasUpper.has(u) ? raw : null;
+        };
+
+        // Helper: detect which slot a sigla belongs to
+        const detectSlot = (sigla: string): SlotType | null => {
+          const u = sigla.toUpperCase();
+          if (allVarKeys.m.some(k => k.toUpperCase() === u)) return 'm';
+          if (allVarKeys.t.some(k => k.toUpperCase() === u)) return 't';
+          if (allVarKeys.n.some(k => k.toUpperCase() === u)) return 'n';
+          if (['PT', 'L', 'CAP', 'X'].includes(u)) return null;
+          return null;
+        };
+
+        // Detect format: check if first header row has 'ID_MEDICO' or 'JORNADA' (app template)
+        const headerRow = rows[0].map((h: any) => (h || '').toString().trim().toUpperCase());
+        const isAppTemplate = headerRow.includes('JORNADA') || headerRow.includes('ID_MEDICO');
+
+        if (isAppTemplate) {
+          // ── Format A: App template (ID_MEDICO/NOMBRE_MEDICO, JORNADA, DIA_1...) ──
+          const headers = rows[0] as string[];
+          for (let ri = 1; ri < rows.length; ri++) {
+            const row = rows[ri];
+            const journeyCol = headerRow.indexOf('JORNADA');
+            const nameCol = headerRow.includes('NOMBRE_MEDICO') ? headerRow.indexOf('NOMBRE_MEDICO') : 0;
+            const doctorName = row[nameCol]?.toString().trim();
+            const slotStr = (journeyCol >= 0 ? row[journeyCol] : row[1])?.toString().trim()?.toLowerCase();
+            if (!doctorName || !slotStr) continue;
+            const doctor = doctors.find(d =>
+              d.nombre.toLowerCase().includes(doctorName.toLowerCase()) ||
+              d.id.toString() === row[0]?.toString().trim()
+            );
+            if (!doctor) continue;
+            const slot: SlotType = slotStr.startsWith('ma') || slotStr === 'm' ? 'm'
+              : slotStr.startsWith('ta') || slotStr === 't' ? 't' : 'n';
+            if (!newData[doctor.id]) newData[doctor.id] = { m: {}, t: {}, n: {} };
+            const dataStartCol = journeyCol >= 0 ? journeyCol + 1 : 2;
+            for (let ci = dataStartCol; ci < row.length; ci++) {
+              const headerVal = headers[ci]?.toString().replace(/\D/g, '');
+              const day = parseInt(headerVal);
+              if (isNaN(day) || day < 1 || day > 31) continue;
+              const rawVal = row[ci]?.toString().trim();
+              if (!rawVal) continue;
+              const canonical = canonicalize(rawVal);
+              if (canonical && canonical !== 'X') newData[doctor.id][slot][day] = canonical;
+            }
+          }
+        } else {
+          // ── Format B: Hospital Excel (MÉDICO column + day number columns) ──
+          // Find the header row with day numbers (1,2,3...) in consecutive columns
+          let headerRowIdx = -1;
+          let dayColMap: { col: number; day: number }[] = [];
+          let nameCol = 0;
+
+          for (let ri = 0; ri < Math.min(rows.length, 10); ri++) {
+            const row = rows[ri];
+            const candidates: { col: number; day: number }[] = [];
+            for (let ci = 1; ci < row.length; ci++) {
+              const val = parseInt((row[ci] || '').toString().trim());
+              if (!isNaN(val) && val >= 1 && val <= 31) candidates.push({ col: ci, day: val });
+            }
+            // Accept if we find at least 15 consecutive day numbers
+            if (candidates.length >= 15) {
+              const sorted = candidates.sort((a, b) => a.day - b.day);
+              let consecutive = 1;
+              for (let i = 1; i < sorted.length; i++) {
+                if (sorted[i].day === sorted[i-1].day + 1) consecutive++;
+              }
+              if (consecutive >= 15) {
+                headerRowIdx = ri;
+                dayColMap = sorted;
+                break;
+              }
+            }
+          }
+
+          if (headerRowIdx === -1) {
+            // Fallback: try parsing with simple numeric headers in row 0
+            const h = rows[0];
+            for (let ci = 1; ci < h.length; ci++) {
+              const d = parseInt((h[ci] || '').toString());
+              if (!isNaN(d) && d >= 1 && d <= 31) dayColMap.push({ col: ci, day: d });
+            }
+            headerRowIdx = 0;
+          }
+
+          if (dayColMap.length === 0) {
+            setNotification({ message: "No se pudo detectar el formato del Excel. Use la plantilla del sistema.", type: 'error' });
+            return;
+          }
+
+          // Parse data rows after the header
+          let importedCells = 0;
+          let currentDoctor: typeof doctors[0] | null = null;
+          const slotCycle: SlotType[] = ['m', 't', 'n'];
+          let slotIdx = 0;
+
+          for (let ri = headerRowIdx + 1; ri < rows.length; ri++) {
+            const row = rows[ri];
+            if (!row || row.every((c: any) => !c || c.toString().trim() === '')) continue;
+
+            // Check if first column has a doctor name
+            const firstCell = (row[nameCol] || '').toString().trim();
+            if (firstCell) {
+              // Try to match doctor by name (partial, case-insensitive)
+              const nameLower = firstCell.toLowerCase()
+                .replace(/^(dr\.|dra\.|dr |dra )/i, '').trim();
+              const matched = doctors.find(d => {
+                const docLower = d.nombre.toLowerCase();
+                return docLower.includes(nameLower) || nameLower.includes(docLower) ||
+                  docLower.split(' ').some(part => part.length > 3 && nameLower.includes(part));
+              });
+              if (matched) {
+                currentDoctor = matched;
+                slotIdx = 0;
+                if (!newData[currentDoctor.id]) newData[currentDoctor.id] = { m: {}, t: {}, n: {} };
+              }
+            }
+
+            if (!currentDoctor) continue;
+
+            // Check if this row has a slot indicator (M/T/N or Mañana/Tarde/Noche)
+            let rowSlot: SlotType | null = null;
+            // Look for slot label in column right after name or in a "JORNADA" column
+            for (let ci = 0; ci <= Math.min(2, row.length - 1); ci++) {
+              const cellVal = (row[ci] || '').toString().trim().toLowerCase();
+              if (cellVal === 'm' || cellVal.startsWith('mañ') || cellVal.startsWith('man')) { rowSlot = 'm'; break; }
+              if (cellVal === 't' || cellVal.startsWith('tar')) { rowSlot = 't'; break; }
+              if (cellVal === 'n' || cellVal.startsWith('noc')) { rowSlot = 'n'; break; }
+            }
+
+            const slotForRow: SlotType = rowSlot || slotCycle[slotIdx % 3];
+
+            // Parse day values
+            let hasData = false;
+            for (const { col, day } of dayColMap) {
+              if (col >= row.length) continue;
+              const rawVal = (row[col] || '').toString().trim();
+              if (!rawVal) continue;
+              // Handle cells with multiple siglas separated by / or newline
+              const parts = rawVal.split(/[\/\n\r]+/).map(p => p.trim()).filter(Boolean);
+              for (const part of parts) {
+                const canonical = canonicalize(part);
+                if (canonical && canonical !== 'X') {
+                  // If slot was auto-detected from sigla content and no explicit slot label
+                  const sigSlot = rowSlot ? slotForRow : (detectSlot(canonical) || slotForRow);
+                  newData[currentDoctor.id][sigSlot][day] = canonical;
+                  hasData = true;
+                  importedCells++;
+                }
+              }
+            }
+
+            if (!rowSlot && hasData) slotIdx++;
+          }
+
+          if (importedCells === 0) {
+            setNotification({ message: "No se encontraron datos válidos para importar. Verifique nombres de médicos.", type: 'error' });
+            return;
           }
         }
+
         await updateMonthlyData(newData);
         setNotification({ message: "Turnero importado correctamente", type: 'success' });
         setTimeout(() => setNotification(null), 3000);
       } catch (err) {
         console.error("Import error:", err);
-        setNotification({ message: "Error al importar Excel", type: 'error' });
+        setNotification({ message: "Error al importar Excel. Verifique el formato.", type: 'error' });
       }
     };
     reader.readAsArrayBuffer(file);
