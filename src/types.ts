@@ -54,6 +54,19 @@ export interface RegistrationRequest {
   assignedId?: number;
 }
 
+export interface RegistrationInvitation {
+  id: string;
+  token: string;
+  email?: string;
+  suggestedRol?: string;
+  message?: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  createdAt: number;
+  createdBy: string;
+  completedAt?: number;
+  registrationRequestId?: string;
+}
+
 export type ShiftMap = Record<number, string>; // day -> sigla
 
 export interface DoctorShifts {

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileSpreadsheet, Printer, Sparkles, XCircle, Info, Calendar, ChevronRight, Send, UserPlus, CheckCircle, XOctagon, ChevronDown, ChevronUp, ClipboardList, Bell } from 'lucide-react';
+import { FileSpreadsheet, Printer, Sparkles, XCircle, Info, Calendar, ChevronRight, Send, UserPlus, CheckCircle, XOctagon, ChevronDown, ChevronUp, ClipboardList, Bell, Link2, Copy, Check } from 'lucide-react';
 import Markdown from 'react-markdown';
-import { AuditEntry, UserSession, RegistrationRequest, DoctorRole } from '../types';
+import { collection, setDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
+import { AuditEntry, UserSession, RegistrationRequest, RegistrationInvitation, DoctorRole } from '../types';
 
 const ROLES: DoctorRole[] = [
   'Médico General', 'Médico Rural', 'Médico Especialista', 'Médico Obstetra/Ginecólogo',
@@ -44,9 +46,57 @@ export function NovedadesView({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [approvalState, setApprovalState] = useState<Record<string, { rol: string; cat: string; rejectReason: string; showReject: boolean; loading: boolean }>>({})
 
+  // Invitation modal state
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<DoctorRole>('Médico General');
+  const [inviteMessage, setInviteMessage] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
   const getApprovalState = (id: string) => approvalState[id] || { rol: 'Médico General', cat: 'Planta', rejectReason: '', showReject: false, loading: false };
   const setField = (id: string, field: string, value: string | boolean) =>
     setApprovalState(prev => ({ ...prev, [id]: { ...getApprovalState(id), [field]: value } }));
+
+  const handleCreateInvitation = async () => {
+    if (!inviteEmail.trim() || !inviteEmail.includes('@')) {
+      alert('Por favor ingrese un correo válido');
+      return;
+    }
+    setInviteLoading(true);
+    try {
+      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const id = Date.now().toString();
+      const invitation: RegistrationInvitation = {
+        id,
+        token,
+        email: inviteEmail.trim(),
+        suggestedRol: inviteRole,
+        message: inviteMessage.trim(),
+        status: 'pending',
+        createdAt: Date.now(),
+        createdBy: session.n || 'Admin'
+      };
+      await setDoc(doc(db, 'registrationInvitations', id), invitation);
+      const link = `${window.location.origin}/register?invite=${token}`;
+      setGeneratedLink(link);
+      setInviteEmail('');
+      setInviteMessage('');
+    } catch (err) {
+      alert('Error creando invitación: ' + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const copyLink = () => {
+    if (generatedLink) {
+      navigator.clipboard.writeText(generatedLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const handleApprove = async (req: RegistrationRequest) => {
     const st = getApprovalState(req.id);
@@ -120,6 +170,21 @@ export function NovedadesView({
       {/* ── SOLICITUDES DE REGISTRO ── */}
       {isAdmin && activeTab === 'registros' && (
         <div className="space-y-3">
+          {/* Header with invite button */}
+          <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div>
+              <h3 className="text-sm font-black text-slate-800">Bandeja de Solicitudes</h3>
+              <p className="text-xs text-slate-500">Gestiona las solicitudes de registro de personal</p>
+            </div>
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-xs uppercase flex items-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20"
+            >
+              <Link2 className="w-4 h-4" />
+              Invitar Personal
+            </button>
+          </div>
+
           {registrationRequests.length === 0 ? (
             <div className="bg-stone-100/50 border border-emerald-100 p-8 rounded-2xl text-center">
               <UserPlus className="w-8 h-8 text-emerald-200 mx-auto mb-2" />
@@ -387,6 +452,109 @@ export function NovedadesView({
       </div>
         </>
       )}
+
+      {/* ── INVITATION MODAL ── */}
+      <AnimatePresence>
+        {showInviteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowInviteModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="bg-emerald-600 p-4 flex items-center justify-between">
+                <h3 className="text-white font-black text-sm uppercase flex items-center gap-2">
+                  <Link2 className="w-5 h-5" />
+                  Invitar Personal
+                </h3>
+                <button onClick={() => { setShowInviteModal(false); setGeneratedLink(null); }} className="text-white/80 hover:text-white">
+                  <XCircle className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {generatedLink ? (
+                  <div className="space-y-4">
+                    <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                      <p className="text-sm font-bold text-emerald-800 mb-2">¡Enlace generado exitosamente!</p>
+                      <p className="text-xs text-emerald-600 mb-3">Comparte este enlace con el personal para que complete su registro:</p>
+                      <div className="bg-white p-3 rounded-lg border border-emerald-200 break-all text-xs font-mono text-slate-600">
+                        {generatedLink}
+                      </div>
+                    </div>
+                    <button
+                      onClick={copyLink}
+                      className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all"
+                    >
+                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copied ? '¡Copiado!' : 'Copiar Enlace'}
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">Correo Electrónico</label>
+                      <input
+                        type="email"
+                        value={inviteEmail}
+                        onChange={e => setInviteEmail(e.target.value)}
+                        placeholder="personal@hospital.gov.co"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">Rol Sugerido</label>
+                      <select
+                        value={inviteRole}
+                        onChange={e => setInviteRole(e.target.value as DoctorRole)}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm bg-white"
+                      >
+                        {ROLES.map(role => (
+                          <option key={role} value={role}>{role}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">Mensaje Personalizado (Opcional)</label>
+                      <textarea
+                        value={inviteMessage}
+                        onChange={e => setInviteMessage(e.target.value)}
+                        placeholder="Hola, por favor completa tu registro en el sistema..."
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm resize-none h-20"
+                      />
+                    </div>
+
+                    <button
+                      onClick={handleCreateInvitation}
+                      disabled={inviteLoading}
+                      className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all disabled:opacity-50"
+                    >
+                      {inviteLoading ? (
+                        <span className="animate-pulse">Generando...</span>
+                      ) : (
+                        <>
+                          <Link2 className="w-4 h-4" />
+                          Generar Enlace de Invitación
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

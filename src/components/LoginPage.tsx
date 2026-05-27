@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Clock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, getDoc, setDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export function LoginPage() {
@@ -23,6 +23,46 @@ export function LoginPage() {
   const [regRol, setRegRol] = useState('Médico General');
   const [regGenero, setRegGenero] = useState<'M' | 'F'>('M');
   const [isRegistering, setIsRegistering] = useState(false);
+  
+  // Invitation state
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [inviteData, setInviteData] = useState<any>(null);
+  const [checkingInvite, setCheckingInvite] = useState(true);
+  
+  // Check for invitation token in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('invite');
+    if (token) {
+      setInviteToken(token);
+      verifyInvitation(token);
+    } else {
+      setCheckingInvite(false);
+    }
+  }, []);
+  
+  const verifyInvitation = async (token: string) => {
+    try {
+      // Find invitation by token
+      const invitesRef = collection(db, 'registrationInvitations');
+      const q = query(invitesRef, where('token', '==', token), where('status', '==', 'pending'));
+      const snapshot = await getDocs(q);
+      
+      if (!snapshot.empty) {
+        const invite = snapshot.docs[0].data();
+        setInviteData({ ...invite, id: snapshot.docs[0].id });
+        setRegRol(invite.suggestedRol || 'Médico General');
+        setRegEmail(invite.email || '');
+        setShowRegModal(true);
+      } else {
+        alert('El enlace de invitación no es válido o ya fue utilizado.');
+      }
+    } catch (err) {
+      console.error('Error verifying invitation:', err);
+    } finally {
+      setCheckingInvite(false);
+    }
+  };
 
   const handleSelfRegister = async () => {
     if (!regNombre.trim() || !regApellidos.trim() || !regCedula.trim() || !regEmail.trim()) {
@@ -57,6 +97,7 @@ export function LoginPage() {
 
       // Create the registration request directly in Firestore
       const id = Date.now().toString();
+      // Create the registration request
       await setDoc(doc(db, 'registrationRequests', id), {
         id,
         nombre: regNombre.trim(),
@@ -68,8 +109,18 @@ export function LoginPage() {
         genero: regGenero,
         requestedRol: regRol,
         status: 'pending',
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        inviteToken: inviteToken || null
       });
+      
+      // If this was from an invitation, mark it as completed
+      if (inviteData) {
+        await updateDoc(doc(db, 'registrationInvitations', inviteData.id), {
+          status: 'completed',
+          completedAt: Date.now(),
+          registrationRequestId: id
+        });
+      }
 
       setSubmitted(true);
     } catch (err) {

@@ -136,10 +136,19 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Registration Invitations: Admin creates, anyone can list (to find by token), only admin can get details
+    match /registrationInvitations/{inviteId} {
+      allow list: if true; // Allow anyone to list (required for token queries)
+      allow get: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin() || (resource.data.token != null && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'completedAt', 'registrationRequestId']));
+      allow delete: if isAdmin();
+    }
+
     // Registration Requests: Anyone can create (for self-registration). Admin can read/update.
     match /registrationRequests/{reqId} {
       allow list, get: if isAdmin();
-      // Allow anonymous users to submit registration requests
+      // Allow anonymous users or invited users to submit registration requests
       allow create: if isValidRegistrationRequest(incoming());
       allow update: if isAdmin();
       allow delete: if false;
