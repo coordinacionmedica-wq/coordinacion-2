@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Clock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 export function LoginPage() {
   const { handleLogin, handleGoogleLogin, fbUser } = useAppContext();
@@ -37,22 +39,38 @@ export function LoginPage() {
 
     setIsRegistering(true);
     try {
-      const res = await fetch('/api/submit-registration', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: regNombre.trim(),
-          apellidos: regApellidos.trim(),
-          cedula: cleanCedula,
-          registroMedico: regRegistroMedico.trim(),
-          email: regEmail.trim(),
-          telefono: regTelefono.trim(),
-          genero: regGenero,
-          requestedRol: regRol
-        })
+      // Check if doctor already has an active account
+      const dupDoctor = await getDocs(query(collection(db, 'doctors'), where('cedula', '==', cleanCedula)));
+      if (!dupDoctor.empty && dupDoctor.docs[0].data().username) {
+        throw new Error(`Ya existe una cuenta para esta cédula. Usuario: ${dupDoctor.docs[0].data().username}`);
+      }
+
+      // Check if there is already a pending request
+      const dupReq = await getDocs(query(
+        collection(db, 'registrationRequests'),
+        where('cedula', '==', cleanCedula),
+        where('status', '==', 'pending')
+      ));
+      if (!dupReq.empty) {
+        throw new Error("Ya existe una solicitud pendiente para esta cédula. Un administrador la revisará pronto.");
+      }
+
+      // Create the registration request directly in Firestore
+      const id = Date.now().toString();
+      await setDoc(doc(db, 'registrationRequests', id), {
+        id,
+        nombre: regNombre.trim(),
+        apellidos: regApellidos.trim(),
+        cedula: cleanCedula,
+        registroMedico: regRegistroMedico.trim(),
+        email: regEmail.trim(),
+        telefono: regTelefono.trim(),
+        genero: regGenero,
+        requestedRol: regRol,
+        status: 'pending',
+        createdAt: Date.now()
       });
-      const result = await res.json();
-      if (!result.success) throw new Error(result.error || 'Error enviando solicitud');
+
       setSubmitted(true);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

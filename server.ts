@@ -18,6 +18,7 @@ const configPath = path.join(__dirname, "firebase-applet-config.json");
 let dbAdmin: any = null;
 let authAdmin: any = null;
 
+// Initialize Firebase Admin
 try {
   const firebaseConfig = fs.existsSync(configPath)
     ? JSON.parse(fs.readFileSync(configPath, "utf-8"))
@@ -26,19 +27,30 @@ try {
   // Build credential from env variable or service account file
   let credential: any = undefined;
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    credential = cert(serviceAccount);
+    try {
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      credential = cert(serviceAccount);
+      console.log("Using FIREBASE_SERVICE_ACCOUNT from environment");
+    } catch (e) {
+      console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT:", e);
+    }
   } else {
     const saPath = path.join(__dirname, "service-account.json");
     if (fs.existsSync(saPath)) {
       const serviceAccount = JSON.parse(fs.readFileSync(saPath, "utf-8"));
       credential = cert(serviceAccount);
+      console.log("Using service-account.json file");
     }
+  }
+
+  if (!credential) {
+    console.error("ERROR: No Firebase credentials found!");
+    console.error("Set FIREBASE_SERVICE_ACCOUNT environment variable or create service-account.json");
   }
 
   const adminApp = getApps().length === 0
     ? initAdminApp({
-        projectId: firebaseConfig.projectId,
+        projectId: firebaseConfig.projectId || process.env.FIREBASE_PROJECT_ID || "",
         ...(credential && { credential }),
       })
     : getApps()[0];
@@ -51,6 +63,7 @@ try {
   console.log("Firebase Admin initialized successfully");
 } catch (err) {
   console.error("Error initializing Firebase Admin:", err);
+  console.error("Registration endpoints will not work without Firebase credentials");
 }
 
 async function startServer() {
@@ -187,7 +200,10 @@ async function startServer() {
 
   // API Route: Submit a registration request (pending admin approval)
   app.post("/api/submit-registration", async (req, res) => {
-    if (!dbAdmin) return res.status(500).json({ success: false, error: "Database not initialized" });
+    if (!dbAdmin) {
+      console.error("submit-registration: dbAdmin is null - Firebase not initialized");
+      return res.status(500).json({ success: false, error: "Server not configured: Firebase credentials missing. Set FIREBASE_SERVICE_ACCOUNT env var." });
+    }
     const { nombre, apellidos, cedula, registroMedico, email, telefono, genero, requestedRol } = req.body;
 
     if (!nombre?.trim() || !apellidos?.trim() || !cedula?.trim() || !email?.trim()) {
@@ -228,7 +244,10 @@ async function startServer() {
 
   // API Route: Approve a registration request (admin only — called from frontend with admin session)
   app.post("/api/approve-registration", async (req, res) => {
-    if (!dbAdmin || !authAdmin) return res.status(500).json({ success: false, error: "Server not initialized" });
+    if (!dbAdmin || !authAdmin) {
+      console.error("approve-registration: dbAdmin or authAdmin is null");
+      return res.status(500).json({ success: false, error: "Server not configured: Firebase credentials missing. Set FIREBASE_SERVICE_ACCOUNT env var." });
+    }
     const { requestId, assignedRol, assignedCat, reviewedBy } = req.body;
 
     if (!requestId || !assignedRol || !assignedCat) {
@@ -327,7 +346,10 @@ async function startServer() {
 
   // API Route: Reject a registration request
   app.post("/api/reject-registration", async (req, res) => {
-    if (!dbAdmin) return res.status(500).json({ success: false, error: "Database not initialized" });
+    if (!dbAdmin) {
+      console.error("reject-registration: dbAdmin is null");
+      return res.status(500).json({ success: false, error: "Server not configured: Firebase credentials missing. Set FIREBASE_SERVICE_ACCOUNT env var." });
+    }
     const { requestId, rejectionReason, reviewedBy } = req.body;
     if (!requestId) return res.status(400).json({ success: false, error: "requestId requerido" });
 

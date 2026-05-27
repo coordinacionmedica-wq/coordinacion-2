@@ -23,6 +23,7 @@ import {
   query,
   where,
   getDocs,
+  getDoc,
   deleteDoc,
   updateDoc,
   orderBy,
@@ -661,35 +662,83 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ── Registration Requests ──
   const approveRegistration = useCallback(async (requestId: string, assignedRol: string, assignedCat: string) => {
     try {
-      const res = await fetch('/api/approve-registration', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requestId, assignedRol, assignedCat, reviewedBy: session?.n || 'Admin' })
+      // Get the request data
+      const reqDoc = await getDoc(doc(db, 'registrationRequests', requestId));
+      if (!reqDoc.exists()) throw new Error('Solicitud no encontrada');
+      const reqData = reqDoc.data() as RegistrationRequest;
+      if (reqData.status !== 'pending') throw new Error('Esta solicitud ya fue procesada');
+
+      // Find lowest available sequential ID
+      const allDocs = await getDocs(collection(db, 'doctors'));
+      const usedIds = new Set(
+        allDocs.docs
+          .map(d => parseInt(d.id))
+          .filter(n => !isNaN(n) && n > 0 && n < 10000000)
+      );
+      let newId = 1;
+      while (usedIds.has(newId)) newId++;
+
+      // Generate credentials
+      const cleanName = reqData.nombre.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '').substring(0, 5);
+      const username = `${cleanName}${reqData.cedula.slice(-4)}`;
+      const password = `ESE${Math.floor(1000 + Math.random() * 9000)}`;
+      const now = Date.now();
+
+      // Create the doctor
+      const newDoctor: Doctor = {
+        id: newId,
+        nombre: `${reqData.nombre} ${reqData.apellidos}`,
+        apellidos: reqData.apellidos,
+        cedula: reqData.cedula,
+        registroMedico: reqData.registroMedico || '',
+        email: reqData.email,
+        telefono: reqData.telefono || '',
+        genero: reqData.genero,
+        cat: assignedCat as any,
+        rol: assignedRol as any,
+        st: 'activo',
+        username,
+        password,
+        passwordLastChanged: now,
+        createdAt: now,
+        mustChangePassword: true
+      };
+
+      await setDoc(doc(db, 'doctors', newId.toString()), newDoctor);
+
+      // Update the request
+      await updateDoc(doc(db, 'registrationRequests', requestId), {
+        status: 'approved',
+        reviewedAt: now,
+        reviewedBy: session?.n || 'Admin',
+        assignedId: newId
       });
-      const result = await res.json();
-      if (!result.success) throw new Error(result.error || 'Error aprobando solicitud');
-      notify(`Médico registrado correctamente. Usuario: ${result.username}`, 'success');
+
+      notify(`Médico registrado correctamente. Usuario: ${username}`, 'success');
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       notify(`Error: ${msg}`, 'error');
     }
-  }, [session, notify]);
+  }, [session, notify, db]);
 
   const rejectRegistration = useCallback(async (requestId: string, reason: string) => {
     try {
-      const res = await fetch('/api/reject-registration', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requestId, rejectionReason: reason, reviewedBy: session?.n || 'Admin' })
+      const reqDoc = await getDoc(doc(db, 'registrationRequests', requestId));
+      if (!reqDoc.exists()) throw new Error('Solicitud no encontrada');
+
+      await updateDoc(doc(db, 'registrationRequests', requestId), {
+        status: 'rejected',
+        rejectionReason: reason,
+        reviewedAt: Date.now(),
+        reviewedBy: session?.n || 'Admin'
       });
-      const result = await res.json();
-      if (!result.success) throw new Error(result.error || 'Error rechazando solicitud');
+
       notify('Solicitud rechazada', 'info');
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       notify(`Error: ${msg}`, 'error');
     }
-  }, [session, notify]);
+  }, [session, notify, db]);
 
   // ── Shift Requests ──
   const submitShiftRequest = useCallback(async (day: number, slot: SlotType, reason: string) => {
