@@ -54,6 +54,7 @@ function AppContent() {
     saveEditedDoctor, addActivity, deleteActivity,
     submitShiftRequest: ctxSubmitShiftRequest, updateRequestStatus,
     isGeneratingAI, aiReport, setAiReport,
+    registrationRequests, approveRegistration, rejectRegistration,
   } = useAppContext();
 
   const { assignFreeDaysToPlanta, approveRequest, rejectRequest } = useShiftActions();
@@ -641,6 +642,9 @@ const handleSubmitShiftRequest = async () => {
               aiReport={aiReport}
               setAiReport={setAiReport}
               onPushNotification={pushNotification}
+              registrationRequests={registrationRequests}
+              onApproveRegistration={approveRegistration}
+              onRejectRegistration={rejectRegistration}
             />
           )}
 

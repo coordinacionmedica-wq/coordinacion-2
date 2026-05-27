@@ -136,6 +136,12 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Registration Requests: Admin reads; writes are server-side only (Firebase Admin SDK bypasses rules)
+    match /registrationRequests/{reqId} {
+      allow list, get: if isAdmin();
+      allow create, update, delete: if false;
+    }
+
     // Test connection
     match /test/connection {
       allow read: if true;

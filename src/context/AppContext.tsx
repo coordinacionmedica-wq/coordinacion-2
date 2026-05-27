@@ -11,7 +11,8 @@ import {
   RuralAvailability,
   AvailabilityCall,
   TrainingActivity,
-  ServiceMapping
+  ServiceMapping,
+  RegistrationRequest
 } from '../types';
 import { MASTER_ADMIN, MASTER_READER, DEFAULT_VARS, MONTH_NAMES, STORAGE_KEYS } from '../constants';
 import {
@@ -126,6 +127,11 @@ interface AppContextType {
   // Service Mappings
   saveServiceMappings: (mappings: ServiceMapping[]) => Promise<void>;
 
+  // Registration Requests
+  registrationRequests: RegistrationRequest[];
+  approveRegistration: (requestId: string, assignedRol: string, assignedCat: string) => Promise<void>;
+  rejectRegistration: (requestId: string, reason: string) => Promise<void>;
+
   // Shift Requests
   submitShiftRequest: (day: number, slot: SlotType, reason: string) => Promise<void>;
   updateRequestStatus: (id: number, status: 'approved' | 'rejected') => Promise<void>;
@@ -187,6 +193,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [activities, setActivities] = useState<TrainingActivity[]>([]);
   const [serviceMappings, setServiceMappings] = useState<ServiceMapping[]>([]);
   const [userNotifications, setUserNotifications] = useState<{ id: string; message: string; timestamp: number; read: boolean }[]>([]);
+  const [registrationRequests, setRegistrationRequests] = useState<RegistrationRequest[]>([]);
   const [isMonthPublished, setIsMonthPublished] = useState(false);
 
   // AI
@@ -317,6 +324,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           const data = snap.data();
           if (data?.mappings) setServiceMappings(data.mappings);
         }
+      })
+    );
+
+    // Registration Requests
+    unsubs.push(
+      onSnapshot(collection(db, 'registrationRequests'), (snap) => {
+        setRegistrationRequests(
+          snap.docs.map(d => d.data() as RegistrationRequest)
+            .sort((a, b) => b.createdAt - a.createdAt)
+        );
       })
     );
 
@@ -641,6 +658,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [notify]);
 
+  // ── Registration Requests ──
+  const approveRegistration = useCallback(async (requestId: string, assignedRol: string, assignedCat: string) => {
+    try {
+      const res = await fetch('/api/approve-registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId, assignedRol, assignedCat, reviewedBy: session?.n || 'Admin' })
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'Error aprobando solicitud');
+      notify(`Médico registrado correctamente. Usuario: ${result.username}`, 'success');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      notify(`Error: ${msg}`, 'error');
+    }
+  }, [session, notify]);
+
+  const rejectRegistration = useCallback(async (requestId: string, reason: string) => {
+    try {
+      const res = await fetch('/api/reject-registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId, rejectionReason: reason, reviewedBy: session?.n || 'Admin' })
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'Error rechazando solicitud');
+      notify('Solicitud rechazada', 'info');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      notify(`Error: ${msg}`, 'error');
+    }
+  }, [session, notify]);
+
   // ── Shift Requests ──
   const submitShiftRequest = useCallback(async (day: number, slot: SlotType, reason: string) => {
     if (!session?.doctorId || !reason) { alert('Por favor escriba un motivo.'); return; }
@@ -692,6 +742,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addVariable, removeVariable,
     addActivity, deleteActivity,
     saveServiceMappings,
+    registrationRequests, approveRegistration, rejectRegistration,
     submitShiftRequest, updateRequestStatus,
     isGeneratingAI, setIsGeneratingAI, aiReport, setAiReport,
     idleTimeout, setIdleTimeout

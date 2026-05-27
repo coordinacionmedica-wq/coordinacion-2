@@ -185,6 +185,171 @@ async function startServer() {
     }
   });
 
+  // API Route: Submit a registration request (pending admin approval)
+  app.post("/api/submit-registration", async (req, res) => {
+    if (!dbAdmin) return res.status(500).json({ success: false, error: "Database not initialized" });
+    const { nombre, apellidos, cedula, registroMedico, email, telefono, genero, requestedRol } = req.body;
+
+    if (!nombre?.trim() || !apellidos?.trim() || !cedula?.trim() || !email?.trim()) {
+      return res.status(400).json({ success: false, error: "Faltan campos obligatorios" });
+    }
+
+    try {
+      // Check if doctor already has an active account
+      const dupDoctor = await dbAdmin.collection("doctors").where("cedula", "==", cedula.trim()).get();
+      if (!dupDoctor.empty && dupDoctor.docs[0].data().username) {
+        return res.json({ success: false, error: `Ya existe una cuenta para esta cédula. Usuario: ${dupDoctor.docs[0].data().username}` });
+      }
+
+      // Check if there is already a pending request for this cedula
+      const dupReq = await dbAdmin.collection("registrationRequests")
+        .where("cedula", "==", cedula.trim())
+        .where("status", "==", "pending")
+        .get();
+      if (!dupReq.empty) {
+        return res.json({ success: false, alreadyPending: true, error: "Ya existe una solicitud pendiente para esta cédula. Un administrador la revisará pronto." });
+      }
+
+      const id = Date.now().toString();
+      await dbAdmin.collection("registrationRequests").doc(id).set({
+        id, nombre: nombre.trim(), apellidos: apellidos.trim(),
+        cedula: cedula.trim(), registroMedico: (registroMedico || "").trim(),
+        email: email.trim(), telefono: (telefono || "").trim(),
+        genero: genero || "M", requestedRol: requestedRol || "Médico General",
+        status: "pending", createdAt: Date.now()
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error submitting registration:", error);
+      res.status(500).json({ success: false, error: (error as Error).message });
+    }
+  });
+
+  // API Route: Approve a registration request (admin only — called from frontend with admin session)
+  app.post("/api/approve-registration", async (req, res) => {
+    if (!dbAdmin || !authAdmin) return res.status(500).json({ success: false, error: "Server not initialized" });
+    const { requestId, assignedRol, assignedCat, reviewedBy } = req.body;
+
+    if (!requestId || !assignedRol || !assignedCat) {
+      return res.status(400).json({ success: false, error: "Faltan parámetros requeridos" });
+    }
+
+    try {
+      const reqRef = dbAdmin.collection("registrationRequests").doc(requestId);
+      const reqDoc = await reqRef.get();
+      if (!reqDoc.exists) return res.status(404).json({ success: false, error: "Solicitud no encontrada" });
+
+      const reqData = reqDoc.data();
+      if (reqData.status !== "pending") {
+        return res.status(400).json({ success: false, error: "Esta solicitud ya fue procesada" });
+      }
+
+      // Find lowest available sequential integer ID (gap-filling, ignores timestamp IDs > 10M)
+      const allDocs = await dbAdmin.collection("doctors").get();
+      const usedIds = new Set(
+        allDocs.docs
+          .map((d: any) => parseInt(d.id))
+          .filter((n: number) => !isNaN(n) && n > 0 && n < 10000000)
+      );
+      let newId = 1;
+      while (usedIds.has(newId)) newId++;
+
+      // Generate credentials
+      const cleanName = reqData.nombre.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "").substring(0, 5);
+      const username = `${cleanName}${reqData.cedula.slice(-4)}`;
+      const password = `ESE${Math.floor(1000 + Math.random() * 9000)}`;
+      const now = Date.now();
+
+      await dbAdmin.collection("doctors").doc(newId.toString()).set({
+        id: newId,
+        nombre: `${reqData.nombre} ${reqData.apellidos}`,
+        apellidos: reqData.apellidos,
+        cedula: reqData.cedula,
+        registroMedico: reqData.registroMedico,
+        email: reqData.email,
+        telefono: reqData.telefono,
+        genero: reqData.genero,
+        cat: assignedCat,
+        rol: assignedRol,
+        st: "activo",
+        username,
+        password,
+        passwordLastChanged: now,
+        createdAt: now,
+        mustChangePassword: true
+      });
+
+      await reqRef.update({ status: "approved", reviewedAt: now, reviewedBy: reviewedBy || "Admin", assignedId: newId });
+
+      // Send email with credentials (best-effort)
+      const host = process.env.SMTP_HOST;
+      const user = process.env.SMTP_USER;
+      const pass = process.env.SMTP_PASS;
+      if (host && user && pass) {
+        try {
+          const nodemailerMod = await import("nodemailer");
+          const transporter = nodemailerMod.default.createTransport({
+            host, port: parseInt(process.env.SMTP_PORT || "587"),
+            secure: process.env.SMTP_SECURE === "true",
+            auth: { user, pass }
+          });
+          const prefix = reqData.genero === "F" ? "Dra." : "Dr.";
+          await transporter.sendMail({
+            from: `"${process.env.SMTP_FROM_NAME || 'ESE Roldanillo'}" <${process.env.SMTP_FROM_EMAIL || user}>`,
+            to: reqData.email,
+            subject: "Cuenta Activada - Sistema de Coordinación Médica HDSAR",
+            html: `<div style="font-family:sans-serif;padding:24px;color:#334155;max-width:480px">
+              <h2 style="color:#059669;">✅ Registro Aprobado</h2>
+              <p>Estimado(a) <strong>${prefix} ${reqData.nombre} ${reqData.apellidos}</strong>,</p>
+              <p>Su solicitud de acceso al sistema de Coordinación Médica del HDSAR ha sido <strong>aprobada</strong>.</p>
+              <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:16px;border-radius:10px;margin:20px 0">
+                <p style="margin:6px 0"><strong>Usuario:</strong> <code style="color:#059669;font-size:16px">${username}</code></p>
+                <p style="margin:6px 0"><strong>Contraseña temporal:</strong> <code style="color:#059669;font-size:16px">${password}</code></p>
+              </div>
+              <p style="background:#fef9c3;border:1px solid #fde047;padding:12px;border-radius:8px;font-size:13px">
+                ⚠️ <strong>Importante:</strong> Debe cambiar su contraseña en el primer ingreso al sistema.
+              </p>
+              <p style="font-size:12px;color:#94a3b8;margin-top:20px">ESE Hospital Departamental San Rafael de Roldanillo — Sistema de Coordinación Médica</p>
+            </div>`
+          });
+        } catch (emailErr) {
+          console.error("Email send error (non-fatal):", emailErr);
+        }
+      }
+
+      res.json({ success: true, newId, username, password });
+    } catch (error) {
+      console.error("Error approving registration:", error);
+      res.status(500).json({ success: false, error: (error as Error).message });
+    }
+  });
+
+  // API Route: Reject a registration request
+  app.post("/api/reject-registration", async (req, res) => {
+    if (!dbAdmin) return res.status(500).json({ success: false, error: "Database not initialized" });
+    const { requestId, rejectionReason, reviewedBy } = req.body;
+    if (!requestId) return res.status(400).json({ success: false, error: "requestId requerido" });
+
+    try {
+      const reqRef = dbAdmin.collection("registrationRequests").doc(requestId);
+      const reqDoc = await reqRef.get();
+      if (!reqDoc.exists) return res.status(404).json({ success: false, error: "Solicitud no encontrada" });
+
+      await reqRef.update({
+        status: "rejected",
+        rejectionReason: rejectionReason || "",
+        reviewedAt: Date.now(),
+        reviewedBy: reviewedBy || "Admin"
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error rejecting registration:", error);
+      res.status(500).json({ success: false, error: (error as Error).message });
+    }
+  });
+
   // API Route for sending emails
   app.post("/api/send-email", async (req, res) => {
     const { to, subject, text, html } = req.body;

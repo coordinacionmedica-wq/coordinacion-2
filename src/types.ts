@@ -33,6 +33,25 @@ export interface Doctor {
   permissions?: string[];
   passwordLastChanged?: number;
   createdAt?: number;
+  mustChangePassword?: boolean;
+}
+
+export interface RegistrationRequest {
+  id: string;
+  nombre: string;
+  apellidos: string;
+  cedula: string;
+  registroMedico: string;
+  email: string;
+  telefono?: string;
+  genero: 'M' | 'F';
+  requestedRol: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: number;
+  reviewedAt?: number;
+  reviewedBy?: string;
+  rejectionReason?: string;
+  assignedId?: number;
 }
 
 export type ShiftMap = Record<number, string>; // day -> sigla

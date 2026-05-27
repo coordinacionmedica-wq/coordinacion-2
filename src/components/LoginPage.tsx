@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShieldCheck, X, CheckCircle } from 'lucide-react';
+import { X, Clock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 export function LoginPage() {
@@ -9,7 +9,7 @@ export function LoginPage() {
   const [loginU, setLoginU] = useState('');
   const [loginP, setLoginP] = useState('');
   const [showRegModal, setShowRegModal] = useState(false);
-  const [generatedCreds, setGeneratedCreds] = useState<{ u: string; p: string } | null>(null);
+  const [submitted, setSubmitted] = useState(false);
 
   // Registration form state
   const [regNombre, setRegNombre] = useState('');
@@ -37,76 +37,23 @@ export function LoginPage() {
 
     setIsRegistering(true);
     try {
-      // 1. Check if doctor already exists
-      const checkRes = await fetch('/api/check-doctor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cedula: cleanCedula })
-      });
-      const checkData = await checkRes.json();
-      if (!checkData.success) throw new Error(checkData.error || 'Error verificando cédula');
-
-      const cleanName = regNombre.trim().toLowerCase().replace(/\s+/g, '').substring(0, 5);
-      const username = `${cleanName}${cleanCedula.slice(-4)}`;
-      const password = `ESE${Math.floor(1000 + Math.random() * 9000)}`;
-
-      if (checkData.exists && checkData.username) {
-        alert(`Ya existe una cuenta para esta cédula. Su usuario es: ${checkData.username}`);
-        setLoginU(checkData.username);
-        setShowRegModal(false);
-        return;
-      }
-
-      // 2. Build doctor data matching server API format
-      const isUpdate = checkData.exists && !checkData.username;
-      const doctorId = isUpdate ? checkData.id : Date.now();
-      const doctorData = isUpdate ? {
-        username, password, passwordLastChanged: Date.now(),
-        email: regEmail.trim(), telefono: regTelefono.trim(),
-        nombre: `${regNombre.trim()} ${regApellidos.trim()}`,
-        apellidos: regApellidos.trim(),
-        registroMedico: regRegistroMedico.trim(),
-        genero: regGenero,
-      } : {
-        id: doctorId, nombre: `${regNombre.trim()} ${regApellidos.trim()}`,
-        apellidos: regApellidos.trim(), cedula: cleanCedula,
-        registroMedico: regRegistroMedico.trim(), email: regEmail.trim(),
-        telefono: regTelefono.trim(), genero: regGenero,
-        cat: regRol === 'Médico Rural' ? 'Rural' : 'Planta',
-        rol: regRol, st: 'activo', username, password,
-        passwordLastChanged: Date.now(), createdAt: Date.now(),
-      };
-
-      // 3. Register via server API
-      const res = await fetch('/api/register-doctor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ doctorId, doctorData, isUpdate })
-      });
-      const result = await res.json();
-      if (!result.success) throw new Error(result.error || 'Error en registro');
-
-      // 4. Send email notification (best-effort)
-      fetch('/api/send-email', {
+      const res = await fetch('/api/submit-registration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: regEmail.trim(),
-          subject: `${isUpdate ? 'Activación' : 'Registro'} de Cuenta - Turnero HDSAR`,
-          text: `Hola ${regNombre}, tu cuenta ha sido ${isUpdate ? 'activada' : 'registrada'}. Usuario: ${username}, Contraseña: ${password}`,
-          html: `<div style="font-family:sans-serif;padding:20px;color:#334155;">
-            <h2 style="color:#059669;">¡${isUpdate ? 'Cuenta Activada' : 'Registro Exitoso'}!</h2>
-            <p>Estimado(a) <strong>${regNombre}</strong>,</p>
-            <div style="background:#f8fafc;padding:15px;border-radius:8px;margin:20px 0;border:1px solid #e2e8f0;">
-              <p style="margin:5px 0;"><strong>Usuario:</strong> <code style="color:#059669;font-weight:bold;">${username}</code></p>
-              <p style="margin:5px 0;"><strong>Contraseña:</strong> <code style="color:#059669;font-weight:bold;">${password}</code></p>
-            </div>
-            <p style="font-size:12px;color:#64748b;">Le recomendamos cambiar su contraseña en el primer inicio de sesión.</p>
-          </div>`
+          nombre: regNombre.trim(),
+          apellidos: regApellidos.trim(),
+          cedula: cleanCedula,
+          registroMedico: regRegistroMedico.trim(),
+          email: regEmail.trim(),
+          telefono: regTelefono.trim(),
+          genero: regGenero,
+          requestedRol: regRol
         })
-      }).catch(e => console.error("Email err:", e));
-
-      setGeneratedCreds({ u: username, p: password });
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'Error enviando solicitud');
+      setSubmitted(true);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       alert(`Error: ${msg}`);
@@ -214,42 +161,35 @@ export function LoginPage() {
               className="bg-white w-full h-full sm:h-auto sm:max-w-2xl sm:rounded-[40px] shadow-2xl p-6 sm:p-10 border-0 sm:border sm:border-emerald-100 relative flex flex-col pt-20 sm:pt-10"
             >
               <button 
-                onClick={() => { setShowRegModal(false); setGeneratedCreds(null); }}
+                onClick={() => { setShowRegModal(false); setSubmitted(false); }}
                 className="absolute top-6 right-6 p-3 bg-slate-100/50 hover:bg-rose-50 rounded-full text-slate-400 hover:text-rose-600 transition-all active:scale-90 z-[210] flex items-center gap-2 group"
               >
                 <span className="text-[10px] uppercase font-black tracking-widest hidden sm:inline group-hover:inline">Cancelar</span>
                 <X className="w-6 h-6" />
               </button>
 
-              {generatedCreds ? (
+              {submitted ? (
                 <div className="text-center py-10 space-y-6">
-                  <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <CheckCircle className="w-10 h-10 text-emerald-600" />
+                  <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Clock className="w-10 h-10 text-amber-600" />
                   </div>
-                  <h2 className="text-3xl font-black text-slate-800">¡Registro Exitoso!</h2>
-                  <p className="text-slate-500">Sus credenciales han sido enviadas a <span className="font-bold text-emerald-600">{regEmail}</span>.</p>
-                  
-                  <div className="bg-emerald-50 p-8 rounded-3xl border border-emerald-100 space-y-4">
-                    <div className="flex justify-between items-center border-b border-emerald-200/50 pb-3">
-                      <span className="text-[10px] uppercase font-black text-emerald-600/50">Usuario</span>
-                      <span className="text-xl font-mono font-black text-emerald-700">{generatedCreds.u}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] uppercase font-black text-emerald-600/50">Contraseña</span>
-                      <span className="text-xl font-mono font-black text-emerald-700">{generatedCreds.p}</span>
-                    </div>
+                  <h2 className="text-3xl font-black text-slate-800">¡Solicitud Enviada!</h2>
+                  <p className="text-slate-500 max-w-xs mx-auto">Su solicitud fue recibida. Un <span className="font-bold text-emerald-600">administrador</span> revisará sus datos y activará su cuenta.</p>
+
+                  <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100 text-left space-y-2">
+                    <p className="text-[10px] uppercase font-black text-amber-600/60 mb-3">Sus datos registrados</p>
+                    <div className="flex justify-between text-sm"><span className="text-slate-500">Nombre</span><span className="font-bold text-slate-700">{regNombre} {regApellidos}</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-slate-500">Cédula</span><span className="font-bold text-slate-700">{regCedula}</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-slate-500">Correo</span><span className="font-bold text-slate-700 text-right max-w-[60%] break-all">{regEmail}</span></div>
                   </div>
 
-                  <button 
-                    onClick={() => {
-                      setShowRegModal(false);
-                      setGeneratedCreds(null);
-                      setLoginU(generatedCreds.u);
-                      setLoginP(generatedCreds.p);
-                    }}
+                  <p className="text-xs text-slate-400 italic">Recibirá sus credenciales de acceso por correo electrónico una vez sea aprobado.</p>
+
+                  <button
+                    onClick={() => { setShowRegModal(false); setSubmitted(false); }}
                     className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-emerald-500/20 active:scale-95 transition-transform"
                   >
-                    INICIAR SESIÓN AHORA
+                    ENTENDIDO
                   </button>
                 </div>
               ) : (
