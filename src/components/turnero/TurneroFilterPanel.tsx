@@ -246,8 +246,9 @@ export function TurneroFilterPanel(props: TurneroFilterPanelProps) {
 
         {isAdmin && (
           <>
-            <label className="cursor-pointer bg-blue-600 text-white p-1.5 md:p-2 rounded-lg hover:bg-blue-700 transition-all shadow-sm" title="Importar Excel">
+            <label className="cursor-pointer bg-blue-600 text-white px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-blue-700 transition-all shadow-sm flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[10px] font-black uppercase" title="Importar Excel al Turnero">
               <FileSpreadsheet className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              IMPORTAR
               <input type="file" accept=".xlsx, .xls" className="hidden" onChange={onImportExcel} />
             </label>
             <button
