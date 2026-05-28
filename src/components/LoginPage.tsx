@@ -181,13 +181,6 @@ export function LoginPage() {
             ACCEDER AL SISTEMA
           </button>
 
-          <button 
-            onClick={() => setShowRegModal(true)}
-            className="w-full bg-emerald-50 text-emerald-700 p-4 rounded-xl font-bold border border-emerald-100 hover:bg-emerald-100 transition-colors"
-          >
-            REGISTRAR TALENTO HUMANO
-          </button>
-
           <a 
             href="https://wa.me/573173683886" 
             target="_blank" 

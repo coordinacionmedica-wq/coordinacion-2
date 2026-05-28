@@ -385,17 +385,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }, (err) => console.error('ServiceMappings listener error:', err))
       );
 
-      // Registration Requests - only if admin doc is ready
-      if (isAdminReady) {
-        unsubs.push(
-          onSnapshot(collection(db, 'registrationRequests'), (snap) => {
-            setRegistrationRequests(
-              snap.docs.map(d => d.data() as RegistrationRequest)
-                .sort((a, b) => b.createdAt - a.createdAt)
-            );
-          }, (err) => console.error('RegistrationRequests listener error:', err))
-        );
-      }
+      // Registration Requests - subscribe for any signed-in user (rules handle access)
+      unsubs.push(
+        onSnapshot(collection(db, 'registrationRequests'), (snap) => {
+          setRegistrationRequests(
+            snap.docs.map(d => d.data() as RegistrationRequest)
+              .sort((a, b) => b.createdAt - a.createdAt)
+          );
+        }, (err) => console.error('RegistrationRequests listener error:', err))
+      );
     };
 
     setupListeners();

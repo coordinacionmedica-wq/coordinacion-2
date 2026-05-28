@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { collection, query, where, getDocs, setDoc, doc, updateDoc } from 'firebase/firestore';
-import { signInAnonymously } from 'firebase/auth';
-import { db, auth } from '../firebase';
+import { db } from '../firebase';
 
 type Step = 'loading' | 'invalid' | 'form' | 'submitted';
 
@@ -37,7 +36,6 @@ export function RegisterPage() {
 
   const verifyInvitation = async (token: string) => {
     try {
-      try { await signInAnonymously(auth); } catch { /* ok — rules allow list: if true */ }
       const q = query(
         collection(db, 'registrationInvitations'),
         where('token', '==', token),
@@ -78,7 +76,6 @@ export function RegisterPage() {
 
     setIsRegistering(true);
     try {
-      try { await signInAnonymously(auth); } catch { /* ok */ }
       const dupDoctor = await getDocs(query(collection(db, 'doctors'), where('cedula', '==', cleanCedula)));
       if (!dupDoctor.empty && dupDoctor.docs[0].data().username) {
         throw new Error(`Ya existe una cuenta para esta cédula: ${dupDoctor.docs[0].data().username}`);

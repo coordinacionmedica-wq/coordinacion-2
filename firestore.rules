@@ -142,10 +142,12 @@ service cloud.firestore {
 
     // Registration Invitations: Authenticated users can create (for admin workflow)
     match /registrationInvitations/{inviteId} {
-      allow list: if true; // Allow anyone to list (required for token queries)
+      allow list: if true; // Allow anyone to list (required for token queries without auth)
       allow get: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && (isAdmin() || incoming().diff(existing()).affectedKeys().hasOnly(['status', 'completedAt', 'registrationRequestId']));
+      // Allow anyone to mark as completed (status/completedAt/registrationRequestId only) — used by RegisterPage without auth
+      allow update: if incoming().diff(existing()).affectedKeys().hasOnly(['status', 'completedAt', 'registrationRequestId'])
+                    || (isSignedIn() && isAdmin());
       allow delete: if isAdmin();
     }
 
