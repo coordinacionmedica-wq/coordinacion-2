@@ -36,6 +36,7 @@ import { ActivitiesModal } from './components/ActivitiesModal';
 import { SolicitudesView } from './components/SolicitudesView';
 import { NovedadesView } from './components/NovedadesView';
 import { AppStyles } from './components/AppStyles';
+import { RegisterPage } from './components/RegisterPage';
 import { useAppContext } from './context/AppContext';
 import { useShiftActions } from './hooks/useShiftActions';
 import { useAIActions } from './hooks/useAIActions';
@@ -807,6 +808,14 @@ const handleSubmitShiftRequest = async () => {
 }
 
 export default function App() {
+  // Detect /register route — show standalone page without loading the full app
+  const isRegisterRoute = window.location.pathname === '/register' || window.location.pathname.startsWith('/register?');
+  const hasInviteParam = new URLSearchParams(window.location.search).has('invite');
+
+  if (isRegisterRoute || hasInviteParam) {
+    return <RegisterPage />;
+  }
+
   return (
     <AppProvider>
       <AppContent />

@@ -130,7 +130,7 @@ interface AppContextType {
 
   // Registration Requests
   registrationRequests: RegistrationRequest[];
-  approveRegistration: (requestId: string, assignedRol: string, assignedCat: string) => Promise<void>;
+  approveRegistration: (requestId: string, assignedRol: string, assignedCat: string) => Promise<{ username: string; password: string } | void>;
   rejectRegistration: (requestId: string, reason: string) => Promise<void>;
 
   // Shift Requests
@@ -737,15 +737,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [notify]);
 
   // ── Registration Requests ──
-  const approveRegistration = useCallback(async (requestId: string, assignedRol: string, assignedCat: string) => {
+  const approveRegistration = useCallback(async (requestId: string, assignedRol: string, assignedCat: string): Promise<{ username: string; password: string } | void> => {
+    // Try server-side first — creates doctor + sends credentials email
     try {
-      // Get the request data
+      const res = await fetch('/api/approve-registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId, assignedRol, assignedCat, reviewedBy: session?.n || 'Admin' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        notify('✅ Cuenta activada. Se envió el correo con credenciales.', 'success');
+        return { username: data.username, password: data.password };
+      }
+      console.warn('Server approve failed:', data.error, '— using client-side fallback');
+    } catch (fetchErr) {
+      console.warn('Server not reachable, using client-side:', fetchErr);
+    }
+
+    // Fallback: client-side Firestore (no email)
+    try {
       const reqDoc = await getDoc(doc(db, 'registrationRequests', requestId));
       if (!reqDoc.exists()) throw new Error('Solicitud no encontrada');
       const reqData = reqDoc.data() as RegistrationRequest;
       if (reqData.status !== 'pending') throw new Error('Esta solicitud ya fue procesada');
 
-      // Find lowest available sequential ID
       const allDocs = await getDocs(collection(db, 'doctors'));
       const usedIds = new Set(
         allDocs.docs
@@ -755,13 +771,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       let newId = 1;
       while (usedIds.has(newId)) newId++;
 
-      // Generate credentials
       const cleanName = reqData.nombre.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '').substring(0, 5);
       const username = `${cleanName}${reqData.cedula.slice(-4)}`;
       const password = `ESE${Math.floor(1000 + Math.random() * 9000)}`;
       const now = Date.now();
 
-      // Create the doctor
       const newDoctor: Doctor = {
         id: newId,
         nombre: `${reqData.nombre} ${reqData.apellidos}`,
@@ -782,8 +796,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       };
 
       await setDoc(doc(db, 'doctors', newId.toString()), newDoctor);
-
-      // Update the request
       await updateDoc(doc(db, 'registrationRequests', requestId), {
         status: 'approved',
         reviewedAt: now,
@@ -791,12 +803,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         assignedId: newId
       });
 
-      notify(`Médico registrado correctamente. Usuario: ${username}`, 'success');
+      notify('✅ Cuenta activada. (Correo no enviado — configure SMTP en el servidor)', 'success');
+      return { username, password };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       notify(`Error: ${msg}`, 'error');
     }
-  }, [session, notify, db]);
+  }, [session, notify]);
 
   const rejectRegistration = useCallback(async (requestId: string, reason: string) => {
     try {

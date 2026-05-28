@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileSpreadsheet, Printer, Sparkles, XCircle, Info, Calendar, ChevronRight, Send, UserPlus, CheckCircle, XOctagon, ChevronDown, ChevronUp, ClipboardList, Bell, Link2, Copy, Check } from 'lucide-react';
+import { FileSpreadsheet, Printer, Sparkles, XCircle, Info, Calendar, ChevronRight, Send, UserPlus, CheckCircle, XOctagon, ChevronDown, ChevronUp, ClipboardList, Bell, Link2, Copy, Check, Mail, MessageCircle, Plus } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { collection, setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -28,7 +28,7 @@ interface Props {
   setAiReport: (r: string | null) => void;
   onPushNotification: (doctorId: number, message: string) => void;
   registrationRequests: RegistrationRequest[];
-  onApproveRegistration: (requestId: string, assignedRol: string, assignedCat: string) => Promise<void>;
+  onApproveRegistration: (requestId: string, assignedRol: string, assignedCat: string) => Promise<{ username: string; password: string } | void>;
   onRejectRegistration: (requestId: string, reason: string) => Promise<void>;
 }
 
@@ -45,6 +45,7 @@ export function NovedadesView({
   const [activeTab, setActiveTab] = useState<'registros' | 'novedades'>('registros');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [approvalState, setApprovalState] = useState<Record<string, { rol: string; cat: string; rejectReason: string; showReject: boolean; loading: boolean }>>({})
+  const [lastCredentials, setLastCredentials] = useState<{ username: string; password: string; nombre: string; email: string } | null>(null);
 
   // Invitation modal state
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -101,9 +102,12 @@ export function NovedadesView({
   const handleApprove = async (req: RegistrationRequest) => {
     const st = getApprovalState(req.id);
     setField(req.id, 'loading', true);
-    await onApproveRegistration(req.id, st.rol, st.cat);
+    const result = await onApproveRegistration(req.id, st.rol, st.cat);
     setField(req.id, 'loading', false);
     setExpandedId(null);
+    if (result?.username) {
+      setLastCredentials({ username: result.username, password: result.password, nombre: `${req.nombre} ${req.apellidos}`, email: req.email });
+    }
   };
 
   const handleReject = async (req: RegistrationRequest) => {
@@ -165,6 +169,35 @@ export function NovedadesView({
             Registro de Cambios
           </button>
         </div>
+      )}
+
+      {/* ── CREDENCIALES GENERADAS ── */}
+      {lastCredentials && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-emerald-900 text-white p-5 rounded-2xl border border-emerald-600 shadow-xl"
+        >
+          <div className="flex justify-between items-start mb-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-emerald-400" />
+              <span className="font-black text-sm uppercase tracking-widest text-emerald-300">Cuenta Activada</span>
+            </div>
+            <button onClick={() => setLastCredentials(null)} className="text-white/40 hover:text-white"><XCircle className="w-5 h-5" /></button>
+          </div>
+          <p className="text-sm text-emerald-100 mb-3"><span className="font-bold">{lastCredentials.nombre}</span> — {lastCredentials.email}</p>
+          <div className="grid grid-cols-2 gap-3 bg-black/30 p-4 rounded-xl">
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-1">Usuario</p>
+              <p className="font-black text-white text-lg font-mono">{lastCredentials.username}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-1">Contraseña temporal</p>
+              <p className="font-black text-white text-lg font-mono">{lastCredentials.password}</p>
+            </div>
+          </div>
+          <p className="text-[10px] text-emerald-400 mt-3 italic">Estas credenciales fueron enviadas al correo registrado (si SMTP está configurado). Guárdalas como respaldo.</p>
+        </motion.div>
       )}
 
       {/* ── SOLICITUDES DE REGISTRO ── */}
@@ -490,13 +523,40 @@ export function NovedadesView({
                         {generatedLink}
                       </div>
                     </div>
-                    <button
-                      onClick={copyLink}
-                      className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all"
-                    >
-                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      {copied ? '¡Copiado!' : 'Copiar Enlace'}
-                    </button>
+                    <div className="grid grid-cols-1 gap-2">
+                      <button
+                        onClick={copyLink}
+                        className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all"
+                      >
+                        {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        {copied ? '¡Enlace Copiado!' : 'Copiar Enlace'}
+                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <a
+                          href={`https://wa.me/?text=${encodeURIComponent(`Hola! Te invito a registrarte en el sistema de Coordinación Médica HDSAR. Ingresa al siguiente enlace y completa tus datos:\n\n${generatedLink}`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-bold text-xs uppercase transition-all"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          WhatsApp
+                        </a>
+                        <a
+                          href={`mailto:${inviteEmail || ''}?subject=${encodeURIComponent('Invitación de Registro — Coordinación Médica HDSAR')}&body=${encodeURIComponent(`Estimado/a,\n\nHa sido invitado/a a registrarse en el sistema de Coordinación Médica del Hospital Departamental San Antonio de Roldanillo.\n\nPor favor, haga clic en el siguiente enlace para completar su registro:\n\n${generatedLink}\n\nEste enlace es de uso único. Una vez complete el formulario, el administrador revisará su solicitud y le enviará sus credenciales de acceso.\n\nSaludos,\nCoordinación Médica HDSAR`)}`}
+                          className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl font-bold text-xs uppercase transition-all"
+                        >
+                          <Mail className="w-4 h-4" />
+                          Correo
+                        </a>
+                      </div>
+                      <button
+                        onClick={() => { setGeneratedLink(null); setInviteEmail(''); setInviteMessage(''); }}
+                        className="w-full border border-slate-200 text-slate-500 py-2.5 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-2 hover:bg-slate-50 transition-all"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Nueva Invitación
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <>
