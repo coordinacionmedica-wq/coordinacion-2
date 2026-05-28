@@ -278,7 +278,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // ── Firestore listeners (wait for auth to resolve before subscribing) ──
   useEffect(() => {
-    if (fbUser === undefined) return; // auth not resolved yet — skip to avoid permission-denied flood
+    if (!fbUser) return; // Wait for auth to be ready (not undefined, not null)
     
     const unsubs: (() => void)[] = [];
     
