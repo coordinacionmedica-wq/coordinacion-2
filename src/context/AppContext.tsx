@@ -279,86 +279,109 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ── Firestore listeners (wait for auth to resolve before subscribing) ──
   useEffect(() => {
     if (fbUser === undefined) return; // auth not resolved yet — skip to avoid permission-denied flood
+    
     const unsubs: (() => void)[] = [];
+    
+    // Helper to check if admin doc exists before subscribing to admin-only collections
+    const waitForAdminDoc = async () => {
+      if (!fbUser || !session || session.r !== 'admin') return true; // Not admin, no need to wait
+      
+      // Wait up to 5 seconds for the admin doc to exist
+      for (let i = 0; i < 50; i++) {
+        const adminDoc = await getDoc(doc(db, 'admins', fbUser.uid));
+        if (adminDoc.exists()) return true;
+        await new Promise(r => setTimeout(r, 100)); // Wait 100ms
+      }
+      console.warn('Admin document not found after 5 seconds');
+      return false;
+    };
 
-    // Doctors
-    unsubs.push(
-      onSnapshot(collection(db, 'doctors'), (snap) => {
-        setDoctors(snap.docs.map(d => ({ id: Number(d.id), ...d.data() } as Doctor)));
-      })
-    );
+    const setupListeners = async () => {
+      const isAdminReady = await waitForAdminDoc();
 
-    // Variables
-    unsubs.push(
-      onSnapshot(doc(db, 'settings', 'variables'), (snap) => {
-        if (snap.exists()) setVariables(snap.data() as VarSlotConfig);
-      })
-    );
+      // Doctors (any signed-in user)
+      unsubs.push(
+        onSnapshot(collection(db, 'doctors'), (snap) => {
+          setDoctors(snap.docs.map(d => ({ id: Number(d.id), ...d.data() } as Doctor)));
+        }, (err) => console.error('Doctors listener error:', err))
+      );
 
-    // Audit logs
-    unsubs.push(
-      onSnapshot(collection(db, 'auditLogs'), (snap) => {
-        setAuditLogs(snap.docs.map(d => d.data() as AuditEntry).sort((a, b) => b.timestamp - a.timestamp));
-      })
-    );
+      // Variables (any signed-in user)
+      unsubs.push(
+        onSnapshot(doc(db, 'settings', 'variables'), (snap) => {
+          if (snap.exists()) setVariables(snap.data() as VarSlotConfig);
+        }, (err) => console.error('Variables listener error:', err))
+      );
 
-    // Shift requests
-    unsubs.push(
-      onSnapshot(collection(db, 'shiftRequests'), (snap) => {
-        setShiftRequests(snap.docs.map(d => d.data() as ShiftRequest).sort((a, b) => b.timestamp - a.timestamp));
-      })
-    );
+      // Audit logs (any signed-in user)
+      unsubs.push(
+        onSnapshot(collection(db, 'auditLogs'), (snap) => {
+          setAuditLogs(snap.docs.map(d => d.data() as AuditEntry).sort((a, b) => b.timestamp - a.timestamp));
+        }, (err) => console.error('AuditLogs listener error:', err))
+      );
 
-    // Rural availability
-    unsubs.push(
-      onSnapshot(collection(db, 'ruralAvailability'), (snap) => {
-        setRuralAvailabilities(snap.docs.map(d => d.data() as RuralAvailability));
-      })
-    );
+      // Shift requests
+      unsubs.push(
+        onSnapshot(collection(db, 'shiftRequests'), (snap) => {
+          setShiftRequests(snap.docs.map(d => d.data() as ShiftRequest).sort((a, b) => b.timestamp - a.timestamp));
+        }, (err) => console.error('ShiftRequests listener error:', err))
+      );
 
-    // Availability calls
-    unsubs.push(
-      onSnapshot(collection(db, 'availabilityCalls'), (snap) => {
-        setAvailabilityCalls(snap.docs.map(d => d.data() as AvailabilityCall).sort((a, b) => b.timestamp - a.timestamp));
-      })
-    );
+      // Rural availability
+      unsubs.push(
+        onSnapshot(collection(db, 'ruralAvailability'), (snap) => {
+          setRuralAvailabilities(snap.docs.map(d => d.data() as RuralAvailability));
+        }, (err) => console.error('RuralAvailability listener error:', err))
+      );
 
-    // Training activities
-    unsubs.push(
-      onSnapshot(collection(db, 'trainingActivities'), (snap) => {
-        setActivities(snap.docs.map(d => d.data() as TrainingActivity));
-      })
-    );
+      // Availability calls
+      unsubs.push(
+        onSnapshot(collection(db, 'availabilityCalls'), (snap) => {
+          setAvailabilityCalls(snap.docs.map(d => d.data() as AvailabilityCall).sort((a, b) => b.timestamp - a.timestamp));
+        }, (err) => console.error('AvailabilityCalls listener error:', err))
+      );
 
-    // Theme
-    unsubs.push(
-      onSnapshot(doc(db, 'settings', 'theme'), (snap) => {
-        if (snap.exists()) setTheme(snap.data() as any);
-      })
-    );
+      // Training activities
+      unsubs.push(
+        onSnapshot(collection(db, 'trainingActivities'), (snap) => {
+          setActivities(snap.docs.map(d => d.data() as TrainingActivity));
+        }, (err) => console.error('TrainingActivities listener error:', err))
+      );
 
-    // Service Mappings
-    unsubs.push(
-      onSnapshot(doc(db, 'settings', 'serviceMappings'), (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          if (data?.mappings) setServiceMappings(data.mappings);
-        }
-      })
-    );
+      // Theme
+      unsubs.push(
+        onSnapshot(doc(db, 'settings', 'theme'), (snap) => {
+          if (snap.exists()) setTheme(snap.data() as any);
+        }, (err) => console.error('Theme listener error:', err))
+      );
 
-    // Registration Requests
-    unsubs.push(
-      onSnapshot(collection(db, 'registrationRequests'), (snap) => {
-        setRegistrationRequests(
-          snap.docs.map(d => d.data() as RegistrationRequest)
-            .sort((a, b) => b.createdAt - a.createdAt)
+      // Service Mappings
+      unsubs.push(
+        onSnapshot(doc(db, 'settings', 'serviceMappings'), (snap) => {
+          if (snap.exists()) {
+            const data = snap.data();
+            if (data?.mappings) setServiceMappings(data.mappings);
+          }
+        }, (err) => console.error('ServiceMappings listener error:', err))
+      );
+
+      // Registration Requests - only if admin doc is ready
+      if (isAdminReady) {
+        unsubs.push(
+          onSnapshot(collection(db, 'registrationRequests'), (snap) => {
+            setRegistrationRequests(
+              snap.docs.map(d => d.data() as RegistrationRequest)
+                .sort((a, b) => b.createdAt - a.createdAt)
+            );
+          }, (err) => console.error('RegistrationRequests listener error:', err))
         );
-      })
-    );
+      }
+    };
+
+    setupListeners();
 
     return () => unsubs.forEach(u => u());
-  }, [fbUser]);
+  }, [fbUser, session]);
 
   // ── Monthly data listener ──
   useEffect(() => {
