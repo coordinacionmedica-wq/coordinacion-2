@@ -232,7 +232,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const reauthAttempted = React.useRef(false);
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
-      setFbUser(user);
       if (!user && !reauthAttempted.current) {
         // Re-authenticate if session exists but Firebase has no user (once only)
         reauthAttempted.current = true;
@@ -241,11 +240,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           try {
             const anonResult = await signInAnonymously(auth);
             const storedSession = JSON.parse(stored) as UserSession;
-            // If it's an admin session, register the UID in /admins/ so rules pass
+            // If it's an admin session, create the admin doc and wait for it
             if ((storedSession.r === 'admin' || storedSession.r === 'root') && anonResult.user?.uid) {
-              setDoc(doc(db, 'admins', anonResult.user.uid), { role: 'admin', createdAt: Date.now() }, { merge: true }).catch(() => {});
+              await setDoc(doc(db, 'admins', anonResult.user.uid), { role: 'admin', createdAt: Date.now() }, { merge: true });
+              // Now safe to set fbUser - admin doc exists
+              setFbUser(anonResult.user);
+            } else {
+              // Not admin, safe to set user
+              setFbUser(anonResult.user);
             }
-          } catch { /* ignore */ }
+          } catch { 
+            setFbUser(null);
+          }
+        } else {
+          setFbUser(null); // No stored session, no user
         }
       } else if (user && user.isAnonymous) {
         // If anonymous user is already signed in and we have an admin session, ensure /admins/ entry exists
@@ -254,10 +262,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           try {
             const storedSession = JSON.parse(stored) as UserSession;
             if (storedSession.r === 'admin' || storedSession.r === 'root') {
-              setDoc(doc(db, 'admins', user.uid), { role: 'admin', createdAt: Date.now() }, { merge: true }).catch(() => {});
+              // Check if admin doc exists, if not create it
+              const adminDoc = await getDoc(doc(db, 'admins', user.uid));
+              if (!adminDoc.exists()) {
+                await setDoc(doc(db, 'admins', user.uid), { role: 'admin', createdAt: Date.now() }, { merge: true });
+              }
             }
           } catch { /* ignore */ }
         }
+        setFbUser(user);
+      } else {
+        // User is not anonymous or no special handling needed
+        setFbUser(user);
       }
     });
     // Handle Google redirect result — detect admin by email
