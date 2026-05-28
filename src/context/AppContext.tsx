@@ -667,7 +667,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (d.password !== oldPass) { alert('La contraseña actual es incorrecta'); return; }
     if (newPass.length < 4) { alert('La nueva contraseña debe tener al menos 4 caracteres'); return; }
     try {
-      await updateDoc(doc(db, 'doctors', doctorId.toString()), { password: newPass, passwordLastChanged: Date.now() });
+      await updateDoc(doc(db, 'doctors', doctorId.toString()), { password: newPass, passwordLastChanged: Date.now(), mustChangePassword: false });
       notify('Contraseña actualizada con éxito', 'success');
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `doctors/${doctorId}`);

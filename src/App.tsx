@@ -37,6 +37,7 @@ import { SolicitudesView } from './components/SolicitudesView';
 import { NovedadesView } from './components/NovedadesView';
 import { AppStyles } from './components/AppStyles';
 import { RegisterPage } from './components/RegisterPage';
+import { ResetPasswordPage } from './components/ResetPasswordPage';
 import { useAppContext } from './context/AppContext';
 import { useShiftActions } from './hooks/useShiftActions';
 import { useAIActions } from './hooks/useAIActions';
@@ -697,6 +698,29 @@ const handleSubmitShiftRequest = async () => {
                   }
                 }}
                 onImportDoctors={handleBatchImportDoctors}
+                onResetPassword={async (doctor) => {
+                  if (!doctor.email) { notify('Este usuario no tiene correo registrado.', 'error'); return; }
+                  try {
+                    const res = await fetch('/api/send-reset-email', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ doctorId: doctor.id, doctorName: doctor.nombre, email: doctor.email })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      if (data.emailSent) {
+                        notify(`Enlace enviado a ${doctor.email}`, 'success');
+                      } else {
+                        // SMTP not configured — show link for manual sharing
+                        prompt('SMTP no configurado. Comparte este enlace manualmente:', data.resetUrl || '');
+                      }
+                    } else {
+                      notify('Error al generar el enlace: ' + (data.error || ''), 'error');
+                    }
+                  } catch {
+                    notify('No se pudo contactar el servidor.', 'error');
+                  }
+                }}
               />
             </motion.div>
           )}
@@ -753,6 +777,9 @@ const handleSubmitShiftRequest = async () => {
           const req = shiftRequests.find(r => r.id === id);
           if (req) rejectRequest(req.id.toString(), req.doctorId, req.day, req.slot);
         }}
+        registrationRequests={registrationRequests}
+        onApproveRegistration={approveRegistration}
+        onRejectRegistration={rejectRegistration}
       />
       {/* Modal Components */}
       <InductionManual 
@@ -811,6 +838,11 @@ export default function App() {
   // Detect /register route — show standalone page without loading the full app
   const isRegisterRoute = window.location.pathname === '/register' || window.location.pathname.startsWith('/register?');
   const hasInviteParam = new URLSearchParams(window.location.search).has('invite');
+  const isResetRoute = window.location.pathname === '/reset-password' || window.location.pathname.startsWith('/reset-password?');
+
+  if (isResetRoute) {
+    return <ResetPasswordPage />;
+  }
 
   if (isRegisterRoute || hasInviteParam) {
     return <RegisterPage />;

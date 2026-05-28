@@ -392,6 +392,76 @@ async function startServer() {
     }
   });
 
+  // API Route: Send password reset link to a doctor
+  app.post("/api/send-reset-email", async (req, res) => {
+    if (!dbAdmin) {
+      return res.status(500).json({ success: false, error: "Server not configured" });
+    }
+    const { doctorId, doctorName, email } = req.body;
+    if (!doctorId || !email) {
+      return res.status(400).json({ success: false, error: "doctorId y email son requeridos" });
+    }
+
+    try {
+      const crypto = await import("crypto");
+      const token = crypto.default.randomBytes(32).toString("hex");
+      const expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+
+      // Store token in Firestore
+      await dbAdmin.collection("passwordResets").doc(token).set({
+        token,
+        doctorId,
+        doctorName: doctorName || "",
+        email,
+        expiresAt,
+        createdAt: Date.now(),
+      });
+
+      // Build reset URL — use APP_URL env var or default
+      const baseUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`;
+      const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+
+      // Send email (best-effort)
+      const host = process.env.SMTP_HOST;
+      const user = process.env.SMTP_USER;
+      const pass = process.env.SMTP_PASS;
+      if (host && user && pass) {
+        const nodemailerMod = await import("nodemailer");
+        const transporter = nodemailerMod.default.createTransport({
+          host, port: parseInt(process.env.SMTP_PORT || "587"),
+          secure: process.env.SMTP_SECURE === "true",
+          auth: { user, pass }
+        });
+        await transporter.sendMail({
+          from: `"${process.env.SMTP_FROM_NAME || 'ESE Roldanillo'}" <${process.env.SMTP_FROM_EMAIL || user}>`,
+          to: email,
+          subject: "Restablecimiento de contraseña — Sistema de Coordinación Médica HDSAR",
+          html: `<div style="font-family:sans-serif;padding:24px;color:#334155;max-width:480px">
+            <h2 style="color:#059669;">🔑 Restablecer contraseña</h2>
+            <p>Estimado(a) <strong>${doctorName || "usuario"}</strong>,</p>
+            <p>El administrador del sistema ha solicitado un restablecimiento de su contraseña.</p>
+            <p>Haga clic en el siguiente botón para crear una nueva contraseña. Este enlace es válido por <strong>24 horas</strong>.</p>
+            <div style="text-align:center;margin:28px 0">
+              <a href="${resetUrl}" style="background:#059669;color:white;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:900;font-size:14px;display:inline-block">
+                RESTABLECER CONTRASEÑA
+              </a>
+            </div>
+            <p style="font-size:11px;color:#94a3b8;word-break:break-all">O copie este enlace: ${resetUrl}</p>
+            <p style="font-size:11px;color:#94a3b8;margin-top:16px">Si no solicitó esto, puede ignorar este correo.</p>
+            <p style="font-size:11px;color:#94a3b8">ESE Hospital Departamental San Rafael de Roldanillo — Sistema de Coordinación Médica</p>
+          </div>`
+        });
+        res.json({ success: true, emailSent: true });
+      } else {
+        // SMTP not configured — return the link so admin can share manually
+        res.json({ success: true, emailSent: false, resetUrl });
+      }
+    } catch (error) {
+      console.error("Error sending reset email:", error);
+      res.status(500).json({ success: false, error: (error as Error).message });
+    }
+  });
+
   // API Route for sending emails
   app.post("/api/send-email", async (req, res) => {
     const { to, subject, text, html } = req.body;

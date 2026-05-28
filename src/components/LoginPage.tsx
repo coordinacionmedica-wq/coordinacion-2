@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Clock } from 'lucide-react';
+import { X, Clock, KeyRound, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { collection, query, where, getDocs, getDoc, setDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -9,9 +9,20 @@ export function LoginPage() {
   const { handleLogin, handleGoogleLogin, fbUser } = useAppContext();
 
   const [loginU, setLoginU] = useState('');
-  const [loginP, setLoginP] = useState('');
+  const [loginP, setLoginP] = useState('');  
   const [showRegModal, setShowRegModal] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  // Forced password change state
+  const [showForceChange, setShowForceChange] = useState(false);
+  const [forceDoctorId, setForceDoctorId] = useState<number | null>(null);
+  const [forceOldPass, setForceOldPass] = useState('');
+  const [forceNewPass, setForceNewPass] = useState('');
+  const [forceConfirm, setForceConfirm] = useState('');
+  const [forceError, setForceError] = useState('');
+  const [forceLoading, setForceLoading] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // Registration form state
   const [regNombre, setRegNombre] = useState('');
@@ -131,7 +142,50 @@ export function LoginPage() {
     }
   };
 
-  const doLogin = () => handleLogin(loginU, loginP);
+  const doLogin = async () => {
+    // Check if doctor must change password before granting full session
+    const trimU = loginU.trim();
+    const trimP = loginP.trim();
+    if (trimU && trimP) {
+      try {
+        const q = query(collection(db, 'doctors'), where('username', '==', trimU));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const d = snap.docs[0].data();
+          if (d.password === trimP && d.mustChangePassword) {
+            setForceDoctorId(d.id);
+            setForceOldPass(trimP);
+            setShowForceChange(true);
+            return;
+          }
+        }
+      } catch { /* fall through to normal login */ }
+    }
+    handleLogin(trimU, trimP);
+  };
+
+  const handleForceChangePassword = async () => {
+    setForceError('');
+    if (forceNewPass.length < 6) { setForceError('La contraseña debe tener al menos 6 caracteres.'); return; }
+    if (forceNewPass !== forceConfirm) { setForceError('Las contraseñas no coinciden.'); return; }
+    if (forceNewPass === forceOldPass) { setForceError('La nueva contraseña no puede ser igual a la temporal.'); return; }
+    if (!forceDoctorId) return;
+    setForceLoading(true);
+    try {
+      await updateDoc(doc(db, 'doctors', forceDoctorId.toString()), {
+        password: forceNewPass,
+        passwordLastChanged: Date.now(),
+        mustChangePassword: false
+      });
+      // Now log in normally
+      await handleLogin(loginU.trim(), forceNewPass);
+      setShowForceChange(false);
+    } catch (err) {
+      setForceError('Error al guardar la contraseña. Intente de nuevo.');
+    } finally {
+      setForceLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 flex items-center justify-center p-6 overflow-y-auto">
@@ -331,6 +385,77 @@ export function LoginPage() {
                   </button>
                 </>
               )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Forced Password Change Modal */}
+      <AnimatePresence>
+        {showForceChange && (
+          <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl z-[300] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-sm rounded-[32px] shadow-2xl border border-emerald-100 p-8 text-center"
+            >
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                <KeyRound className="w-8 h-8 text-amber-600" />
+              </div>
+              <h2 className="text-xl font-black text-slate-800 mb-1">Cambio de contraseña requerido</h2>
+              <p className="text-sm text-slate-400 mb-6">Es su primer acceso. Debe establecer una contraseña personal antes de continuar.</p>
+
+              {forceError && (
+                <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold p-3 rounded-xl mb-4 text-left">
+                  {forceError}
+                </div>
+              )}
+
+              <div className="space-y-3 text-left mb-6">
+                <div>
+                  <label className="text-[10px] uppercase font-black text-emerald-600 mb-1 block">Nueva contraseña</label>
+                  <div className="relative">
+                    <input
+                      type={showNew ? 'text' : 'password'}
+                      className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl outline-none focus:border-emerald-500 font-bold pr-10"
+                      placeholder="Mínimo 6 caracteres"
+                      value={forceNewPass}
+                      onChange={e => setForceNewPass(e.target.value)}
+                    />
+                    <button type="button" onClick={() => setShowNew(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                      {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-black text-emerald-600 mb-1 block">Confirmar contraseña</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirm ? 'text' : 'password'}
+                      className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl outline-none focus:border-emerald-500 font-bold pr-10"
+                      placeholder="Repita la contraseña"
+                      value={forceConfirm}
+                      onChange={e => setForceConfirm(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleForceChangePassword()}
+                    />
+                    <button type="button" onClick={() => setShowConfirm(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                      {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={handleForceChangePassword}
+                disabled={forceLoading}
+                className="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-lg shadow-emerald-500/20"
+              >
+                {forceLoading
+                  ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> GUARDANDO...</>
+                  : <><ShieldCheck className="w-4 h-4" /> GUARDAR Y ACCEDER</>
+                }
+              </button>
             </motion.div>
           </div>
         )}

@@ -166,6 +166,13 @@ service cloud.firestore {
              data.createdAt is number;
     }
 
+    // Password reset tokens: created server-side, read/deleted by anyone with the token URL
+    match /passwordResets/{tokenId} {
+      allow read: if true;   // token is secret enough — page validates expiry
+      allow delete: if true; // consumed on use
+      allow create, update: if false; // server-side only via Admin SDK
+    }
+
     // Test connection
     match /test/connection {
       allow read: if true;

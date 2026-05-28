@@ -24,6 +24,7 @@ import {
   Home,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { RegistrationRequest } from '../types';
 
 interface AppHeaderProps {
   isAdminUser: boolean;
@@ -43,12 +44,15 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
     markNotificationRead,
     handleLogout,
     handleGoogleLogin,
-    isFirebaseUnauthenticatedAdmin
+    isFirebaseUnauthenticatedAdmin,
+    registrationRequests,
   } = useAppContext();
 
   if (!session) return null;
 
-  const pendingCount = shiftRequests.filter(r => r.status === 'pending').length;
+  const pendingShift = shiftRequests.filter(r => r.status === 'pending').length;
+  const pendingReg = registrationRequests.filter((r: RegistrationRequest) => r.status === 'pending').length;
+  const pendingCount = pendingShift + pendingReg;
 
   return (
     <>

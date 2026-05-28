@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Download, FileText, Upload, Edit, Trash2, Clock, Database, Plus, Check, X, Search, Shield, Filter, RotateCcw } from 'lucide-react';
+import { Download, FileText, Upload, Edit, Trash2, Clock, Database, Plus, Check, X, Search, Shield, Filter, RotateCcw, KeyRound } from 'lucide-react';
 import { Doctor, MonthlyData, VarSlotConfig, SlotType } from '../types';
 import { PERMISSION_LABELS, DEFAULT_ROLE_PERMISSIONS, ALL_PERMISSIONS } from '../constants';
 import * as XLSX from 'xlsx';
@@ -18,9 +18,10 @@ interface Props {
   onAddDoctorClick: () => void;
   onUpdateDoctorPermissions?: (id: number, permissions: string[]) => void;
   onImportDoctors?: (doctors: any[]) => void;
+  onResetPassword?: (doctor: Doctor) => void;
 }
 
-export function HumanResourcesView({ doctors, currentMonthData, variables, selectedMonth, selectedYear, isAdmin, onUpdateDoctorStatus, onEditDoctor, onAddDoctorClick, onUpdateDoctorPermissions, onImportDoctors }: Props) {
+export function HumanResourcesView({ doctors, currentMonthData, variables, selectedMonth, selectedYear, isAdmin, onUpdateDoctorStatus, onEditDoctor, onAddDoctorClick, onUpdateDoctorPermissions, onImportDoctors, onResetPassword }: Props) {
   
   const [cedulaSearch, setCedulaSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -330,6 +331,15 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
                         >
                           <Shield className="w-4 h-4" />
                         </button>
+                        {onResetPassword && doc.email && (
+                          <button
+                            onClick={() => onResetPassword(doc)}
+                            className="p-1.5 text-slate-400 hover:bg-amber-50 hover:text-amber-600 rounded-lg transition-colors border border-transparent hover:border-amber-200"
+                            title="Enviar enlace de restablecimiento de contraseña"
+                          >
+                            <KeyRound className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   )}
