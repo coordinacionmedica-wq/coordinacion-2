@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { SlotType, MonthlyData, VarSlotConfig, Doctor } from '../types';
 import { MONTH_NAMES } from '../constants';
 
@@ -101,7 +101,7 @@ export function useTurneroExport(params: ExportParams) {
         tableRows.push(row);
       });
     });
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
       startY: 20,

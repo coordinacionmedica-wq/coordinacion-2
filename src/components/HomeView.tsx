@@ -227,7 +227,6 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
             { id: 'rural',       label: 'Rural',          icon: MapPin,        color: 'text-sky-600    bg-sky-50      border-sky-100',     adminOnly: false, perm: 'call_availability' },
             { id: 'novedades',   label: 'Novedades',      icon: ClipboardList, color: 'text-violet-600 bg-violet-50   border-violet-100',  adminOnly: true,  perm: null },
             { id: 'pic',         label: 'Capacitaciones', icon: BrainCircuit,  color: 'text-orange-600 bg-orange-50   border-orange-100',  adminOnly: false, perm: 'ver_pic' },
-            { id: 'bd',          label: 'Talento Humano', icon: Users,         color: 'text-slate-600  bg-slate-50    border-slate-100',   adminOnly: true,  perm: null },
             { id: 'docs',        label: 'Guías',          icon: FileText,      color: 'text-teal-600   bg-teal-50     border-teal-100',    adminOnly: false, perm: 'ver_guias' },
             { id: 'stats',       label: 'Estadísticas',   icon: BarChart3,     color: 'text-rose-600   bg-rose-50     border-rose-100',    adminOnly: true,  perm: null },
           ].filter(item => {

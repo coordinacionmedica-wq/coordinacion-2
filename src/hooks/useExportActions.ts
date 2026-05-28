@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { useAppContext } from '../context/AppContext';
 import { SlotType } from '../types';
 import { MONTH_NAMES } from '../constants';
@@ -104,7 +104,7 @@ export function useExportActions(filters: TurneroFilterOptions) {
       });
     });
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: [tableColumn], body: tableRows, startY: 20, theme: 'grid',
       styles: { fontSize: 6, cellPadding: 1, halign: 'center' },
       columnStyles: { 0: { halign: 'left', cellWidth: 30 } },
@@ -215,7 +215,7 @@ export function useExportActions(filters: TurneroFilterOptions) {
     });
 
     // Table
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: 130,
       head: [['FECHA', 'MÉDICO', 'DÍA', 'JORNADA', 'ANTERIOR', 'NUEVO', 'REALIZADO POR']],
       body: filteredLogs.map(l => [
@@ -275,7 +275,7 @@ export function useExportActions(filters: TurneroFilterOptions) {
     doc.setFontSize(10);
     doc.text(`PLAN DE CAPACITACIÓN HDSAR - ${MONTH_NAMES[selectedMonth].toUpperCase()} ${selectedYear}`, 40, 52);
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: 80,
       head: [['DÍA', 'ACTIVIDAD', 'LUGAR', 'MODALIDAD', 'H', 'RESPONSABLE', 'DIRIGIDA A', 'POBLACIÓN']],
       body: current.sort((a, b) => a.day - b.day).map(a => [a.day, a.activityName, a.place, a.modality.toUpperCase(), a.hours, a.responsible, a.targetGroup, a.targetPopulation]),
@@ -363,7 +363,7 @@ export function useExportActions(filters: TurneroFilterOptions) {
     });
 
     // Table
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: 128,
       head: [['MÉDICO', 'FECHA LLAMADO', 'ACTIVIDAD', 'PACIENTE', 'DIAGNÓSTICO', 'LUGAR ACEPT.', 'LLAMADO POR', 'HORAS']],
       body: filtered.sort((a, b) => a.callDateTime - b.callDateTime).map(r => [

@@ -4,7 +4,7 @@ import { Doctor, MonthlyData, VarSlotConfig, SlotType } from '../types';
 import { PERMISSION_LABELS, DEFAULT_ROLE_PERMISSIONS, ALL_PERMISSIONS } from '../constants';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 interface Props {
   doctors: Doctor[];
@@ -146,13 +146,13 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
       `${d.totalHours}`
     ]);
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
       startY: 20,
       theme: 'grid',
       styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [5, 150, 105], textColor: 255 }, // Emerald 600
+      headStyles: { fillColor: [5, 150, 105], textColor: 255 },
     });
 
     doc.save(`Base_Datos_Talento_Humano_${monthName}_${selectedYear}.pdf`);

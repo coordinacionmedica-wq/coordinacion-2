@@ -410,40 +410,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setCurrentMonthData({});
     setIsMonthPublished(false);
 
+    if (!fbUser) return;
+
     const monthKey = `${selectedYear}_${selectedMonth}`;
 
-    const unsubMeta = onSnapshot(doc(db, 'monthlyData', monthKey), (snap) => {
-      if (snap.exists()) {
-        setIsMonthPublished(!!snap.data()?.published);
-      } else {
-        setIsMonthPublished(false);
-      }
-    });
+    const unsubMeta = onSnapshot(
+      doc(db, 'monthlyData', monthKey),
+      (snap) => {
+        if (snap.exists()) {
+          setIsMonthPublished(!!snap.data()?.published);
+        } else {
+          setIsMonthPublished(false);
+        }
+      },
+      (err) => console.error('monthlyData meta listener error:', err)
+    );
 
-    const unsubDocs = onSnapshot(collection(db, 'monthlyData', monthKey, 'doctors'), (snap) => {
-      const data: MonthlyData = {};
-      snap.docs.forEach(d => {
-        data[Number(d.id)] = d.data() as DoctorShifts;
-      });
-      setCurrentMonthData(data);
-    });
+    const unsubDocs = onSnapshot(
+      collection(db, 'monthlyData', monthKey, 'doctors'),
+      (snap) => {
+        const data: MonthlyData = {};
+        snap.docs.forEach(d => {
+          data[Number(d.id)] = d.data() as DoctorShifts;
+        });
+        setCurrentMonthData(data);
+      },
+      (err) => console.error('monthlyData doctors listener error:', err)
+    );
 
     return () => { unsubMeta(); unsubDocs(); };
   }, [selectedMonth, selectedYear, fbUser]);
 
   // ── Notifications listener ──
   useEffect(() => {
-    if (!session?.doctorId) { setUserNotifications([]); return; }
+    if (!session?.doctorId || !fbUser) { setUserNotifications([]); return; }
     const q = query(
       collection(db, 'notifications'),
       where('doctorId', '==', session.doctorId),
       where('read', '==', false)
     );
-    const unsub = onSnapshot(q, (snap) => {
-      setUserNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() } as any)));
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => { setUserNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() } as any))); },
+      (err) => console.error('Notifications listener error:', err)
+    );
     return unsub;
-  }, [session?.doctorId]);
+  }, [session?.doctorId, fbUser]);
 
   // ── Idle timeout logic ──
   useEffect(() => {

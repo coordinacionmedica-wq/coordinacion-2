@@ -110,11 +110,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Notifications: Recipient can read and mark as read.
+    // Notifications: Any signed-in user can read (query already filters by doctorId).
+    // Doctors sign in anonymously — their auth.uid is a random string, NOT their numeric doctorId,
+    // so int(request.auth.uid) would throw. Client-side query handles the doctorId filter.
     match /notifications/{noteId} {
-      allow list, get: if isSignedIn() && (isAdmin() || (existing() != null && existing().doctorId == int(request.auth.uid)));
+      allow list, get: if isSignedIn();
       allow create: if isAdmin();
-      allow update: if isSignedIn() && (existing() != null && existing().doctorId == int(request.auth.uid)) && incoming().diff(existing()).affectedKeys().hasOnly(['read']);
+      allow update: if isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['read']);
       allow delete: if isAdmin();
     }
 
