@@ -385,15 +385,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }, (err) => console.error('ServiceMappings listener error:', err))
       );
 
-      // Registration Requests - subscribe for any signed-in user (rules handle access)
-      unsubs.push(
-        onSnapshot(collection(db, 'registrationRequests'), (snap) => {
-          setRegistrationRequests(
-            snap.docs.map(d => d.data() as RegistrationRequest)
-              .sort((a, b) => b.createdAt - a.createdAt)
-          );
-        }, (err) => console.error('RegistrationRequests listener error:', err))
-      );
+      // Registration Requests — admin-only (rules reject non-admins)
+      if (session?.r === 'admin') {
+        unsubs.push(
+          onSnapshot(collection(db, 'registrationRequests'), (snap) => {
+            setRegistrationRequests(
+              snap.docs.map(d => d.data() as RegistrationRequest)
+                .sort((a, b) => b.createdAt - a.createdAt)
+            );
+          }, (err) => {
+            if (err?.code === 'permission-denied') return; // Expected for non-admins
+            console.error('RegistrationRequests listener error:', err);
+          })
+        );
+      }
     };
 
     setupListeners();
@@ -544,7 +549,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
         }
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.code === 'auth/popup-closed-by-user') return; // User cancelled — ignore silently
+      if (err?.code === 'auth/cancelled-popup-request') return; // Another popup already open
       console.error('Google login error:', err);
     }
   }, []);
