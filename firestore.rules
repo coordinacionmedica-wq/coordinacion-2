@@ -138,12 +138,12 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Registration Invitations: Admin creates, anyone can list (to find by token), only admin can get details
+    // Registration Invitations: Authenticated users can create (for admin workflow)
     match /registrationInvitations/{inviteId} {
       allow list: if true; // Allow anyone to list (required for token queries)
-      allow get: if isAdmin();
-      allow create: if isAdmin();
-      allow update: if isAdmin() || (resource.data.token != null && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'completedAt', 'registrationRequestId']));
+      allow get: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (isAdmin() || incoming().diff(existing()).affectedKeys().hasOnly(['status', 'completedAt', 'registrationRequestId']));
       allow delete: if isAdmin();
     }
 
