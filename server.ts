@@ -18,53 +18,54 @@ const configPath = path.join(__dirname, "firebase-applet-config.json");
 let dbAdmin: any = null;
 let authAdmin: any = null;
 
-// Initialize Firebase Admin
-try {
-  const firebaseConfig = fs.existsSync(configPath)
-    ? JSON.parse(fs.readFileSync(configPath, "utf-8"))
-    : { projectId: process.env.FIREBASE_PROJECT_ID || "" };
+// Initialize Firebase Admin (async IIFE so we can use return/await cleanly)
+await (async () => {
+  try {
+    const firebaseConfig = fs.existsSync(configPath)
+      ? JSON.parse(fs.readFileSync(configPath, "utf-8"))
+      : { projectId: process.env.FIREBASE_PROJECT_ID || "" };
 
-  // Build credential from env variable or service account file
-  let credential: any = undefined;
-  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    try {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-      credential = cert(serviceAccount);
-      console.log("Using FIREBASE_SERVICE_ACCOUNT from environment");
-    } catch (e) {
-      console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT:", e);
+    // Build credential from env variable or service account file
+    let credential: any = undefined;
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+      try {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        credential = cert(serviceAccount);
+        console.log("Firebase Admin: using FIREBASE_SERVICE_ACCOUNT env var.");
+      } catch (e) {
+        console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT:", e);
+      }
+    } else {
+      const saPath = path.join(__dirname, "service-account.json");
+      if (fs.existsSync(saPath)) {
+        const serviceAccount = JSON.parse(fs.readFileSync(saPath, "utf-8"));
+        credential = cert(serviceAccount);
+        console.log("Firebase Admin: using service-account.json file.");
+      }
     }
-  } else {
-    const saPath = path.join(__dirname, "service-account.json");
-    if (fs.existsSync(saPath)) {
-      const serviceAccount = JSON.parse(fs.readFileSync(saPath, "utf-8"));
-      credential = cert(serviceAccount);
-      console.log("Using service-account.json file");
+
+    if (!credential) {
+      console.log("Firebase Admin: no credentials configured — server-side admin endpoints disabled. App uses client-side Firestore auth.");
+      return; // OK — client-side handles auth
     }
+
+    const adminApp = getApps().length === 0
+      ? initAdminApp({
+          projectId: firebaseConfig.projectId || process.env.FIREBASE_PROJECT_ID || "",
+          credential,
+        })
+      : getApps()[0];
+
+    const { getAuth } = await import("firebase-admin/auth");
+    authAdmin = getAuth(adminApp);
+    dbAdmin = firebaseConfig.firestoreDatabaseId
+      ? getFirestore(adminApp, firebaseConfig.firestoreDatabaseId)
+      : getFirestore(adminApp);
+    console.log("Firebase Admin initialized successfully.");
+  } catch (err) {
+    console.error("Error initializing Firebase Admin:", err);
   }
-
-  if (!credential) {
-    console.warn("WARNING: No explicit Firebase credentials found (FIREBASE_SERVICE_ACCOUNT or service-account.json).");
-    console.warn("Attempting to use Application Default Credentials (ADC). This may work on GCP/Render if ADC is configured.");
-  }
-
-  const adminApp = getApps().length === 0
-    ? initAdminApp({
-        projectId: firebaseConfig.projectId || process.env.FIREBASE_PROJECT_ID || "",
-        ...(credential && { credential }),
-      })
-    : getApps()[0];
-
-  const { getAuth } = await import("firebase-admin/auth");
-  authAdmin = getAuth(adminApp);
-  dbAdmin = firebaseConfig.firestoreDatabaseId
-    ? getFirestore(adminApp, firebaseConfig.firestoreDatabaseId)
-    : getFirestore(adminApp);
-  console.log("Firebase Admin initialized successfully");
-} catch (err) {
-  console.error("Error initializing Firebase Admin:", err);
-  console.error("Registration endpoints will not work without Firebase credentials");
-}
+})();
 
 async function startServer() {
   const app = express();
