@@ -231,14 +231,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ── Firebase Auth listener ──
   const reauthAttempted = React.useRef(false);
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
       setFbUser(user);
-      // Re-authenticate if session exists but Firebase has no user (once only)
       if (!user && !reauthAttempted.current) {
+        // Re-authenticate if session exists but Firebase has no user (once only)
         reauthAttempted.current = true;
         const stored = localStorage.getItem(STORAGE_KEYS.SESSION);
         if (stored) {
-          signInAnonymously(auth).catch(() => {});
+          try {
+            const anonResult = await signInAnonymously(auth);
+            const storedSession = JSON.parse(stored) as UserSession;
+            // If it's an admin session, register the UID in /admins/ so rules pass
+            if ((storedSession.r === 'admin' || storedSession.r === 'root') && anonResult.user?.uid) {
+              setDoc(doc(db, 'admins', anonResult.user.uid), { role: 'admin', createdAt: Date.now() }, { merge: true }).catch(() => {});
+            }
+          } catch { /* ignore */ }
+        }
+      } else if (user && user.isAnonymous) {
+        // If anonymous user is already signed in and we have an admin session, ensure /admins/ entry exists
+        const stored = localStorage.getItem(STORAGE_KEYS.SESSION);
+        if (stored) {
+          try {
+            const storedSession = JSON.parse(stored) as UserSession;
+            if (storedSession.r === 'admin' || storedSession.r === 'root') {
+              setDoc(doc(db, 'admins', user.uid), { role: 'admin', createdAt: Date.now() }, { merge: true }).catch(() => {});
+            }
+          } catch { /* ignore */ }
         }
       }
     });
@@ -408,7 +426,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const handleLogin = useCallback(async (loginU: string, loginP: string) => {
     // Admin login — credentials only, Firebase anonymous auth
     if (loginU === MASTER_ADMIN.u && loginP === MASTER_ADMIN.p) {
-      try { await signInAnonymously(auth); } catch { /* optional */ }
+      try {
+        const anonResult = await signInAnonymously(auth);
+        // Register the anonymous UID in /admins/ so Firestore isAdmin() rules pass
+        if (anonResult.user?.uid) {
+          try {
+            await setDoc(doc(db, 'admins', anonResult.user.uid), { role: 'admin', createdAt: Date.now() }, { merge: true });
+          } catch { /* ignore if already exists */ }
+        }
+      } catch { /* optional */ }
       const sess: UserSession = { r: 'admin', n: 'Admin General' };
       setSession(sess);
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));

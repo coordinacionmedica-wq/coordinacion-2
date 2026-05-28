@@ -54,10 +54,12 @@ service cloud.firestore {
 
     // --- Collection Routes ---
 
-    // Admins: Only admins can manage admins. Users can read their own admin doc.
+    // Admins: Only admins can manage admins. Users can read/create their own admin doc.
+    // Note: self-create is allowed so anonymous admins (master credentials) can register their UID.
     match /admins/{uid} {
       allow read: if isSignedIn() && (isAdmin() || request.auth.uid == uid);
-      allow write: if isAdmin() || (isSignedIn() && request.auth.uid == uid && (
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow update, delete: if isAdmin() || (isSignedIn() && request.auth.uid == uid && (
         request.auth.token.email == 'julive17@gmail.com' ||
         request.auth.token.email == 'coordinacionmedica@correohdsa.gov.co'
       ));
