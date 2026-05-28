@@ -71,8 +71,8 @@ service cloud.firestore {
       allow list, get: if isSignedIn();
       allow create: if isAdmin() && isValidDoctor(incoming());
       allow update: if (isAdmin() && isValidDoctor(incoming())) ||
-                    (isSignedIn() && request.auth.uid == doctorId && 
-                     incoming().diff(existing()).affectedKeys().hasOnly(['password', 'passwordLastChanged']));
+                    (isSignedIn() &&
+                     incoming().diff(existing()).affectedKeys().hasOnly(['password', 'passwordLastChanged', 'mustChangePassword']));
       allow delete: if isAdmin();
     }
 

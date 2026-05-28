@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Clock, KeyRound, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { collection, query, where, getDocs, getDoc, setDoc, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { signInAnonymously } from 'firebase/auth';
+import { auth, db } from '../firebase';
 
 export function LoginPage() {
   const { handleLogin, handleGoogleLogin, fbUser } = useAppContext();
@@ -148,6 +149,7 @@ export function LoginPage() {
     const trimP = loginP.trim();
     if (trimU && trimP) {
       try {
+        if (!auth.currentUser) { await signInAnonymously(auth); }
         const q = query(collection(db, 'doctors'), where('username', '==', trimU));
         const snap = await getDocs(q);
         if (!snap.empty) {
@@ -172,6 +174,7 @@ export function LoginPage() {
     if (!forceDoctorId) return;
     setForceLoading(true);
     try {
+      if (!auth.currentUser) { await signInAnonymously(auth); }
       await updateDoc(doc(db, 'doctors', forceDoctorId.toString()), {
         password: forceNewPass,
         passwordLastChanged: Date.now(),
