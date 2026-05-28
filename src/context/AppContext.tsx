@@ -57,7 +57,7 @@ interface AppContextType {
   // Session
   session: UserSession | null;
   setSession: React.Dispatch<React.SetStateAction<UserSession | null>>;
-  fbUser: User | null;
+  fbUser: User | null | undefined;
   isBooting: boolean;
   isOnline: boolean;
   isFirebaseUnauthenticatedAdmin: boolean;
@@ -171,7 +171,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Session
   const [session, setSession] = useState<UserSession | null>(null);
-  const [fbUser, setFbUser] = useState<User | null>(null);
+  const [fbUser, setFbUser] = useState<User | null | undefined>(undefined);
 
   // Date
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -258,8 +258,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return unsub;
   }, []);
 
-  // ── Firestore listeners ──
+  // ── Firestore listeners (wait for auth to resolve before subscribing) ──
   useEffect(() => {
+    if (fbUser === undefined) return; // auth not resolved yet — skip to avoid permission-denied flood
     const unsubs: (() => void)[] = [];
 
     // Doctors
@@ -339,10 +340,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => unsubs.forEach(u => u());
-  }, []);
+  }, [fbUser]);
 
   // ── Monthly data listener ──
   useEffect(() => {
+    if (fbUser === undefined) return; // auth not resolved yet
     // Reset data immediately on month/year change so counters start at 0
     setCurrentMonthData({});
     setIsMonthPublished(false);
@@ -366,7 +368,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => { unsubMeta(); unsubDocs(); };
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, fbUser]);
 
   // ── Notifications listener ──
   useEffect(() => {
