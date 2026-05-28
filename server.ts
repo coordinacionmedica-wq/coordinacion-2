@@ -44,8 +44,8 @@ try {
   }
 
   if (!credential) {
-    console.error("ERROR: No Firebase credentials found!");
-    console.error("Set FIREBASE_SERVICE_ACCOUNT environment variable or create service-account.json");
+    console.warn("WARNING: No explicit Firebase credentials found (FIREBASE_SERVICE_ACCOUNT or service-account.json).");
+    console.warn("Attempting to use Application Default Credentials (ADC). This may work on GCP/Render if ADC is configured.");
   }
 
   const adminApp = getApps().length === 0
