@@ -262,13 +262,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           try {
             const storedSession = JSON.parse(stored) as UserSession;
             if (storedSession.r === 'admin' || storedSession.r === 'root') {
-              // Check if admin doc exists, if not create it
+              // Check if admin doc exists, if not create it and WAIT for confirmation
               const adminDoc = await getDoc(doc(db, 'admins', user.uid));
               if (!adminDoc.exists()) {
                 await setDoc(doc(db, 'admins', user.uid), { role: 'admin', createdAt: Date.now() }, { merge: true });
+                // Double-check it was created
+                await getDoc(doc(db, 'admins', user.uid));
               }
             }
-          } catch { /* ignore */ }
+          } catch (err) {
+            console.error('Error ensuring admin doc:', err);
+          }
         }
         setFbUser(user);
       } else {
@@ -468,12 +472,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         const anonResult = await signInAnonymously(auth);
         // Register the anonymous UID in /admins/ so Firestore isAdmin() rules pass
+        // This MUST succeed before setting session so listeners don't fire without admin doc
         if (anonResult.user?.uid) {
-          try {
-            await setDoc(doc(db, 'admins', anonResult.user.uid), { role: 'admin', createdAt: Date.now() }, { merge: true });
-          } catch { /* ignore if already exists */ }
+          await setDoc(doc(db, 'admins', anonResult.user.uid), { role: 'admin', createdAt: Date.now() }, { merge: true });
+          // Verify the doc was written before proceeding
+          const adminDoc = await getDoc(doc(db, 'admins', anonResult.user.uid));
+          if (!adminDoc.exists()) throw new Error('Admin doc not created');
         }
-      } catch { /* optional */ }
+      } catch (err) {
+        console.error('Error creating admin document:', err);
+        alert('Error al iniciar sesión. No se pudo registrar el administrador en Firestore.');
+        return;
+      }
       const sess: UserSession = { r: 'admin', n: 'Admin General' };
       setSession(sess);
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
