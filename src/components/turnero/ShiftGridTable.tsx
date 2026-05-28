@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { useDragScroll } from '../../hooks/useDragScroll';
+import { Eye, EyeOff } from 'lucide-react';
 import { SlotType, MonthlyData, VarSlotConfig, Doctor } from '../../types';
 import { DAY_NAMES } from '../../constants';
 
@@ -40,6 +42,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
   const [editingCell, setEditingCell] = useState<{ doctorId: number; day: number; slot: SlotType } | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [pasteMessage, setPasteMessage] = useState('');
+  const [focusedDoctorId, setFocusedDoctorId] = useState<number | null>(null);
 
   const handleSetShift = async (doctorId: number, day: number, slot: SlotType, value: string) => {
     await onSetShift(doctorId, day, slot, value);
@@ -93,9 +96,18 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
 
   return (
     <div className="relative" onPaste={handleBulkPaste}>
-      {/* Mobile hint */}
-      <div className="md:hidden flex items-center justify-between px-2 pb-1 text-[8px] text-slate-400 font-bold italic">
-        <span>← Desliza horizontalmente →</span>
+      {/* Mobile hint + focus mode badge */}
+      <div className="flex items-center justify-between px-2 pb-1">
+        <span className="md:hidden text-xs text-slate-400 font-bold flex items-center gap-1">👆 <span className="italic">Mantén presionado y arrastra para navegar</span></span>
+        {focusedDoctorId !== null && (
+          <button
+            onClick={() => setFocusedDoctorId(null)}
+            className="flex items-center gap-1.5 bg-slate-700 text-white text-xs font-black px-3 py-1.5 rounded-full hover:bg-slate-600 transition-all shadow-md"
+          >
+            <EyeOff className="w-3.5 h-3.5" />
+            Ver todos los médicos
+          </button>
+        )}
       </div>
 
       {pasteMessage && (
@@ -104,21 +116,24 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
         </div>
       )}
 
-      <div className="overflow-x-auto border border-slate-200 rounded-xl md:rounded-[18px] bg-white shadow-xl overflow-y-hidden custom-scrollbar -mx-1 md:mx-0">
+      <div
+        ref={useDragScroll<HTMLDivElement>()}
+        className="overflow-x-auto border border-slate-200 rounded-xl md:rounded-[18px] bg-white shadow-xl overflow-y-hidden custom-scrollbar -mx-1 md:mx-0 select-none"
+      >
         <table className="w-full text-xs md:text-xs text-center border-collapse">
           <thead>
             <tr className="bg-slate-50">
-              <th className="sticky left-0 bg-slate-50 z-30 min-w-[90px] md:min-w-[160px] text-left px-2 md:px-4 py-3 md:py-4 text-sky-700 border-r-2 border-sky-500 border-b border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-[8px] md:text-xs font-black">
+              <th className="sticky left-0 bg-slate-50 z-30 min-w-[110px] md:min-w-[180px] text-left px-2 md:px-4 py-3 md:py-4 text-sky-700 border-r-2 border-sky-500 border-b border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-xs font-black">
                 MÉDICO
               </th>
-              <th className="w-6 md:w-8 border border-slate-200 text-slate-400 font-black border-b text-[7px] md:text-xs">J.</th>
+              <th className="w-6 md:w-8 border border-slate-200 text-slate-400 font-black border-b text-xs">J.</th>
               {Array.from({ length: daysInMonth }, (_, i) => {
                 const day = i + 1;
                 const dow = new Date(selectedYear, selectedMonth, day).getDay();
                 return (
                   <th key={day} className={`px-0.5 md:px-2 py-1 md:py-2 border border-slate-200 border-b ${dow === 0 ? 'border-r-2 border-r-sky-500' : ''} ${dow === 0 || dow === 6 ? 'bg-sky-50/50' : ''}`}>
                     <div className="text-slate-800 text-xs md:text-sm font-bold">{day}</div>
-                    <div className="text-[6px] md:text-[8px] text-emerald-600 uppercase font-bold">{DAY_NAMES[dow]}</div>
+                    <div className="text-[9px] md:text-xs text-emerald-600 uppercase font-bold">{DAY_NAMES[dow]}</div>
                   </th>
                 );
               })}
@@ -131,7 +146,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
             </tr>
           </thead>
           <tbody>
-            {doctors.map(med => {
+            {(focusedDoctorId !== null ? doctors.filter(d => d.id === focusedDoctorId) : doctors).map(med => {
               let medTotalMonth = 0;
               let weeklyAcc = Array(sundays.length).fill(0);
 
@@ -153,17 +168,26 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                 return (
                   <tr key={med.id} className="group hover:bg-slate-50 transition-colors border-b-2 border-slate-200">
                     <td className="sticky left-0 bg-white z-20 text-left px-2 md:px-4 border-r-2 border-sky-500 border-b border-slate-200 shadow-xl group-hover:bg-slate-50">
-                      <div className="font-bold text-slate-800 text-xs md:text-xs whitespace-nowrap truncate max-w-[80px] md:max-w-none">
-                        {med.genero === 'F' ? 'Dra.' : 'Dr.'} {med.nombre}
+                      <div className="flex items-center justify-between gap-1">
+                        <div className="font-black text-slate-800 text-xs md:text-sm whitespace-nowrap truncate max-w-[80px] md:max-w-none">
+                          {med.genero === 'F' ? 'Dra.' : 'Dr.'} {med.nombre}
+                        </div>
+                        <button
+                          onClick={() => setFocusedDoctorId(med.id)}
+                          title="Ver solo este médico"
+                          className="shrink-0 p-1 rounded-md hover:bg-sky-100 text-sky-500 transition-all"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[7px] md:text-[8px] text-slate-400 font-mono">{med.cat}</span>
-                        <span className={`text-[7px] font-bold ${hourStatus === 'low' ? 'text-amber-600' : hourStatus === 'high' ? 'text-rose-600' : 'text-emerald-600'}`}>
-                          {medTotalMonth}h / {limits.min}-{limits.max}h
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="text-xs text-slate-400 font-bold">{med.cat}</span>
+                        <span className={`text-xs font-bold ${hourStatus === 'low' ? 'text-amber-600' : hourStatus === 'high' ? 'text-rose-600' : 'text-emerald-600'}`}>
+                          {medTotalMonth}h
                         </span>
                       </div>
                     </td>
-                    <td className="bg-slate-50 text-slate-400 font-black text-[7px] py-1 border-r border-slate-200">—</td>
+                    <td className="bg-slate-50 text-slate-400 font-black text-xs py-1 border-r border-slate-200">—</td>
                     {Array.from({ length: daysInMonth }, (_, i) => {
                       const d = i + 1;
                       const dow = new Date(selectedYear, selectedMonth, d).getDay();
@@ -213,18 +237,27 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                 <tr key={`${med.id}-${slot}`} className={`group hover:bg-slate-50 transition-colors ${sIdx === 2 ? 'border-b-4 border-slate-200' : ''}`}>
                   {sIdx === 0 && (
                     <td rowSpan={3} className="sticky left-0 bg-white z-20 text-left px-2 md:px-4 border-r-2 border-sky-500 border-b border-slate-200 shadow-xl group-hover:bg-slate-50">
-                      <div className="font-bold text-slate-800 text-xs md:text-xs whitespace-nowrap truncate max-w-[80px] md:max-w-none">
-                        {med.genero === 'F' ? 'Dra.' : 'Dr.'} {med.nombre}
+                      <div className="flex items-center justify-between gap-1">
+                        <div className="font-black text-slate-800 text-xs md:text-sm whitespace-nowrap truncate max-w-[80px] md:max-w-none">
+                          {med.genero === 'F' ? 'Dra.' : 'Dr.'} {med.nombre}
+                        </div>
+                        <button
+                          onClick={() => setFocusedDoctorId(med.id)}
+                          title="Ver solo este médico"
+                          className="shrink-0 p-1 rounded-md hover:bg-sky-100 text-sky-500 transition-all"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[8px] md:text-xs text-slate-400 font-mono">{med.cat}</span>
-                        <span className={`text-[7px] font-bold ${hourStatus === 'low' ? 'text-amber-600' : hourStatus === 'high' ? 'text-rose-600' : 'text-emerald-600'}`}>
-                          {medTotalMonth}/{limits.min}-{limits.max}h
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="text-xs text-slate-400 font-bold">{med.cat}</span>
+                        <span className={`text-xs font-bold ${hourStatus === 'low' ? 'text-amber-600' : hourStatus === 'high' ? 'text-rose-600' : 'text-emerald-600'}`}>
+                          {medTotalMonth}h
                         </span>
                       </div>
                     </td>
                   )}
-                  <td className="bg-slate-50 text-slate-400 font-black text-[7px] md:text-[8px] py-1 md:py-2 border-r border-slate-200 uppercase">
+                  <td className="bg-slate-50 text-slate-500 font-black text-xs py-1 md:py-2 border-r border-slate-200 uppercase">
                     {slot === 'm' ? 'M' : slot === 't' ? 'T' : 'N'}
                   </td>
                   {Array.from({ length: daysInMonth }, (_, i) => {

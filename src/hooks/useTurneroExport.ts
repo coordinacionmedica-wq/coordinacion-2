@@ -44,38 +44,100 @@ export function useTurneroExport(params: ExportParams) {
 
   const exportExcel = () => {
     const data = getFilteredData();
-    const rows: any[] = [];
+    const monthLabel = `${MONTH_NAMES[selectedMonth].toUpperCase()} ${selectedYear}`;
+    const totalCol = 2 + daysInMonth;
+
+    // Build rows array-of-arrays for clean Excel generation
+    const rows: any[][] = [];
+
+    // ── Title row ──
+    rows.push([`COORDINACIÓN MÉDICA — ESE Hospital Departamental San Antonio de Roldanillo`]);
+    // ── Period row ──
+    rows.push([`Turnero Médico — ${monthLabel}`]);
+
+    // ── Header row ──
+    const headerRow = ['MÉDICO', 'J'];
+    const dayNames = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'];
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dow = new Date(selectedYear, selectedMonth, d).getDay();
+      headerRow.push(`${d} ${dayNames[dow]}`);
+    }
+    headerRow.push('TOTAL HORAS');
+    rows.push(headerRow);
+
+    // ── Data rows ──
     data.forEach(({ med, medTotalMonth }) => {
+      const slotLabels: Record<string, string> = { m: 'M', t: 'T', n: 'N' };
       (['m', 't', 'n'] as SlotType[]).forEach((slot, sIdx) => {
-        const rowData: any = {
-          'MÉDICO': sIdx === 0 ? med.nombre : '',
-          'JORNADA': slot === 'm' ? 'Mañana' : slot === 't' ? 'Tarde' : 'Noche',
-        };
+        const isFirstRow = sIdx === 0;
+        const row: any[] = [
+          isFirstRow ? `${med.genero === 'F' ? 'Dra.' : 'Dr.'} ${med.nombre}` : '',
+          slotLabels[slot],
+        ];
         for (let d = 1; d <= daysInMonth; d++) {
           const val = currentMonthData[med.id]?.[slot]?.[d] || 'X';
-          rowData[d.toString()] = val !== 'X' ? (showGridHours ? (variables[slot][val] || 0) : val) : '';
+          row.push(val !== 'X'
+            ? (showGridHours ? (variables[slot][val] || 0) : val)
+            : '');
         }
-        if (sIdx === 0) rowData['TOTAL HORAS'] = medTotalMonth;
-        rows.push(rowData);
+        row.push(isFirstRow ? medTotalMonth : '');
+        rows.push(row);
       });
+      // separator row
+      rows.push(Array(totalCol + 1).fill(''));
     });
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const totalColIdx = 2 + daysInMonth;
-    const totalColLetter = XLSX.utils.encode_col(totalColIdx);
-    data.forEach((_, idx) => {
-      const rowNum = (idx * 3) + 2;
-      for (let j = 0; j < 3; j++) {
-        const r = rowNum + j;
-        const cellRef = `${totalColLetter}${r}`;
-        if (showGridHours) {
-          const startCell = XLSX.utils.encode_cell({ r: r - 1, c: 2 });
-          const endCell = XLSX.utils.encode_cell({ r: r - 1, c: 1 + daysInMonth });
-          ws[cellRef] = { t: 'n', f: `SUM(${startCell}:${endCell})` };
-        }
-      }
-    });
+
+    // ── Global total row ──
+    const globalTotal = data.reduce((acc, { medTotalMonth }) => acc + medTotalMonth, 0);
+    const totalRow: any[] = Array(totalCol).fill('');
+    totalRow[0] = 'TOTAL GENERAL';
+    totalRow[totalCol] = globalTotal;
+    rows.push(totalRow);
+
+    // ── Create workbook ──
+    const ws = XLSX.utils.aoa_to_sheet(rows);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, `Turnero_${MONTH_NAMES[selectedMonth]}`);
+
+    // Column widths
+    ws['!cols'] = [
+      { wch: 28 },
+      { wch: 4 },
+      ...Array.from({ length: daysInMonth }, (_, i) => {
+        const dow = new Date(selectedYear, selectedMonth, i + 1).getDay();
+        return { wch: dow === 0 || dow === 6 ? 5 : 4 };
+      }),
+      { wch: 10 },
+    ];
+
+    // Merges for title and period rows
+    ws['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: totalCol } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: totalCol } },
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, `Turnero ${MONTH_NAMES[selectedMonth]}`);
+
+    // ── Legend sheet ──
+    const legendData = [
+      ['LEYENDA DEL TURNERO'],
+      [],
+      ['SIGLA', 'SIGNIFICADO', 'HORAS'],
+      ['M', 'Jornada Mañana (7:00 – 13:00)', '6h'],
+      ['T', 'Jornada Tarde (13:00 – 19:00)', '6h'],
+      ['N', 'Jornada Noche (19:00 – 7:00)', '12h'],
+      ['PT', 'Post-Turno / Descanso compensatorio', '0h'],
+      [],
+      ['CATEGORÍA', 'DESCRIPCIÓN', 'RANGO HORAS/MES'],
+      ['Planta', 'Personal de planta', '150 – 200h'],
+      ['CTA', 'Contratista', '150 – 200h'],
+      ['APS', 'Atención Primaria en Salud', '100 – 160h'],
+      ['Rural', 'Médico rural', 'Variable'],
+      ['Disponibilidad', 'Disponibilidad llamada', 'Variable'],
+    ];
+    const wsLegend = XLSX.utils.aoa_to_sheet(legendData);
+    wsLegend['!cols'] = [{ wch: 18 }, { wch: 42 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(wb, wsLegend, 'Leyenda');
+
     XLSX.writeFile(wb, `Turnero_${MONTH_NAMES[selectedMonth]}_${selectedYear}.xlsx`);
   };
 

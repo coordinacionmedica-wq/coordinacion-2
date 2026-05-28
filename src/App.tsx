@@ -482,7 +482,7 @@ const handleSubmitShiftRequest = async () => {
 
 
   return (
-    <div className={`bg-stone-50 min-h-screen text-slate-800 flex flex-col font-sans transition-all duration-500`} style={{ '--primary': theme.primary } as any}>
+    <div className={`bg-slate-100 min-h-screen text-slate-800 flex flex-col font-sans transition-all duration-500`} style={{ '--primary': theme.primary } as any}>
       <AppStyles theme={theme} />
       {/* Offline Alert */}
       <AnimatePresence>

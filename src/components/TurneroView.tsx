@@ -186,79 +186,89 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
 
   // ── Render ──
   return (
-    <motion.div key="turnos" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-1.5 md:space-y-2">
+    <motion.div key="turnos" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 md:space-y-4">
 
-      {/* ── Unified compact top bar ── */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm no-print">
+      {/* ── Top bar del Turnero ── */}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm no-print overflow-hidden">
 
-        {/* Row 1: title + stats chips + action button */}
-        <div className="flex flex-wrap items-center gap-1.5 px-3 py-2">
-          <h2 className="text-xs font-black text-slate-800 shrink-0">Turnero</h2>
-          <span className="text-[8px] text-slate-400 font-mono hidden sm:inline">|</span>
+        {/* Fila principal */}
+        <div className="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-slate-100">
+          <h2 className="text-base font-black text-slate-800 shrink-0">Turnero</h2>
+          <div className="w-px h-5 bg-slate-200 hidden sm:block" />
 
-          {/* Stats chips */}
-          <div className="flex flex-wrap gap-1 flex-1 min-w-0">
-            <span className="text-[8px] font-bold bg-sky-50 text-sky-700 border border-sky-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">
-              🏥 Planta: {doctors.filter(d => d.cat === 'Planta' && d.st === 'activo').length}
+          {/* Chips de estadísticas — más grandes y legibles */}
+          <div className="flex flex-wrap gap-2 flex-1 min-w-0">
+            <span className="flex items-center gap-1.5 text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 px-2.5 py-1 rounded-full whitespace-nowrap hover:bg-sky-100 transition-colors">
+              🏥 <span className="font-black">{doctors.filter(d => d.cat === 'Planta' && d.st === 'activo').length}</span> Planta
             </span>
-            <span className="text-[8px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">
-              🌿 Rural: {doctors.filter(d => d.cat === 'Rural' && d.st === 'activo').length}
+            <span className="flex items-center gap-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full whitespace-nowrap hover:bg-emerald-100 transition-colors">
+              🌿 <span className="font-black">{doctors.filter(d => d.cat === 'Rural' && d.st === 'activo').length}</span> Rural
             </span>
-            <span className="text-[8px] font-bold bg-amber-50 text-amber-700 border border-amber-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">
-              📋 Nov: {auditLogs.filter(l => l.targetMonth === selectedMonth).length}
+            <span className="flex items-center gap-1.5 text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full whitespace-nowrap hover:bg-amber-100 transition-colors">
+              📋 <span className="font-black">{auditLogs.filter(l => l.targetMonth === selectedMonth).length}</span> Novedades
             </span>
             {conflictCounts.total > 0 ? (
-              <span className="text-[8px] font-bold bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded-full whitespace-nowrap">
-                ⚠️ {conflictCounts.overlaps > 0 ? `${conflictCounts.overlaps} SC` : ''}{conflictCounts.postTurno > 0 ? ` ${conflictCounts.postTurno} PT` : ''}{conflictCounts.noCoverage > 0 ? ` ${conflictCounts.noCoverage} NC` : ''}
+              <span className="flex items-center gap-1.5 text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-full whitespace-nowrap animate-pulse">
+                ⚠️ {conflictCounts.overlaps > 0 && <span>{conflictCounts.overlaps} sobrecargas</span>}
+                {conflictCounts.postTurno > 0 && <span>{conflictCounts.postTurno} post-turno</span>}
+                {conflictCounts.noCoverage > 0 && <span>{conflictCounts.noCoverage} sin cobertura</span>}
               </span>
             ) : (
-              <span className="text-[8px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">✓ Sin conflictos</span>
+              <span className="flex items-center gap-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full whitespace-nowrap">
+                ✓ Sin conflictos
+              </span>
             )}
             {availabilityCalls[0] && (
-              <span className="text-[8px] font-bold bg-slate-50 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded-full truncate max-w-[140px]" title={availabilityCalls[0].doctorName}>
+              <span className="flex items-center gap-1.5 text-xs font-bold bg-slate-50 text-slate-600 border border-slate-200 px-2.5 py-1 rounded-full truncate max-w-[180px]" title={availabilityCalls[0].doctorName}>
                 📞 {availabilityCalls[0].doctorName}
               </span>
             )}
           </div>
 
-          {/* Expandable toggles */}
-          <div className="flex items-center gap-1 shrink-0">
+          {/* Botones de acción — claros y con hover */}
+          <div className="flex items-center gap-2 shrink-0">
             {currentShiftInfo && (
               <button
                 onClick={() => setShowOnDuty(v => !v)}
-                title="En turno ahora"
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[8px] font-bold border transition-all ${
-                  showOnDuty ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50'
+                title="Ver quién está en turno ahora"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all hover:shadow-sm ${
+                  showOnDuty
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-500/20'
+                    : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50'
                 }`}
               >
-                <Clock className="w-3 h-3" />
-                <span className="hidden sm:inline">En turno</span>
-                <span className="bg-white/30 text-[7px] font-black px-1 rounded-full">{currentShiftInfo.onDuty.length}</span>
+                <Clock className="w-3.5 h-3.5" />
+                En turno
+                <span className={`text-xs font-black px-1.5 py-0.5 rounded-full ${showOnDuty ? 'bg-white/25 text-white' : 'bg-indigo-100 text-indigo-700'}`}>
+                  {currentShiftInfo.onDuty.length}
+                </span>
               </button>
             )}
             <button
               onClick={() => setShowCoverage(v => !v)}
-              title="Cobertura diaria"
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[8px] font-bold border transition-all ${
-                showCoverage ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+              title="Ver cobertura diaria del mes"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all hover:shadow-sm ${
+                showCoverage
+                  ? 'bg-slate-700 text-white border-slate-700 shadow-sm'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
               }`}
             >
-              <Users className="w-3 h-3" />
-              <span className="hidden sm:inline">Cobertura</span>
+              <Users className="w-3.5 h-3.5" />
+              Cobertura
             </button>
             {(session?.r === 'admin' || (session?.doctorId && doctors.find(d => d.id === session.doctorId)?.permissions?.includes('call_availability'))) && (
               <button
                 onClick={onOpenCallModal}
-                className="flex items-center gap-1 bg-rose-500 text-white px-2 py-1 rounded-lg font-black text-[8px] hover:bg-rose-600 transition-all shadow-sm"
+                className="flex items-center gap-1.5 bg-rose-500 text-white px-3 py-1.5 rounded-lg font-bold text-xs hover:bg-rose-600 active:scale-95 transition-all shadow-sm shadow-rose-500/20"
               >
-                <PhoneIncoming className="w-3 h-3 animate-pulse" />
-                <span className="hidden sm:inline">Disponibilidad</span>
+                <PhoneIncoming className="w-3.5 h-3.5 animate-pulse" />
+                Disponibilidad
               </button>
             )}
           </div>
         </div>
 
-        {/* Row 2 (collapsible): En turno ahora */}
+        {/* Panel colapsable: En turno ahora */}
         <AnimatePresence>
           {showOnDuty && currentShiftInfo && (
             <motion.div
@@ -266,22 +276,23 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.18 }}
-              className="overflow-hidden border-t border-indigo-100"
+              className="overflow-hidden border-b border-indigo-100"
             >
-              <div className="px-3 py-2 bg-indigo-50/50">
-                <div className="flex items-center gap-2 mb-1">
-                  <Clock className="w-3 h-3 text-indigo-500 animate-pulse" />
-                  <span className="text-xs font-black text-indigo-800">
-                    {currentShiftInfo.slot === 'm' ? 'Mañana (7-13h)' : currentShiftInfo.slot === 't' ? 'Tarde (13-19h)' : 'Noche (19-7h)'} · Día {currentShiftInfo.today} · {currentShiftInfo.onDuty.length} médicos
+              <div className="px-4 py-3 bg-indigo-50/60">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="w-4 h-4 text-indigo-500 animate-pulse" />
+                  <span className="text-sm font-black text-indigo-800">
+                    {currentShiftInfo.slot === 'm' ? 'Jornada Mañana (7–13h)' : currentShiftInfo.slot === 't' ? 'Jornada Tarde (13–19h)' : 'Jornada Noche (19–7h)'}
                   </span>
+                  <span className="text-xs font-bold text-indigo-500">· Día {currentShiftInfo.today} · {currentShiftInfo.onDuty.length} médicos</span>
                 </div>
                 {currentShiftInfo.onDuty.length === 0 ? (
-                  <p className="text-xs text-rose-600 font-bold">⚠️ Sin asignaciones</p>
+                  <p className="text-sm text-rose-600 font-bold">⚠️ Sin asignaciones para esta jornada</p>
                 ) : (
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {currentShiftInfo.onDuty.map(({ doctor, sigla }) => (
-                      <span key={doctor.id} className="bg-white text-[8px] font-bold text-slate-700 border border-indigo-100 px-2 py-0.5 rounded-full">
-                        {doctor.genero === 'F' ? 'Dra.' : 'Dr.'} {doctor.nombre.split(' ')[0]} <span className="text-indigo-600">{sigla}</span>
+                      <span key={doctor.id} className="bg-white text-xs font-bold text-slate-700 border border-indigo-200 px-2.5 py-1 rounded-full shadow-sm">
+                        {doctor.genero === 'F' ? 'Dra.' : 'Dr.'} {doctor.nombre.split(' ')[0]} <span className="text-indigo-600 font-black">{sigla}</span>
                       </span>
                     ))}
                   </div>
@@ -291,7 +302,7 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
           )}
         </AnimatePresence>
 
-        {/* Row 3 (collapsible): Cobertura diaria */}
+        {/* Panel colapsable: Cobertura diaria */}
         <AnimatePresence>
           {showCoverage && (
             <motion.div
@@ -299,39 +310,41 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.18 }}
-              className="overflow-hidden border-t border-slate-200"
+              className="overflow-hidden"
             >
-              <div className="px-3 py-2">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[8px] font-black text-slate-600 flex items-center gap-1"><Users className="w-3 h-3" /> Cobertura Diaria</span>
+              <div className="px-4 py-3 bg-slate-50/60">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-black text-slate-700 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-slate-500" /> Cobertura Diaria del Mes
+                  </span>
                   <button
                     onClick={() => setCompactView(!compactView)}
-                    className="flex items-center gap-1 text-[7px] font-bold text-slate-400 hover:text-slate-700"
+                    className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 bg-white border border-slate-200 px-2.5 py-1 rounded-lg hover:bg-slate-100 transition-all"
                   >
-                    {compactView ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
-                    {compactView ? 'Completa' : 'Compacta'}
+                    {compactView ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    {compactView ? 'Vista completa' : 'Vista compacta'}
                   </button>
                 </div>
                 <div className="overflow-x-auto">
-                  <div className="flex gap-[1px] min-w-max">
+                  <div className="flex gap-0.5 min-w-max">
                     {dailyCoverage.map(dc => {
                       const total = dc.m + dc.t + dc.n;
                       const getColor = (count: number) => count === 0 ? 'bg-rose-500' : count <= 1 ? 'bg-amber-400' : 'bg-emerald-400';
                       return (
-                        <div key={dc.day} className="flex flex-col items-center gap-[1px]" title={`Día ${dc.day}: M=${dc.m} T=${dc.t} N=${dc.n}`}>
-                          <span className="text-[5px] text-slate-400 font-bold">{dc.day}</span>
-                          <div className={`w-2 h-1.5 rounded-[1px] ${getColor(dc.m)}`} />
-                          <div className={`w-2 h-1.5 rounded-[1px] ${getColor(dc.t)}`} />
-                          <div className={`w-2 h-1.5 rounded-[1px] ${getColor(dc.n)}`} />
-                          <span className="text-[5px] font-bold text-slate-500">{total}</span>
+                        <div key={dc.day} className="flex flex-col items-center gap-0.5" title={`Día ${dc.day}: Mañana=${dc.m} Tarde=${dc.t} Noche=${dc.n}`}>
+                          <span className="text-[9px] text-slate-500 font-bold">{dc.day}</span>
+                          <div className={`w-3 h-2 rounded-sm ${getColor(dc.m)}`} />
+                          <div className={`w-3 h-2 rounded-sm ${getColor(dc.t)}`} />
+                          <div className={`w-3 h-2 rounded-sm ${getColor(dc.n)}`} />
+                          <span className="text-[9px] font-black text-slate-600">{total}</span>
                         </div>
                       );
                     })}
                   </div>
-                  <div className="flex gap-2 mt-1 text-[6px] text-slate-400 font-bold">
-                    <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-rose-500" /> Sin cob.</span>
-                    <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-amber-400" /> 1 méd.</span>
-                    <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-emerald-400" /> 2+</span>
+                  <div className="flex gap-4 mt-2">
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-rose-600"><span className="w-3 h-3 rounded-sm bg-rose-500 shrink-0" /> Sin cobertura</span>
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-amber-600"><span className="w-3 h-3 rounded-sm bg-amber-400 shrink-0" /> 1 médico</span>
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600"><span className="w-3 h-3 rounded-sm bg-emerald-400 shrink-0" /> 2 o más</span>
                   </div>
                 </div>
               </div>
@@ -404,11 +417,20 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
       />
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-2 md:gap-4 text-xs text-[#7aa8c8] font-mono no-print px-1">
-        <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#4ade80] rounded-full"></span> &lt;42h</div>
-        <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#16a34a] rounded-full"></span> 42-66h</div>
-        <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#ff7d33] rounded-full"></span> &gt;66h</div>
-        <div className="flex items-center gap-1 ml-auto text-amber-400"><span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-400 rounded-full"></span> PT</div>
+      <div className="flex flex-wrap items-center gap-2 md:gap-3 no-print bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm">
+        <span className="text-xs font-black text-slate-400 uppercase tracking-widest hidden sm:inline">Leyenda horas semana:</span>
+        <div className="flex items-center gap-1.5 text-sm font-bold text-emerald-700">
+          <span className="w-3 h-3 bg-emerald-400 rounded-full shrink-0 shadow-sm"></span> &lt;42h Normal
+        </div>
+        <div className="flex items-center gap-1.5 text-sm font-bold text-emerald-800">
+          <span className="w-3 h-3 bg-emerald-600 rounded-full shrink-0 shadow-sm"></span> 42-66h Límite
+        </div>
+        <div className="flex items-center gap-1.5 text-sm font-bold text-rose-600">
+          <span className="w-3 h-3 bg-rose-500 rounded-full shrink-0 shadow-sm"></span> &gt;66h Excedido
+        </div>
+        <div className="flex items-center gap-1.5 text-sm font-bold text-amber-600 ml-auto">
+          <span className="w-3 h-3 bg-amber-400 rounded-full shrink-0 shadow-sm"></span> PT Permiso/Tiempo
+        </div>
       </div>
     </motion.div>
   );
