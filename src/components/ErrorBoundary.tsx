@@ -42,7 +42,7 @@ class ErrorBoundary extends React.Component<Props, State> {
             
             {this.state.error && (
               <div className="bg-[#162840] p-4 rounded-xl mb-6 text-left border border-[#1a3050]">
-                <p className="text-[10px] uppercase text-sky-500 font-bold mb-1">Detalle del error:</p>
+                <p className="text-xs uppercase text-sky-500 font-bold mb-1">Detalle del error:</p>
                 <code className="text-xs text-rose-300 font-mono break-all">
                   {this.state.error.message}
                 </code>
@@ -55,7 +55,7 @@ class ErrorBoundary extends React.Component<Props, State> {
             >
               <RefreshCw className="w-5 h-5" /> RECARGAR APLICACIÓN
             </button>
-            <p className="text-[9px] text-slate-500 mt-4 uppercase tracking-widest font-bold">
+            <p className="text-xs text-slate-500 mt-4 uppercase tracking-widest font-bold">
               ESE ROLDANILLO - COORDINACIÓN MÉDICA
             </p>
           </div>

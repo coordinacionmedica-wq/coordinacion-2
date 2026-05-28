@@ -45,7 +45,7 @@ export function BottomNav() {
             }`}
           >
             <btn.icon className="w-5 h-5 md:w-6 md:h-6 mb-0.5" />
-            <span className="text-[7px] md:text-[9px] font-black uppercase tracking-tight whitespace-nowrap">{btn.label}</span>
+            <span className="text-[9px] md:text-xs font-black uppercase tracking-tight whitespace-nowrap">{btn.label}</span>
           </button>
         ))}
       </div>

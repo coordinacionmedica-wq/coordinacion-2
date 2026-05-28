@@ -20,7 +20,7 @@ export function TurneroAIPanel({ isGenerating, suggestions, onGenerate, onApply,
           </div>
           <div>
             <h3 className="font-black uppercase tracking-tight text-white text-xs md:text-sm">IA Shift Engine</h3>
-            <p className="text-[8px] md:text-[9px] uppercase font-bold opacity-60">Generador de mallas automáticas</p>
+            <p className="text-[8px] md:text-xs uppercase font-bold opacity-60">Generador de mallas automáticas</p>
           </div>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
@@ -28,13 +28,13 @@ export function TurneroAIPanel({ isGenerating, suggestions, onGenerate, onApply,
             <>
               <button
                 onClick={onDiscard}
-                className="flex-1 sm:flex-none bg-slate-800 text-white px-2.5 md:px-3 py-1.5 rounded-lg font-bold text-[9px] md:text-[10px] hover:bg-slate-700 transition-all border border-slate-700"
+                className="flex-1 sm:flex-none bg-slate-800 text-white px-2.5 md:px-3 py-1.5 rounded-lg font-bold text-xs md:text-xs hover:bg-slate-700 transition-all border border-slate-700"
               >
                 DESCARTAR
               </button>
               <button
                 onClick={onApply}
-                className="flex-1 sm:flex-none bg-emerald-500 text-white px-3 md:px-4 py-1.5 rounded-lg font-black text-[9px] md:text-[10px] hover:bg-emerald-400 transition-all shadow-md shadow-emerald-500/20"
+                className="flex-1 sm:flex-none bg-emerald-500 text-white px-3 md:px-4 py-1.5 rounded-lg font-black text-xs md:text-xs hover:bg-emerald-400 transition-all shadow-md shadow-emerald-500/20"
               >
                 APLICAR MALLA
               </button>
@@ -43,7 +43,7 @@ export function TurneroAIPanel({ isGenerating, suggestions, onGenerate, onApply,
             <button
               onClick={onGenerate}
               disabled={isGenerating}
-              className="flex-1 sm:flex-none bg-white text-emerald-900 px-3 md:px-4 py-1.5 rounded-lg font-black text-[9px] md:text-[10px] hover:bg-emerald-50 transition-all shadow-md shadow-white/10 disabled:opacity-50"
+              className="flex-1 sm:flex-none bg-white text-emerald-900 px-3 md:px-4 py-1.5 rounded-lg font-black text-xs md:text-xs hover:bg-emerald-50 transition-all shadow-md shadow-white/10 disabled:opacity-50"
             >
               {isGenerating ? (
                 <span className="flex items-center justify-center gap-1.5">
@@ -61,7 +61,7 @@ export function TurneroAIPanel({ isGenerating, suggestions, onGenerate, onApply,
 
       {suggestions && (
         <div className="mt-2 md:mt-3 p-2 md:p-2.5 bg-emerald-950/50 rounded-lg border border-emerald-800/50">
-          <p className="text-[8px] md:text-[9px] font-bold text-emerald-400 uppercase italic flex items-center gap-1.5">
+          <p className="text-[8px] md:text-xs font-bold text-emerald-400 uppercase italic flex items-center gap-1.5">
             <Info className="w-3 h-3 flex-shrink-0" /> Propuesta generada. Revise antes de aplicar.
           </p>
         </div>

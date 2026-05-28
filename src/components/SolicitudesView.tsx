@@ -44,13 +44,13 @@ export function SolicitudesView({
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="text-[10px] text-slate-400 uppercase ml-2 mb-1 block font-bold">Día del Cambio</label>
+              <label className="text-xs text-slate-400 uppercase ml-2 mb-1 block font-bold">Día del Cambio</label>
               <select className="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg outline-none text-sm text-slate-800" value={reqDay} onChange={e => setReqDay(parseInt(e.target.value))}>
                 {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(d => <option key={d} value={d}>Día {d}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-[10px] text-slate-400 uppercase ml-2 mb-1 block font-bold">Jornada</label>
+              <label className="text-xs text-slate-400 uppercase ml-2 mb-1 block font-bold">Jornada</label>
               <select className="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg outline-none text-sm text-slate-800" value={reqSlot} onChange={e => setReqSlot(e.target.value as SlotType)}>
                 <option value="m">Mañana</option>
                 <option value="t">Tarde</option>
@@ -58,7 +58,7 @@ export function SolicitudesView({
               </select>
             </div>
             <div className="sm:col-span-3">
-              <label className="text-[10px] text-slate-400 uppercase ml-2 mb-1 block font-bold">Motivo / Detalle del cambio</label>
+              <label className="text-xs text-slate-400 uppercase ml-2 mb-1 block font-bold">Motivo / Detalle del cambio</label>
               <textarea className="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-sky-500 min-h-[72px] text-sm text-slate-800" placeholder="Describa el cambio solicitado..." value={reqReason} onChange={e => setReqReason(e.target.value)} />
             </div>
           </div>
@@ -90,7 +90,7 @@ export function SolicitudesView({
                   <div className="flex items-center gap-2 mb-1">
                     {isAdmin && <span className="text-emerald-600 font-bold">Dr. {req.doctorName} - </span>}
                     <span className="text-slate-800 font-bold uppercase">Día {req.day} ({req.slot.toUpperCase()})</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-black uppercase ${
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-black uppercase ${
                       req.status === 'pending' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
                       req.status === 'approved' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
                       'bg-rose-100 text-rose-700 border border-rose-200'
@@ -99,7 +99,7 @@ export function SolicitudesView({
                     </span>
                   </div>
                   <p className="text-slate-500 text-sm italic">"{req.reason}"</p>
-                  <div className="text-[10px] text-slate-400 mt-2">{new Date(req.timestamp).toLocaleString()}</div>
+                  <div className="text-xs text-slate-400 mt-2">{new Date(req.timestamp).toLocaleString()}</div>
                 </div>
 
                 {isAdmin && req.status === 'pending' && (

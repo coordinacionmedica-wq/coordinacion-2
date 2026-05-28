@@ -271,12 +271,12 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
               <div className="px-3 py-2 bg-indigo-50/50">
                 <div className="flex items-center gap-2 mb-1">
                   <Clock className="w-3 h-3 text-indigo-500 animate-pulse" />
-                  <span className="text-[9px] font-black text-indigo-800">
+                  <span className="text-xs font-black text-indigo-800">
                     {currentShiftInfo.slot === 'm' ? 'Mañana (7-13h)' : currentShiftInfo.slot === 't' ? 'Tarde (13-19h)' : 'Noche (19-7h)'} · Día {currentShiftInfo.today} · {currentShiftInfo.onDuty.length} médicos
                   </span>
                 </div>
                 {currentShiftInfo.onDuty.length === 0 ? (
-                  <p className="text-[9px] text-rose-600 font-bold">⚠️ Sin asignaciones</p>
+                  <p className="text-xs text-rose-600 font-bold">⚠️ Sin asignaciones</p>
                 ) : (
                   <div className="flex flex-wrap gap-1">
                     {currentShiftInfo.onDuty.map(({ doctor, sigla }) => (
@@ -404,7 +404,7 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
       />
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-2 md:gap-4 text-[8px] md:text-[9px] text-[#7aa8c8] font-mono no-print px-1">
+      <div className="flex flex-wrap gap-2 md:gap-4 text-xs text-[#7aa8c8] font-mono no-print px-1">
         <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#4ade80] rounded-full"></span> &lt;42h</div>
         <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#16a34a] rounded-full"></span> 42-66h</div>
         <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#ff7d33] rounded-full"></span> &gt;66h</div>

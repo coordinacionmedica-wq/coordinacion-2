@@ -57,7 +57,7 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
   return (
     <>
       {isFirebaseUnauthenticatedAdmin && (
-        <div className="bg-amber-500 text-black text-[10px] uppercase font-black py-2 px-4 flex items-center justify-center gap-3 sticky top-0 z-[60] shadow-lg">
+        <div className="bg-amber-500 text-black text-xs uppercase font-black py-2 px-4 flex items-center justify-center gap-3 sticky top-0 z-[60] shadow-lg">
           <ShieldCheck className="w-4 h-4" />
           <span>Atención: Ha entrado como Administrador Maestro pero no ha iniciado sesión con Google. Los cambios no se guardarán en la nube.</span>
           <button
@@ -79,10 +79,10 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
               className="h-10 w-auto object-contain rounded-lg shadow-sm border border-emerald-100"
             />
             <div>
-              <h1 className="font-black text-emerald-700 tracking-tighter text-sm md:text-base">
+              <h1 className="font-black text-emerald-700 tracking-tighter text-base md:text-lg">
                 COORDINACIÓN MÉDICA HDSAR
               </h1>
-              <p className="text-[9px] text-stone-500 font-mono italic hidden sm:block">
+              <p className="text-xs text-stone-500 font-mono italic hidden sm:block">
                 Julián Humberto Vélez Varela Md - Coordinador Médico
               </p>
             </div>
@@ -122,11 +122,11 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
                     >
                       <ShieldCheck className="w-5 h-5" />
                       <div className="text-left flex-1">
-                        <div className="text-[10px] uppercase font-bold opacity-60">Administración</div>
-                        <div className="text-xs font-black">Bandeja de Autorización</div>
+                        <div className="text-xs uppercase font-bold opacity-60">Administración</div>
+                        <div className="text-sm font-black">Bandeja de Autorización</div>
                       </div>
                       {pendingCount > 0 && (
-                        <span className="bg-amber-500 text-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-black">
+                        <span className="bg-amber-500 text-black text-xs w-6 h-6 rounded-full flex items-center justify-center font-black">
                           {pendingCount}
                         </span>
                       )}
@@ -138,14 +138,14 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
                     <div className="mb-2 border border-emerald-100 rounded-xl p-3 bg-emerald-50/30">
                       <div className="flex items-center gap-2 mb-2">
                         <Bell className="w-4 h-4 text-emerald-600" />
-                        <span className="text-[10px] uppercase font-bold text-emerald-600">Notificaciones</span>
-                        <span className="bg-rose-500 text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold ml-auto">
+                        <span className="text-xs uppercase font-bold text-emerald-600">Notificaciones</span>
+                        <span className="bg-rose-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold ml-auto">
                           {userNotifications.length}
                         </span>
                       </div>
                       <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                         {userNotifications.map(n => (
-                          <div key={n.id} className="text-[11px] bg-white p-2 rounded-lg border border-emerald-100 flex justify-between items-center">
+                          <div key={n.id} className="text-sm bg-white p-2.5 rounded-lg border border-emerald-100 flex justify-between items-center">
                             <span className="text-slate-700 truncate mr-2">{n.message}</span>
                             <button
                               onClick={() => markNotificationRead(n.id)}
@@ -168,7 +168,7 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
                     className="flex items-center gap-3 p-3 rounded-xl bg-[#25D366]/10 border border-[#25D366]/20 text-[#128C7E] hover:bg-[#25D366]/20 transition-all mb-2"
                   >
                     <MessageCircle className="w-5 h-5" />
-                    <span className="text-xs font-black uppercase">Chat Médico</span>
+                    <span className="text-sm font-black uppercase">Chat Médico</span>
                   </a>
 
                   {/* Logout */}
@@ -177,7 +177,7 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
                     className="w-full flex items-center gap-3 p-3 rounded-xl text-rose-600 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all"
                   >
                     <LogOut className="w-5 h-5" />
-                    <span className="text-xs font-black uppercase">Cerrar Sesión</span>
+                    <span className="text-sm font-black uppercase">Cerrar Sesión</span>
                   </button>
                 </motion.div>
               )}
@@ -226,13 +226,13 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
 
               {/* ── MOBILE: current tab label + hamburger dropdown ── */}
               <div className="flex md:hidden items-center justify-between gap-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold text-xs shadow-sm min-w-0">
+                <div className="flex items-center gap-2 px-3 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm shadow-sm min-w-0">
                   {activeTabMeta && <activeTabMeta.icon className="w-3.5 h-3.5 shrink-0" />}
                   <span className="truncate">{activeTabMeta?.label ?? 'Menú'}</span>
                 </div>
                 <button
                   onClick={() => setMoreMenuOpen(v => !v)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/80 border border-emerald-200 text-emerald-700 rounded-lg font-bold text-xs hover:bg-emerald-50 transition-all shadow-sm shrink-0"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-white/80 border border-emerald-200 text-emerald-700 rounded-lg font-bold text-sm hover:bg-emerald-50 transition-all shadow-sm shrink-0"
                 >
                   {moreMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
                   <span>Menú</span>
@@ -256,7 +256,7 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
                         <button
                           key={tab.id}
                           onClick={() => { setActiveTab(tab.id); setMoreMenuOpen(false); }}
-                          className={`flex items-center gap-2 px-3 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
                             activeTab === tab.id
                               ? 'bg-emerald-600 text-white shadow-sm'
                               : 'text-slate-700 hover:bg-emerald-50'
@@ -273,7 +273,7 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
                             <button
                               key={tab.id}
                               onClick={() => { setActiveTab(tab.id); setMoreMenuOpen(false); }}
-                              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
                                 activeTab === tab.id
                                   ? 'bg-emerald-600 text-white shadow-sm'
                                   : 'text-slate-500 hover:bg-slate-50'
@@ -296,7 +296,7 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-all whitespace-nowrap shrink-0 ${
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap shrink-0 ${
                       activeTab === tab.id
                         ? 'bg-emerald-600 text-white shadow-md'
                         : 'bg-white/60 text-emerald-700 hover:bg-emerald-50 border border-emerald-100'
@@ -311,7 +311,7 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
                   <div className="relative shrink-0 ml-auto">
                     <button
                       onClick={() => setMoreMenuOpen(v => !v)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-all whitespace-nowrap border ${
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap border ${
                         secondaryActive || moreMenuOpen
                           ? 'bg-emerald-600 text-white border-emerald-600 shadow-md'
                           : 'bg-white/60 text-emerald-700 border-emerald-100 hover:bg-emerald-50'
@@ -336,7 +336,7 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
                               <button
                                 key={tab.id}
                                 onClick={() => { setActiveTab(tab.id); setMoreMenuOpen(false); }}
-                                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg font-bold text-xs transition-all ${
+                                className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg font-bold text-sm transition-all ${
                                   activeTab === tab.id
                                     ? 'bg-emerald-600 text-white'
                                     : 'text-emerald-700 hover:bg-emerald-50'

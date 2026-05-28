@@ -132,10 +132,10 @@ export function NovedadesView({
           <p className="text-xs text-slate-500 font-mono">Registro oficial de cambios en el turnero</p>
         </div>
         <div className="flex gap-3 no-print">
-          <button onClick={onExportExcel} className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl border border-emerald-200 font-bold text-[10px] uppercase flex items-center gap-2 hover:bg-emerald-100 transition-all">
+          <button onClick={onExportExcel} className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl border border-emerald-200 font-bold text-xs uppercase flex items-center gap-2 hover:bg-emerald-100 transition-all">
             <FileSpreadsheet className="w-4 h-4" /> Excel
           </button>
-          <button onClick={onExportPDF} className="bg-rose-50 text-rose-700 px-4 py-2 rounded-xl border border-rose-200 font-bold text-[10px] uppercase flex items-center gap-2 hover:bg-rose-100 transition-all">
+          <button onClick={onExportPDF} className="bg-rose-50 text-rose-700 px-4 py-2 rounded-xl border border-rose-200 font-bold text-xs uppercase flex items-center gap-2 hover:bg-rose-100 transition-all">
             <Printer className="w-4 h-4" /> PDF
           </button>
         </div>
@@ -153,7 +153,7 @@ export function NovedadesView({
             <UserPlus className="w-4 h-4" />
             Solicitudes de Registro
             {pendingReqs.length > 0 && (
-              <span className="bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{pendingReqs.length}</span>
+              <span className="bg-rose-500 text-white text-xs font-black px-2 py-0.5 rounded-full">{pendingReqs.length}</span>
             )}
           </button>
           <button
@@ -185,15 +185,15 @@ export function NovedadesView({
           <p className="text-sm text-emerald-100 mb-3"><span className="font-bold">{lastCredentials.nombre}</span> — {lastCredentials.email}</p>
           <div className="grid grid-cols-2 gap-3 bg-black/30 p-4 rounded-xl">
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-1">Usuario</p>
+              <p className="text-xs uppercase tracking-widest text-emerald-400 mb-1">Usuario</p>
               <p className="font-black text-white text-lg font-mono">{lastCredentials.username}</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-1">Contraseña temporal</p>
+              <p className="text-xs uppercase tracking-widest text-emerald-400 mb-1">Contraseña temporal</p>
               <p className="font-black text-white text-lg font-mono">{lastCredentials.password}</p>
             </div>
           </div>
-          <p className="text-[10px] text-emerald-400 mt-3 italic">Estas credenciales fueron enviadas al correo registrado (si SMTP está configurado). Guárdalas como respaldo.</p>
+          <p className="text-xs text-emerald-400 mt-3 italic">Estas credenciales fueron enviadas al correo registrado (si SMTP está configurado). Guárdalas como respaldo.</p>
         </motion.div>
       )}
 
@@ -250,16 +250,16 @@ export function NovedadesView({
                       </div>
                       <div>
                         <div className="font-black text-slate-800">{prefix} {req.nombre} {req.apellidos}</div>
-                        <div className="text-[10px] text-slate-400 font-mono">CC {req.cedula} · RM {req.registroMedico || '—'}</div>
+                        <div className="text-xs text-slate-400 font-mono">CC {req.cedula} · RM {req.registroMedico || '—'}</div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="text-right">
-                        <div className="text-[10px] text-slate-400">{new Date(req.createdAt).toLocaleString()}</div>
-                        <div className="text-[10px] text-slate-500">Solicitó: <span className="font-bold">{req.requestedRol}</span></div>
+                        <div className="text-xs text-slate-400">{new Date(req.createdAt).toLocaleString()}</div>
+                        <div className="text-xs text-slate-500">Solicitó: <span className="font-bold">{req.requestedRol}</span></div>
                       </div>
-                      <span className={`text-[10px] font-black uppercase px-3 py-1.5 rounded-full border ${statusColor}`}>
+                      <span className={`text-xs font-black uppercase px-3 py-1.5 rounded-full border ${statusColor}`}>
                         {statusLabel}
                       </span>
                       {req.status === 'pending' && (
@@ -282,16 +282,16 @@ export function NovedadesView({
                         <div className="p-5 space-y-4">
                           {/* Datos del solicitante */}
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-white p-4 rounded-xl border border-slate-100">
-                            <div><p className="text-[10px] uppercase font-black text-slate-400">Email</p><p className="text-sm font-bold text-slate-700 break-all">{req.email}</p></div>
-                            <div><p className="text-[10px] uppercase font-black text-slate-400">Teléfono</p><p className="text-sm font-bold text-slate-700">{req.telefono || '—'}</p></div>
-                            <div><p className="text-[10px] uppercase font-black text-slate-400">Género</p><p className="text-sm font-bold text-slate-700">{req.genero === 'M' ? 'Masculino' : 'Femenino'}</p></div>
-                            <div><p className="text-[10px] uppercase font-black text-slate-400">Solicitó rol</p><p className="text-sm font-bold text-emerald-700">{req.requestedRol}</p></div>
+                            <div><p className="text-xs uppercase font-black text-slate-400">Email</p><p className="text-sm font-bold text-slate-700 break-all">{req.email}</p></div>
+                            <div><p className="text-xs uppercase font-black text-slate-400">Teléfono</p><p className="text-sm font-bold text-slate-700">{req.telefono || '—'}</p></div>
+                            <div><p className="text-xs uppercase font-black text-slate-400">Género</p><p className="text-sm font-bold text-slate-700">{req.genero === 'M' ? 'Masculino' : 'Femenino'}</p></div>
+                            <div><p className="text-xs uppercase font-black text-slate-400">Solicitó rol</p><p className="text-sm font-bold text-emerald-700">{req.requestedRol}</p></div>
                           </div>
 
                           {/* Asignación por admin */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                              <label className="text-[10px] uppercase font-black text-emerald-600 ml-1 mb-1 block">Rol a Asignar *</label>
+                              <label className="text-xs uppercase font-black text-emerald-600 ml-1 mb-1 block">Rol a Asignar *</label>
                               <select
                                 className="w-full bg-white border border-emerald-200 p-3 rounded-xl outline-none focus:border-emerald-500 font-bold text-sm"
                                 value={st.rol}
@@ -301,7 +301,7 @@ export function NovedadesView({
                               </select>
                             </div>
                             <div>
-                              <label className="text-[10px] uppercase font-black text-emerald-600 ml-1 mb-1 block">Categoría *</label>
+                              <label className="text-xs uppercase font-black text-emerald-600 ml-1 mb-1 block">Categoría *</label>
                               <select
                                 className="w-full bg-white border border-emerald-200 p-3 rounded-xl outline-none focus:border-emerald-500 font-bold text-sm"
                                 value={st.cat}
@@ -333,7 +333,7 @@ export function NovedadesView({
                           ) : (
                             <div className="space-y-3">
                               <div>
-                                <label className="text-[10px] uppercase font-black text-rose-600 ml-1 mb-1 block">Motivo del Rechazo *</label>
+                                <label className="text-xs uppercase font-black text-rose-600 ml-1 mb-1 block">Motivo del Rechazo *</label>
                                 <input
                                   className="w-full bg-white border border-rose-200 p-3 rounded-xl outline-none focus:border-rose-400 font-bold text-sm"
                                   placeholder="Ej: Documento incompleto, verificar registro médico..."
@@ -366,7 +366,7 @@ export function NovedadesView({
 
                   {/* Aprobado/Rechazado footer */}
                   {req.status !== 'pending' && (
-                    <div className={`px-5 py-2.5 border-t text-[10px] font-bold uppercase tracking-widest ${
+                    <div className={`px-5 py-2.5 border-t text-xs font-bold uppercase tracking-widest ${
                       req.status === 'approved' ? 'border-emerald-100 bg-emerald-50/50 text-emerald-600' : 'border-rose-100 bg-rose-50/50 text-rose-600'
                     }`}>
                       {req.status === 'approved'
@@ -415,13 +415,13 @@ export function NovedadesView({
             <Markdown>{aiReport}</Markdown>
           </div>
           <div className="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
-            <p className="text-[9px] text-white/40 uppercase font-mono italic">Generado el {new Date().toLocaleString()}</p>
+            <p className="text-xs text-white/40 uppercase font-mono italic">Generado el {new Date().toLocaleString()}</p>
             <button
               onClick={() => {
                 const win = window.open('', '_blank');
                 win?.document.write(`<html><head><title>Informe Estadístico IA</title><style>body{font-family:sans-serif;padding:40px;line-height:1.6;color:#333}h2{color:#7c3aed}pre{white-space:pre-wrap;background:#f4f4f4;padding:20px;border-radius:10px}</style></head><body><h2>Informe Estadístico Gerencial - IA</h2><div style="font-size:14px">${aiReport.replace(/\n/g, '<br>')}</div></body></html>`);
               }}
-              className="text-[10px] font-black underline underline-offset-4 hover:text-violet-400"
+              className="text-xs font-black underline underline-offset-4 hover:text-violet-400"
             >
               ABRIR PARA IMPRIMIR
             </button>
@@ -449,7 +449,7 @@ export function NovedadesView({
                 </div>
                 <div>
                   <div className="text-sm font-bold text-slate-800">Dr. {log.doctorName}</div>
-                  <div className="text-[10px] text-slate-400 flex items-center gap-2">
+                  <div className="text-xs text-slate-400 flex items-center gap-2">
                     <Calendar className="w-3 h-3" /> Día {log.day} | Jornada: {log.slot.toUpperCase()}
                   </div>
                 </div>
@@ -472,8 +472,8 @@ export function NovedadesView({
                   </button>
                 )}
                 <div className="text-right">
-                  <div className="text-[10px] text-slate-400">{new Date(log.timestamp).toLocaleString()}</div>
-                  <div className="text-[9px] uppercase font-bold text-emerald-700/60 transition-colors">Por: {log.adminName}</div>
+                  <div className="text-xs text-slate-400">{new Date(log.timestamp).toLocaleString()}</div>
+                  <div className="text-xs uppercase font-bold text-emerald-700/60 transition-colors">Por: {log.adminName}</div>
                 </div>
               </div>
             </motion.div>

@@ -46,9 +46,9 @@ export function CodigoAzulModal({ isOpen, onClose }: Props) {
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="text-xl font-black text-blue-500">30:2</div>
-                      <div className="text-[10px] leading-tight">Ciclo de compresiones y ventilaciones</div>
+                      <div className="text-xs leading-tight">Ciclo de compresiones y ventilaciones</div>
                     </div>
-                    <p className="text-[10px] opacity-60">Frecuencia: 100-120 lpm. Profundidad: 5-6 cm. Permitir descompresión total.</p>
+                    <p className="text-xs opacity-60">Frecuencia: 100-120 lpm. Profundidad: 5-6 cm. Permitir descompresión total.</p>
                   </div>
                 </div>
               </div>
@@ -56,7 +56,7 @@ export function CodigoAzulModal({ isOpen, onClose }: Props) {
               <div className="space-y-4">
                 <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
                   <h3 className="font-black text-amber-700 text-xs mb-4 uppercase">3. RITMOS DESFIBRILABLES</h3>
-                  <p className="text-[9px] font-black text-slate-400 mb-3 uppercase">TVSP / FV</p>
+                  <p className="text-xs font-black text-slate-400 mb-3 uppercase">TVSP / FV</p>
                   <div className="space-y-3 text-xs font-bold">
                     <div className="p-3 bg-white rounded-xl border border-amber-200 text-amber-600 text-center">DESCARGA (200J Bifásico)</div>
                     <div className="p-3 bg-white rounded-xl border border-slate-100">Adrenalina 1mg (3-5 min)</div>
@@ -65,7 +65,7 @@ export function CodigoAzulModal({ isOpen, onClose }: Props) {
                 </div>
                 <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200">
                   <h3 className="font-black text-slate-400 text-xs mb-4 uppercase">4. RITMOS NO DESFIBRILABLES</h3>
-                  <p className="text-[9px] font-black text-slate-400 mb-3 uppercase">Asistolia / AESP</p>
+                  <p className="text-xs font-black text-slate-400 mb-3 uppercase">Asistolia / AESP</p>
                   <div className="space-y-3 text-xs font-bold">
                     <div className="p-3 bg-blue-600 text-white rounded-xl text-center shadow-lg">ADRENALINA LO ANTES POSIBLE</div>
                     <div className="p-3 bg-white rounded-xl border border-slate-200">RCP Continuo (2 min)</div>
@@ -79,7 +79,7 @@ export function CodigoAzulModal({ isOpen, onClose }: Props) {
                   <h3 className="font-black text-slate-800 text-xs mb-4 uppercase flex items-center gap-2">
                     <Search className="w-4 h-4 text-blue-500" /> CAUSAS REVERSIBLES
                   </h3>
-                  <div className="grid grid-cols-2 gap-4 text-[9px] font-bold">
+                  <div className="grid grid-cols-2 gap-4 text-xs font-bold">
                     <div className="space-y-1">
                       <p className="text-blue-600">5 H's</p>
                       <p>• Hipovolemia</p>
@@ -98,7 +98,7 @@ export function CodigoAzulModal({ isOpen, onClose }: Props) {
                     </div>
                   </div>
                   <div className="mt-8 p-4 bg-blue-50 rounded-2xl">
-                    <p className="text-[9px] font-black text-blue-600 uppercase text-center">🚨 VÍA AÉREA AVANZADA Y CAPNOGRAFÍA</p>
+                    <p className="text-xs font-black text-blue-600 uppercase text-center">🚨 VÍA AÉREA AVANZADA Y CAPNOGRAFÍA</p>
                   </div>
                 </div>
               </div>

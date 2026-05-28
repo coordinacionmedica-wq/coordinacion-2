@@ -156,17 +156,17 @@ export function AdminView({
             {editingVar ? 'Actualizar' : 'Guardar Sigla'}
           </button>
           {editingVar && (
-            <button onClick={() => { setEditingVar(null); setNewVarCode(''); setNewVarHour(''); }} className="col-span-2 sm:col-span-4 text-[10px] text-rose-500 font-bold underline text-center">Cancelar edición</button>
+            <button onClick={() => { setEditingVar(null); setNewVarCode(''); setNewVarHour(''); }} className="col-span-2 sm:col-span-4 text-xs text-rose-500 font-bold underline text-center">Cancelar edición</button>
           )}
         </div>
 
         <div className="space-y-3">
           {(['m', 't', 'n'] as SlotType[]).map(slot => (
             <div key={slot} className="border-t border-emerald-50 pt-3">
-              <p className="text-[10px] text-emerald-600 uppercase font-bold mb-2">{slot === 'm' ? 'Jornada Mañana' : slot === 't' ? 'Jornada Tarde' : 'Jornada Noche'}</p>
+              <p className="text-xs text-emerald-600 uppercase font-bold mb-2">{slot === 'm' ? 'Jornada Mañana' : slot === 't' ? 'Jornada Tarde' : 'Jornada Noche'}</p>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(variables[slot]).map(([k, v]) => (
-                  <div key={k} className="group relative bg-stone-50 pl-3 pr-8 py-2 rounded-lg border border-emerald-100 text-[10px] flex gap-2 hover:border-emerald-500 transition-all cursor-pointer shadow-sm" onClick={() => {
+                  <div key={k} className="group relative bg-stone-50 pl-3 pr-8 py-2 rounded-lg border border-emerald-100 text-xs flex gap-2 hover:border-emerald-500 transition-all cursor-pointer shadow-sm" onClick={() => {
                     setEditingVar({ slot, code: k });
                     setNewVarCode(k);
                     setNewVarHour(v.toString());
@@ -197,17 +197,17 @@ export function AdminView({
           <div className="flex gap-2">
             <button
               onClick={onDownloadTemplate}
-              className="bg-slate-50 text-slate-600 border border-slate-200 px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase flex items-center gap-1.5 hover:bg-slate-100 transition-all"
+              className="bg-slate-50 text-slate-600 border border-slate-200 px-3 py-1.5 rounded-lg font-bold text-xs uppercase flex items-center gap-1.5 hover:bg-slate-100 transition-all"
             >
               <FileDown className="w-3.5 h-3.5" /> Plantilla
             </button>
-            <label className="cursor-pointer bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase flex items-center gap-1.5 hover:bg-blue-600 hover:text-white transition-all">
+            <label className="cursor-pointer bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg font-bold text-xs uppercase flex items-center gap-1.5 hover:bg-blue-600 hover:text-white transition-all">
               <FileSpreadsheet className="w-3.5 h-3.5" /> Importar
               <input type="file" accept=".xlsx, .xls" className="hidden" onChange={onImportExcel} />
             </label>
             <button
               onClick={assignFreeDaysToPlanta}
-              className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase flex items-center gap-1.5 hover:bg-emerald-600 hover:text-white transition-all"
+              className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg font-bold text-xs uppercase flex items-center gap-1.5 hover:bg-emerald-600 hover:text-white transition-all"
             >
               <Clock className="w-3.5 h-3.5" /> Día Libre
             </button>
@@ -277,14 +277,14 @@ export function AdminView({
                 <div className="min-w-0 flex-1">
                   <div className="font-bold text-slate-800 leading-tight">{d.nombre}</div>
                   <div className="flex items-center gap-2">
-                    <div className="text-[10px] text-emerald-600 uppercase font-black">{d.cat}</div>
-                    <div className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 rounded uppercase font-bold">{d.rol || 'Médico'}</div>
-                    {d.email && <div className="text-[9px] text-slate-400 italic">({d.email})</div>}
+                    <div className="text-xs text-emerald-600 uppercase font-black">{d.cat}</div>
+                    <div className="text-xs bg-emerald-100 text-emerald-800 px-1.5 rounded uppercase font-bold">{d.rol || 'Médico'}</div>
+                    {d.email && <div className="text-xs text-slate-400 italic">({d.email})</div>}
                   </div>
-                  <div className="text-[9px] text-slate-400 font-mono mt-1">
+                  <div className="text-xs text-slate-400 font-mono mt-1">
                     Cédula: <span className="font-bold">{d.cedula || 'N/A'}</span> | RM: <span className="font-bold">{d.registroMedico || 'N/A'}</span>
                   </div>
-                  <div className="text-[9px] text-slate-400 font-mono mt-0.5">
+                  <div className="text-xs text-slate-400 font-mono mt-0.5">
                     User: <span className="text-emerald-700 font-bold">{d.username}</span> | Pass: <span className="text-emerald-700 font-bold">{d.password}</span>
                   </div>
                 </div>
@@ -319,7 +319,7 @@ export function AdminView({
                   </button>
                 </div>
               </div>
-              <div className="text-[9px] font-mono text-slate-300">UID: {d.id}</div>
+              <div className="text-xs font-mono text-slate-300">UID: {d.id}</div>
             </div>
           ))}
         </div>
@@ -332,7 +332,7 @@ export function AdminView({
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="text-[10px] text-emerald-600 uppercase font-black block mb-2">Color Principal</label>
+            <label className="text-xs text-emerald-600 uppercase font-black block mb-2">Color Principal</label>
             <div className="grid grid-cols-5 gap-2">
               {['#00c8f0', '#00e5a0', '#ff7d33', '#f43f5e', '#a855f7', '#eab308', '#22c55e', '#3b82f6', '#ec4899', '#f97316'].map(c => (
                 <button
@@ -345,7 +345,7 @@ export function AdminView({
             </div>
           </div>
           <div>
-            <label className="text-[10px] text-emerald-600 uppercase font-black block mb-2">Fuente del Sistema</label>
+            <label className="text-xs text-emerald-600 uppercase font-black block mb-2">Fuente del Sistema</label>
             <div className="flex flex-col gap-1.5">
               {(['sans', 'serif', 'mono'] as const).map(f => (
                 <button
@@ -374,12 +374,12 @@ export function AdminView({
           </div>
           <button
             onClick={addServiceMapping}
-            className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200 font-bold text-[10px] uppercase flex items-center gap-1.5 hover:bg-emerald-100 transition-all"
+            className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200 font-bold text-xs uppercase flex items-center gap-1.5 hover:bg-emerald-100 transition-all"
           >
             <Plus className="w-3.5 h-3.5" /> Añadir
           </button>
         </div>
-        <p className="text-[10px] text-slate-400 mb-3 uppercase font-bold">Asigne las siglas a cada servicio para el cálculo de productividad.</p>
+        <p className="text-xs text-slate-400 mb-3 uppercase font-bold">Asigne las siglas a cada servicio para el cálculo de productividad.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {serviceMappings.map((m, idx) => (
@@ -391,7 +391,7 @@ export function AdminView({
                 <Trash2 className="w-4 h-4" />
               </button>
               <div className="space-y-1">
-                <span className="text-[10px] text-emerald-600 font-black uppercase">Nombre del Servicio</span>
+                <span className="text-xs text-emerald-600 font-black uppercase">Nombre del Servicio</span>
                 <input
                   className="w-full bg-white border border-emerald-100 p-2 rounded-lg text-xs font-bold outline-none focus:border-emerald-500"
                   value={m.name}
@@ -403,7 +403,7 @@ export function AdminView({
                 />
               </div>
               <div className="space-y-1 mt-2">
-                <span className="text-[9px] text-slate-400 uppercase font-bold">Siglas Asociadas (separadas por coma)</span>
+                <span className="text-xs text-slate-400 uppercase font-bold">Siglas Asociadas (separadas por coma)</span>
                 <input
                   className="w-full bg-white border border-emerald-100 p-2 rounded-lg text-xs font-bold outline-none focus:border-emerald-500"
                   placeholder="Ej: 13, 13A, 13B"
@@ -446,7 +446,7 @@ export function AdminView({
               className="flex-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-4 py-2.5 rounded-lg flex flex-col items-center gap-0.5 transition-all disabled:opacity-50"
             >
               <span className="text-emerald-700 font-black text-xs uppercase">{p}</span>
-              <span className="text-[9px] text-slate-400">{p === 'semanal' ? 'Días 1–7' : p === 'quincenal' ? 'Días 1–15' : 'Mes completo'}</span>
+              <span className="text-xs text-slate-400">{p === 'semanal' ? 'Días 1–7' : p === 'quincenal' ? 'Días 1–15' : 'Mes completo'}</span>
             </button>
           ))}
         </div>
@@ -473,7 +473,7 @@ export function AdminView({
         <div className="bg-emerald-50 px-4 py-3 rounded-xl border border-emerald-100 flex flex-wrap justify-between items-center gap-3">
           <div className="flex-1 min-w-0">
             <p className="font-black text-emerald-900 text-xs mb-0.5">Auto-Cierre por Inactividad</p>
-            <p className="text-[10px] text-slate-500">Cierra sesión automáticamente tras inactividad del mouse o teclado.</p>
+            <p className="text-xs text-slate-500">Cierra sesión automáticamente tras inactividad del mouse o teclado.</p>
           </div>
           <select
             value={idleTimeout}
@@ -501,7 +501,7 @@ export function AdminView({
           <Activity className="w-4 h-4 text-white shrink-0" />
           <div className="text-left">
             <span className="block font-black text-xs">Análisis Profundo de Servicios (IA Gerencia)</span>
-            <span className="block text-[9px] text-white/70">Ocupación, patrones de uso y capacidad instalada</span>
+            <span className="block text-xs text-white/70">Ocupación, patrones de uso y capacidad instalada</span>
           </div>
           <Sparkles className="w-4 h-4 ml-auto text-emerald-200 animate-pulse shrink-0" />
         </button>
@@ -521,7 +521,7 @@ export function AdminView({
           className="bg-stone-50 p-4 rounded-2xl border border-emerald-100"
         >
           <div className="flex justify-between items-center mb-3">
-            <span className="text-[9px] bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-black uppercase">Resultados IA</span>
+            <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-black uppercase">Resultados IA</span>
             <button
               onClick={() => setAiReport(null)}
               className="text-slate-400 hover:text-rose-500 transition-colors"
@@ -533,7 +533,7 @@ export function AdminView({
             {aiReport}
           </div>
           <div className="mt-4 pt-3 border-t border-emerald-100 flex justify-between items-center">
-            <p className="text-[9px] text-slate-400 italic">Generado por Gemini IA.</p>
+            <p className="text-xs text-slate-400 italic">Generado por Gemini IA.</p>
             <button
               onClick={() => {
                 const blob = new Blob([aiReport], { type: 'text/plain' });
@@ -582,8 +582,8 @@ export function AdminView({
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] text-slate-400 mb-1">{new Date(log.timestamp).toLocaleTimeString()}</div>
-                  <div className="text-[9px] uppercase font-black text-emerald-700/50">Sincronizado</div>
+                  <div className="text-xs text-slate-400 mb-1">{new Date(log.timestamp).toLocaleTimeString()}</div>
+                  <div className="text-xs uppercase font-black text-emerald-700/50">Sincronizado</div>
                 </div>
               </div>
             ))}

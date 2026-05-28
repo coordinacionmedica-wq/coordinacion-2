@@ -491,7 +491,7 @@ const handleSubmitShiftRequest = async () => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="bg-orange-500 text-white text-[10px] uppercase font-black py-1 px-4 flex items-center justify-center gap-2 overflow-hidden sticky top-0 z-[60]"
+            className="bg-orange-500 text-white text-xs uppercase font-black py-1 px-4 flex items-center justify-center gap-2 overflow-hidden sticky top-0 z-[60]"
           >
             <WifiOff className="w-3 h-3" />
             Modo Offline: Los cambios se sincronizarán cuando vuelvas a tener conexión

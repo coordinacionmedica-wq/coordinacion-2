@@ -272,13 +272,13 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
           </div>
           <div>
             <h3 className="text-sm font-black text-slate-800">IA Shift Engine V3</h3>
-            <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Configuración de Reglas Institucionales</p>
+            <p className="text-xs text-emerald-600 font-bold uppercase tracking-widest">Configuración de Reglas Institucionales</p>
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase ml-2 flex items-center gap-1">
+              <label className="text-xs font-black text-slate-400 uppercase ml-2 flex items-center gap-1">
                 <Clock className="w-3 h-3" /> Máx. Noches Consecutivas
               </label>
               <input 
@@ -289,7 +289,7 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
               />
            </div>
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase ml-2 flex items-center gap-1">
+              <label className="text-xs font-black text-slate-400 uppercase ml-2 flex items-center gap-1">
                 <Clock className="w-3 h-3" /> Descanso Mínimo (Horas)
               </label>
               <input 
@@ -300,7 +300,7 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
               />
            </div>
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase ml-2 flex items-center gap-1">
+              <label className="text-xs font-black text-slate-400 uppercase ml-2 flex items-center gap-1">
                 <Clock className="w-3 h-3" /> Máx. Turnos por Mes
               </label>
               <input 
@@ -311,7 +311,7 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
               />
            </div>
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase ml-2 flex items-center gap-1">
+              <label className="text-xs font-black text-slate-400 uppercase ml-2 flex items-center gap-1">
                 <FileSpreadsheet className="w-3 h-3" /> Espaciado Fin de Semana (Semanas)
               </label>
               <input 
@@ -322,7 +322,7 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
               />
            </div>
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase ml-2 flex items-center gap-1">
+              <label className="text-xs font-black text-slate-400 uppercase ml-2 flex items-center gap-1">
                 <CheckCircle className="w-3 h-3" /> Fines de Semana Libres / Mes
               </label>
               <input 
@@ -352,7 +352,7 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
         </div>
 
         <div className="mb-4">
-           <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block">Reglas Personalizadas (Prompt Directo para IA)</label>
+           <label className="text-xs font-black text-slate-400 uppercase ml-2 mb-2 block">Reglas Personalizadas (Prompt Directo para IA)</label>
            <textarea 
              className="w-full bg-slate-50 border border-slate-100 px-3 py-2 rounded-xl font-bold text-sm outline-none focus:border-emerald-500 transition-all min-h-[100px]"
              placeholder="Ej: El Dr. X no hace noches los jueves. Las vacaciones de la Dra. Y del 10 al 15..."
@@ -392,7 +392,7 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
           </div>
           <div>
             <h3 className="text-sm font-black text-slate-800">Centro de Plantillas</h3>
-            <p className="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Descarga de Estructuras para Importación Masiva</p>
+            <p className="text-xs text-blue-600 font-bold uppercase tracking-widest">Descarga de Estructuras para Importación Masiva</p>
           </div>
         </div>
 
@@ -406,9 +406,9 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
                   <FileDown className="w-6 h-6" />
                 </div>
                 <h4 className="font-black text-slate-800 uppercase text-sm tracking-tight">Plantilla de Turnos</h4>
-                <p className="text-[10px] text-slate-400 font-bold leading-relaxed uppercase">Estructura para importar la programación mensual completa.</p>
+                <p className="text-xs text-slate-400 font-bold leading-relaxed uppercase">Estructura para importar la programación mensual completa.</p>
             </button>
-            <label className="flex items-center justify-center gap-2 p-4 bg-blue-50 text-blue-700 rounded-2xl cursor-pointer hover:bg-blue-100 transition-all font-black text-[10px] uppercase tracking-widest border border-blue-200">
+            <label className="flex items-center justify-center gap-2 p-4 bg-blue-50 text-blue-700 rounded-2xl cursor-pointer hover:bg-blue-100 transition-all font-black text-xs uppercase tracking-widest border border-blue-200">
               <Database className="w-4 h-4" /> Importar Turnos
               <input type="file" className="hidden" accept=".xlsx,.xls" onChange={(e) => handleFileUpload(e, 'shifts')} />
             </label>
@@ -423,9 +423,9 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
                   <UsersIcon className="w-6 h-6" />
                 </div>
                 <h4 className="font-black text-slate-800 uppercase text-sm tracking-tight">Carga Talento Humano</h4>
-                <p className="text-[10px] text-slate-400 font-bold leading-relaxed uppercase">Actualización masiva de personal, roles y credenciales.</p>
+                <p className="text-xs text-slate-400 font-bold leading-relaxed uppercase">Actualización masiva de personal, roles y credenciales.</p>
             </button>
-            <label className="flex items-center justify-center gap-2 p-4 bg-emerald-50 text-emerald-700 rounded-2xl cursor-pointer hover:bg-emerald-100 transition-all font-black text-[10px] uppercase tracking-widest border border-emerald-200">
+            <label className="flex items-center justify-center gap-2 p-4 bg-emerald-50 text-emerald-700 rounded-2xl cursor-pointer hover:bg-emerald-100 transition-all font-black text-xs uppercase tracking-widest border border-emerald-200">
               <Database className="w-4 h-4" /> Importar Usuarios
               <input type="file" className="hidden" accept=".xlsx,.xls" onChange={(e) => handleFileUpload(e, 'users')} />
             </label>
@@ -440,9 +440,9 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
                   <Clock className="w-6 h-6" />
                 </div>
                 <h4 className="font-black text-slate-800 uppercase text-sm tracking-tight">Catálogo de Siglas</h4>
-                <p className="text-[10px] text-slate-400 font-bold leading-relaxed uppercase">Configurar códigos horarios y su respectiva carga horaria.</p>
+                <p className="text-xs text-slate-400 font-bold leading-relaxed uppercase">Configurar códigos horarios y su respectiva carga horaria.</p>
             </button>
-            <label className="flex items-center justify-center gap-2 p-4 bg-amber-50 text-amber-700 rounded-2xl cursor-pointer hover:bg-amber-100 transition-all font-black text-[10px] uppercase tracking-widest border border-amber-200">
+            <label className="flex items-center justify-center gap-2 p-4 bg-amber-50 text-amber-700 rounded-2xl cursor-pointer hover:bg-amber-100 transition-all font-black text-xs uppercase tracking-widest border border-amber-200">
               <Database className="w-4 h-4" /> Importar Siglas
               <input type="file" className="hidden" accept=".xlsx,.xls" onChange={(e) => handleFileUpload(e, 'siglas')} />
             </label>

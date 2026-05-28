@@ -218,13 +218,13 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
 
                 <button 
                   onClick={downloadTemplate}
-                  className="bg-white text-slate-600 border border-slate-200 px-3 py-2.5 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm"
+                  className="bg-white text-slate-600 border border-slate-200 px-3 py-2.5 rounded-xl font-black text-xs uppercase flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm"
                   title="Descargar plantilla Excel"
                 >
                   <Download className="w-3.5 h-3.5" /> Plantilla
                 </button>
 
-                <label className="bg-white text-emerald-700 border border-emerald-200 px-3 py-2.5 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 hover:bg-emerald-50 transition-all shadow-sm cursor-pointer whitespace-nowrap">
+                <label className="bg-white text-emerald-700 border border-emerald-200 px-3 py-2.5 rounded-xl font-black text-xs uppercase flex items-center gap-2 hover:bg-emerald-50 transition-all shadow-sm cursor-pointer whitespace-nowrap">
                   <Upload className="w-3.5 h-3.5" /> 
                   {isImporting ? 'Cargando...' : 'Importar'}
                   <input 
@@ -260,46 +260,46 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="px-6 py-4 text-[10px] uppercase font-black text-slate-500 tracking-wider">Personal / Identificación</th>
-                <th className="px-6 py-4 text-[10px] uppercase font-black text-slate-500 tracking-wider">Contacto</th>
-                <th className="px-6 py-4 text-[10px] uppercase font-black text-slate-500 tracking-wider">Cargo & Categoría</th>
-                <th className="px-6 py-4 text-[10px] uppercase font-black text-slate-500 tracking-wider">
+                <th className="px-6 py-4 text-xs uppercase font-black text-slate-500 tracking-wide">Personal / Identificación</th>
+                <th className="px-6 py-4 text-xs uppercase font-black text-slate-500 tracking-wide">Contacto</th>
+                <th className="px-6 py-4 text-xs uppercase font-black text-slate-500 tracking-wide">Cargo & Categoría</th>
+                <th className="px-6 py-4 text-xs uppercase font-black text-slate-500 tracking-wide">
                   <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> Horas ({monthName})
+                    <Clock className="w-3.5 h-3.5" /> Horas ({monthName})
                   </div>
                 </th>
-                <th className="px-6 py-4 text-[10px] uppercase font-black text-slate-500 tracking-wider">Estado</th>
-                {isAdmin && <th className="px-6 py-4 text-[10px] uppercase font-black text-slate-500 tracking-wider">Acciones</th>}
+                <th className="px-6 py-4 text-xs uppercase font-black text-slate-500 tracking-wide">Estado</th>
+                {isAdmin && <th className="px-6 py-4 text-xs uppercase font-black text-slate-500 tracking-wide">Acciones</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredDocs.map(doc => (
                 <tr key={doc.id} className={`hover:bg-slate-50 transition-colors ${doc.st !== 'activo' && 'opacity-60 bg-rose-50/30'}`}>
                   <td className="px-6 py-4">
-                    <div className="font-bold text-slate-800 text-sm">{doc.nombre} {doc.apellidos || ''}</div>
-                    <div className="text-[10px] text-slate-500 font-mono mt-0.5">CC: {doc.cedula || 'N/R'}</div>
-                    <div className="text-[10px] text-slate-400 font-mono">RM/TP: {doc.registroMedico || 'N/R'}</div>
+                    <div className="font-bold text-slate-800 text-base">{doc.nombre} {doc.apellidos || ''}</div>
+                    <div className="text-xs text-slate-500 font-mono mt-0.5">CC: {doc.cedula || 'N/R'}</div>
+                    <div className="text-xs text-slate-400 font-mono">RM/TP: {doc.registroMedico || 'N/R'}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-xs text-slate-600 max-w-[200px] truncate">{doc.email || 'Sin correo'}</div>
-                    <div className="text-xs text-slate-500">{doc.telefono || 'Sin teléfono'}</div>
+                    <div className="text-sm text-slate-600 max-w-[200px] truncate">{doc.email || 'Sin correo'}</div>
+                    <div className="text-sm text-slate-500">{doc.telefono || 'Sin teléfono'}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-xs font-bold text-emerald-800 block mb-1">{doc.rol || 'Asistencial'}</div>
-                    <span className="inline-block text-[9px] uppercase font-black bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">
+                    <div className="text-sm font-bold text-emerald-800 block mb-1">{doc.rol || 'Asistencial'}</div>
+                    <span className="inline-block text-xs uppercase font-black bg-slate-100 text-slate-600 px-2 py-1 rounded-full border border-slate-200">
                       {doc.cat}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="inline-block bg-slate-800 text-white font-mono text-xs px-2 py-1 rounded-lg font-bold shadow-sm">
+                    <span className="inline-block bg-slate-800 text-white font-mono text-sm px-3 py-1 rounded-lg font-bold shadow-sm">
                       {doc.totalHours}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1 text-[10px] uppercase font-black px-2 py-1 rounded-full border ${
+                    <span className={`inline-flex items-center gap-1.5 text-xs uppercase font-black px-3 py-1.5 rounded-full border ${
                       doc.st === 'activo' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'
                     }`}>
-                      {doc.st === 'activo' ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                      {doc.st === 'activo' ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
                       {doc.st === 'activo' ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
@@ -394,7 +394,7 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
                       Permisos de Acceso
                     </h3>
                     <p className="text-sm font-bold text-slate-700 mt-0.5">{editingPermissionsDoc.nombre} {editingPermissionsDoc.apellidos || ''}</p>
-                    <span className="inline-block text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full mt-1">
+                    <span className="inline-block text-xs font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full mt-1">
                       {editingPermissionsDoc.rol}
                     </span>
                   </div>
@@ -429,10 +429,10 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
                           <span className="text-base">{icon}</span>
                           <span className="font-bold text-slate-800 text-sm">{label}</span>
                           {isDefault && (
-                            <span className="text-[9px] font-black uppercase bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full">defecto</span>
+                            <span className="text-xs font-black uppercase bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full">defecto</span>
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-400 mt-0.5 ml-6">{description}</p>
+                        <p className="text-sm text-slate-400 mt-0.5 ml-6">{description}</p>
                       </div>
                       <div className="shrink-0 mt-0.5">
                         <div
@@ -452,7 +452,7 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
               </div>
 
               <div className="p-6 pt-4 border-t border-slate-100">
-                <p className="text-[10px] text-slate-400 mb-3 italic text-center">Los cambios se guardan automáticamente en Firestore.</p>
+                <p className="text-xs text-slate-400 mb-3 italic text-center">Los cambios se guardan automáticamente en Firestore.</p>
                 <button
                   onClick={() => setEditingPermissionsDoc(null)}
                   className="w-full bg-slate-800 text-white font-black py-3.5 rounded-xl hover:bg-slate-700 transition-all"

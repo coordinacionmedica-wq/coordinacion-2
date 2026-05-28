@@ -77,26 +77,26 @@ export function AuthInboxModal({ isOpen, onClose, requests, doctors, onApprove, 
             <div className="flex gap-2 px-6 pb-3 relative z-10">
               <button
                 onClick={() => setTab('registro')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-black text-xs uppercase transition-all ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-sm uppercase transition-all ${
                   tab === 'registro' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                 }`}
               >
                 <UserPlus className="w-4 h-4" />
                 Registros
                 {pendingReg.length > 0 && (
-                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${ tab === 'registro' ? 'bg-white text-emerald-700' : 'bg-rose-500 text-white'}`}>{pendingReg.length}</span>
+                  <span className={`text-xs font-black px-2 py-0.5 rounded-full ${ tab === 'registro' ? 'bg-white text-emerald-700' : 'bg-rose-500 text-white'}`}>{pendingReg.length}</span>
                 )}
               </button>
               <button
                 onClick={() => setTab('turnos')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-black text-xs uppercase transition-all ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-sm uppercase transition-all ${
                   tab === 'turnos' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                 }`}
               >
                 <Calendar className="w-4 h-4" />
                 Cambios de Turno
                 {pendingShift.length > 0 && (
-                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${ tab === 'turnos' ? 'bg-white text-emerald-700' : 'bg-rose-500 text-white'}`}>{pendingShift.length}</span>
+                  <span className={`text-xs font-black px-2 py-0.5 rounded-full ${ tab === 'turnos' ? 'bg-white text-emerald-700' : 'bg-rose-500 text-white'}`}>{pendingShift.length}</span>
                 )}
               </button>
             </div>
@@ -109,7 +109,7 @@ export function AuthInboxModal({ isOpen, onClose, requests, doctors, onApprove, 
                 pendingReg.length === 0 ? (
                   <div className="text-center py-16">
                     <UserPlus className="w-10 h-10 text-emerald-200 mx-auto mb-3" />
-                    <p className="text-slate-400 font-black uppercase tracking-widest text-xs italic">No hay solicitudes de registro pendientes</p>
+                    <p className="text-slate-400 font-bold text-sm italic">No hay solicitudes de registro pendientes</p>
                   </div>
                 ) : (
                   pendingReg.map(req => {
@@ -127,12 +127,12 @@ export function AuthInboxModal({ isOpen, onClose, requests, doctors, onApprove, 
                               {req.nombre.charAt(0)}
                             </div>
                             <div>
-                              <div className="font-black text-slate-800 text-sm">{prefix} {req.nombre} {req.apellidos}</div>
-                              <div className="text-[10px] text-slate-400 font-mono">CC {req.cedula} · {req.requestedRol}</div>
+                              <div className="font-black text-slate-800 text-base">{prefix} {req.nombre} {req.apellidos}</div>
+                              <div className="text-xs text-slate-400 font-mono">CC {req.cedula} · {req.requestedRol}</div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-slate-400">{new Date(req.createdAt).toLocaleDateString()}</span>
+                            <span className="text-xs text-slate-400">{new Date(req.createdAt).toLocaleDateString()}</span>
                             {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
                           </div>
                         </div>
@@ -147,14 +147,14 @@ export function AuthInboxModal({ isOpen, onClose, requests, doctors, onApprove, 
                             >
                               <div className="p-4 space-y-3">
                                 <div className="grid grid-cols-2 gap-2 text-xs bg-white p-3 rounded-xl border border-slate-100">
-                                  <div><span className="text-slate-400 uppercase font-bold text-[10px]">Email</span><br/><span className="font-bold text-slate-700 break-all">{req.email}</span></div>
-                                  <div><span className="text-slate-400 uppercase font-bold text-[10px]">Teléfono</span><br/><span className="font-bold text-slate-700">{req.telefono || '—'}</span></div>
+                                  <div><span className="text-slate-400 uppercase font-bold text-xs">Email</span><br/><span className="font-bold text-slate-700 break-all text-sm">{req.email}</span></div>
+                                  <div><span className="text-slate-400 uppercase font-bold text-xs">Teléfono</span><br/><span className="font-bold text-slate-700 text-sm">{req.telefono || '—'}</span></div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                   <div>
-                                    <label className="text-[10px] uppercase font-black text-emerald-600 mb-1 block">Rol a asignar</label>
+                                    <label className="text-xs uppercase font-black text-emerald-600 mb-1 block">Rol a asignar</label>
                                     <select
-                                      className="w-full bg-white border border-emerald-200 p-2 rounded-xl text-xs font-bold outline-none"
+                                      className="w-full bg-white border border-emerald-200 p-2.5 rounded-xl text-sm font-bold outline-none"
                                       value={st.rol}
                                       onChange={e => setRegField(req.id, 'rol', e.target.value)}
                                     >
@@ -162,9 +162,9 @@ export function AuthInboxModal({ isOpen, onClose, requests, doctors, onApprove, 
                                     </select>
                                   </div>
                                   <div>
-                                    <label className="text-[10px] uppercase font-black text-emerald-600 mb-1 block">Categoría</label>
+                                    <label className="text-xs uppercase font-black text-emerald-600 mb-1 block">Categoría</label>
                                     <select
-                                      className="w-full bg-white border border-emerald-200 p-2 rounded-xl text-xs font-bold outline-none"
+                                      className="w-full bg-white border border-emerald-200 p-2.5 rounded-xl text-sm font-bold outline-none"
                                       value={st.cat}
                                       onChange={e => setRegField(req.id, 'cat', e.target.value)}
                                     >
@@ -177,14 +177,14 @@ export function AuthInboxModal({ isOpen, onClose, requests, doctors, onApprove, 
                                     <button
                                       onClick={() => handleApproveReg(req)}
                                       disabled={st.loading}
-                                      className="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-2 hover:bg-emerald-700 disabled:opacity-50 transition-all"
+                                      className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:bg-emerald-700 disabled:opacity-50 transition-all"
                                     >
                                       {st.loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                                       APROBAR Y ACTIVAR
                                     </button>
                                     <button
                                       onClick={() => setRegField(req.id, 'showReject', true)}
-                                      className="px-4 bg-rose-50 text-rose-600 border border-rose-200 py-2.5 rounded-xl font-black text-xs hover:bg-rose-100 transition-all"
+                                      className="px-4 bg-rose-50 text-rose-600 border border-rose-200 py-3 rounded-xl font-black text-sm hover:bg-rose-100 transition-all"
                                     >
                                       Rechazar
                                     </button>
@@ -192,7 +192,7 @@ export function AuthInboxModal({ isOpen, onClose, requests, doctors, onApprove, 
                                 ) : (
                                   <div className="space-y-2">
                                     <input
-                                      className="w-full bg-white border border-rose-200 p-2.5 rounded-xl text-xs outline-none font-bold"
+                                      className="w-full bg-white border border-rose-200 p-3 rounded-xl text-sm outline-none font-bold"
                                       placeholder="Motivo del rechazo..."
                                       value={st.rejectReason}
                                       onChange={e => setRegField(req.id, 'rejectReason', e.target.value)}
@@ -201,13 +201,13 @@ export function AuthInboxModal({ isOpen, onClose, requests, doctors, onApprove, 
                                       <button
                                         onClick={() => handleRejectReg(req)}
                                         disabled={st.loading || !st.rejectReason.trim()}
-                                        className="flex-1 bg-rose-600 text-white py-2.5 rounded-xl font-black text-xs disabled:opacity-50 hover:bg-rose-700 transition-all"
+                                        className="flex-1 bg-rose-600 text-white py-3 rounded-xl font-black text-sm disabled:opacity-50 hover:bg-rose-700 transition-all"
                                       >
                                         CONFIRMAR RECHAZO
                                       </button>
                                       <button
                                         onClick={() => setRegField(req.id, 'showReject', false)}
-                                        className="px-4 bg-slate-100 text-slate-600 py-2.5 rounded-xl font-black text-xs hover:bg-slate-200 transition-all"
+                                        className="px-4 bg-slate-100 text-slate-600 py-3 rounded-xl font-black text-sm hover:bg-slate-200 transition-all"
                                       >
                                         Cancelar
                                       </button>
@@ -229,7 +229,7 @@ export function AuthInboxModal({ isOpen, onClose, requests, doctors, onApprove, 
                 pendingShift.length === 0 ? (
                   <div className="text-center py-16">
                     <Calendar className="w-10 h-10 text-emerald-200 mx-auto mb-3" />
-                    <p className="text-slate-400 font-black uppercase tracking-widest text-xs italic">No hay solicitudes de turno pendientes</p>
+                    <p className="text-slate-400 font-bold text-sm italic">No hay solicitudes de turno pendientes</p>
                   </div>
                 ) : (
                   pendingShift.map(req => {
@@ -238,13 +238,13 @@ export function AuthInboxModal({ isOpen, onClose, requests, doctors, onApprove, 
                       <div key={req.id} className="bg-slate-50 border border-emerald-100 p-5 rounded-2xl flex justify-between items-center group hover:border-emerald-500/50 transition-all shadow-sm">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-black text-slate-800 uppercase text-sm">{docName}</span>
-                            <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold uppercase">Turno</span>
+                            <span className="font-black text-slate-800 uppercase text-base">{docName}</span>
+                            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold uppercase">Turno</span>
                           </div>
-                          <div className="text-xs text-emerald-600">
+                          <div className="text-sm text-emerald-600">
                             Día {req.day} — Jornada: <span className="font-bold uppercase">{req.slot}</span>
                           </div>
-                          <p className="text-[11px] text-slate-500 mt-2 italic bg-white p-3 rounded-xl border border-emerald-50 border-dashed">
+                          <p className="text-sm text-slate-500 mt-2 italic bg-white p-3 rounded-xl border border-emerald-50 border-dashed">
                             "{req.reason || 'Sin motivo especificado'}"
                           </p>
                         </div>
@@ -269,7 +269,7 @@ export function AuthInboxModal({ isOpen, onClose, requests, doctors, onApprove, 
               )}
             </div>
 
-            <div className="px-6 pb-5 pt-3 border-t border-slate-100 text-[10px] text-slate-400 italic text-center relative z-10">
+            <div className="px-6 pb-5 pt-3 border-t border-slate-100 text-xs text-slate-400 italic text-center relative z-10">
               Las autorizaciones se reflejan automáticamente en tiempo real.
             </div>
           </motion.div>

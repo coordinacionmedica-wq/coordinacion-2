@@ -16,7 +16,7 @@ export function EditDoctorModal({ doctor, onChange, onSave, onCancel }: Props) {
         <div className="space-y-4 max-h-[70vh] overflow-y-auto px-2 custom-scrollbar">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Nombres</label>
+              <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Nombres</label>
               <input
                 className="w-full bg-stone-50 border border-emerald-100 p-4 rounded-xl text-slate-800 outline-none focus:border-emerald-500 font-bold"
                 value={doctor.nombre}
@@ -25,7 +25,7 @@ export function EditDoctorModal({ doctor, onChange, onSave, onCancel }: Props) {
               />
             </div>
             <div>
-              <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Apellidos</label>
+              <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Apellidos</label>
               <input
                 className="w-full bg-stone-50 border border-emerald-100 p-4 rounded-xl text-slate-800 outline-none focus:border-emerald-500 font-bold"
                 value={doctor.apellidos || ''}
@@ -36,7 +36,7 @@ export function EditDoctorModal({ doctor, onChange, onSave, onCancel }: Props) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Cédula</label>
+              <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Cédula</label>
               <input
                 className="w-full bg-stone-50 border border-emerald-100 p-4 rounded-xl text-slate-800 outline-none focus:border-emerald-500 font-bold"
                 value={doctor.cedula || ''}
@@ -45,7 +45,7 @@ export function EditDoctorModal({ doctor, onChange, onSave, onCancel }: Props) {
               />
             </div>
             <div>
-              <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Registro Médico</label>
+              <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Registro Médico</label>
               <input
                 className="w-full bg-stone-50 border border-emerald-100 p-4 rounded-xl text-slate-800 outline-none focus:border-emerald-500 font-bold"
                 value={doctor.registroMedico || ''}
@@ -56,7 +56,7 @@ export function EditDoctorModal({ doctor, onChange, onSave, onCancel }: Props) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Email</label>
+              <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Email</label>
               <input
                 className="w-full bg-stone-50 border border-emerald-100 p-4 rounded-xl text-slate-800 outline-none focus:border-emerald-500 font-bold"
                 value={doctor.email || ''}
@@ -65,7 +65,7 @@ export function EditDoctorModal({ doctor, onChange, onSave, onCancel }: Props) {
               />
             </div>
             <div>
-              <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Teléfono</label>
+              <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Teléfono</label>
               <input
                 className="w-full bg-stone-50 border border-emerald-100 p-4 rounded-xl text-slate-800 outline-none focus:border-emerald-500 font-bold"
                 value={doctor.telefono || ''}
@@ -75,7 +75,7 @@ export function EditDoctorModal({ doctor, onChange, onSave, onCancel }: Props) {
             </div>
           </div>
           <div>
-            <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Contraseña</label>
+            <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Contraseña</label>
             <input
               className="w-full bg-stone-50 border border-emerald-100 p-4 rounded-xl text-slate-800 outline-none focus:border-emerald-500 font-bold"
               value={doctor.password}
@@ -85,7 +85,7 @@ export function EditDoctorModal({ doctor, onChange, onSave, onCancel }: Props) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Categoría</label>
+              <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Categoría</label>
               <select
                 className="w-full bg-stone-50 border border-emerald-100 p-4 rounded-xl text-slate-800 outline-none focus:border-emerald-500 font-bold"
                 value={doctor.cat}
@@ -99,7 +99,7 @@ export function EditDoctorModal({ doctor, onChange, onSave, onCancel }: Props) {
               </select>
             </div>
             <div>
-              <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Rol</label>
+              <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Rol</label>
               <select
                 className="w-full bg-stone-50 border border-emerald-100 p-4 rounded-xl text-slate-800 outline-none focus:border-emerald-500 font-bold"
                 value={doctor.rol}

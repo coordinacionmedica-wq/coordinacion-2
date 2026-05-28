@@ -134,17 +134,17 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">
+          <p className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-1">
             {MONTH_NAMES[selectedMonth]} {selectedYear}
           </p>
           <h2 className="text-base font-black text-slate-800">Bienvenido, {session.n}</h2>
         </div>
         <div className="flex items-center gap-2">
           {isMonthPublished
-            ? <span className="flex items-center gap-1.5 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-emerald-200"><CheckCircle className="w-3.5 h-3.5" /> Turnero Publicado</span>
-            : <span className="flex items-center gap-1.5 bg-amber-100 text-amber-700 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-amber-200"><Clock className="w-3.5 h-3.5" /> Borrador</span>
+            ? <span className="flex items-center gap-1.5 bg-emerald-100 text-emerald-700 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-emerald-200"><CheckCircle className="w-3.5 h-3.5" /> Turnero Publicado</span>
+            : <span className="flex items-center gap-1.5 bg-amber-100 text-amber-700 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-amber-200"><Clock className="w-3.5 h-3.5" /> Borrador</span>
           }
-          <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border ${isOnline ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
+          <span className={`flex items-center gap-1.5 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full border ${isOnline ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
             <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></span>
             {isOnline ? 'En línea' : 'Sin conexión'}
           </span>
@@ -157,33 +157,33 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
           <div className="absolute right-2 top-2 opacity-5 group-hover:opacity-10 transition-opacity">
             <HeartPulse className="w-16 h-16 text-emerald-600" />
           </div>
-          <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Horas Globales del Mes</p>
+          <p className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-1">Horas Globales del Mes</p>
           <div className="text-5xl font-black text-emerald-600">{globalTotalHours}<span className="text-2xl text-emerald-400 ml-1">h</span></div>
-          <p className="text-[10px] text-slate-400 mt-2 font-mono">Consolidado Triple Sum</p>
+          <p className="text-xs text-slate-400 mt-2 font-mono">Consolidado Triple Sum</p>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-center">
-          <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-2">Médicos Activos</p>
+          <p className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-2">Médicos Activos</p>
           <div className="text-4xl font-black text-slate-800">{doctors.filter(d => d.st === 'activo').length}</div>
-          <p className="text-[9px] text-slate-400 mt-1">de {doctors.length} total</p>
+          <p className="text-xs text-slate-400 mt-1">de {doctors.length} total</p>
         </div>
         <div className={`p-5 rounded-2xl border shadow-sm text-center ${shiftRequests.filter(r => r.status === 'pending' && r.targetMonth === selectedMonth && r.targetYear === selectedYear).length > 0 ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100'}`}>
-          <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-2">Solicitudes Pendientes</p>
+          <p className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-2">Solicitudes Pendientes</p>
           <div className={`text-4xl font-black ${shiftRequests.filter(r => r.status === 'pending' && r.targetMonth === selectedMonth && r.targetYear === selectedYear).length > 0 ? 'text-amber-600' : 'text-slate-800'}`}>
             {shiftRequests.filter(r => r.status === 'pending' && r.targetMonth === selectedMonth && r.targetYear === selectedYear).length}
           </div>
-          <button onClick={() => setActiveTab('solicitudes')} className="text-[9px] text-emerald-600 font-bold underline mt-1 hover:text-emerald-700">ver todas</button>
+          <button onClick={() => setActiveTab('solicitudes')} className="text-xs text-emerald-600 font-bold underline mt-1 hover:text-emerald-700">ver todas</button>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-center">
-          <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-2">Actividades PIC</p>
+          <p className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-2">Actividades PIC</p>
           <div className="text-4xl font-black text-slate-800">{activities.filter(a => a.month === selectedMonth && a.year === selectedYear).length}</div>
-          <button onClick={() => setActiveTab('pic')} className="text-[9px] text-emerald-600 font-bold underline mt-1 hover:text-emerald-700">ver módulo</button>
+          <button onClick={() => setActiveTab('pic')} className="text-xs text-emerald-600 font-bold underline mt-1 hover:text-emerald-700">ver módulo</button>
         </div>
       </div>
 
       {/* ── Emergencias (if visible) ── */}
       {(canSeeCodigoRojo || canSeeCodigoAzul) && (
         <div>
-          <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2 ml-1">Protocolos de Emergencia</p>
+          <p className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-2 ml-1">Protocolos de Emergencia</p>
           <div className="grid grid-cols-2 gap-3">
             {canSeeCodigoRojo && (
               <button
@@ -194,7 +194,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
                   <Flame className="w-6 h-6" />
                 </div>
                 <div className="text-left">
-                  <div className="text-[9px] uppercase opacity-70 leading-none mb-1">Obstetricia</div>
+                  <div className="text-xs uppercase opacity-70 leading-none mb-1">Obstetricia</div>
                   <div className="text-lg">CÓDIGO ROJO</div>
                 </div>
               </button>
@@ -208,7 +208,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
                   <Activity className="w-6 h-6" />
                 </div>
                 <div className="text-left">
-                  <div className="text-[9px] uppercase opacity-70 leading-none mb-1">RCP / Paro</div>
+                  <div className="text-xs uppercase opacity-70 leading-none mb-1">RCP / Paro</div>
                   <div className="text-lg">CÓDIGO AZUL</div>
                 </div>
               </button>
@@ -219,7 +219,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
 
       {/* ── Accesos Rápidos ── */}
       <div>
-        <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2 ml-1">Accesos Rápidos</p>
+        <p className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-2 ml-1">Accesos Rápidos</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { id: 'turnos',      label: 'Turnero',        icon: Calendar,      color: 'text-emerald-600 bg-emerald-50  border-emerald-100', adminOnly: false, perm: null },
@@ -257,7 +257,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
       {/* ── Herramientas (admin/read) ── */}
       {(session.r === 'admin' || session.r === 'read') && (
         <div>
-          <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2 ml-1">Herramientas</p>
+          <p className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-2 ml-1">Herramientas</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button
               onClick={onGenerateAIStats}
@@ -266,7 +266,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
             >
               <Sparkles className={`w-5 h-5 ${isGeneratingAI ? 'animate-spin' : ''}`} />
               <div className="text-left">
-                <div className="text-[9px] uppercase opacity-70">Inteligencia Artificial</div>
+                <div className="text-xs uppercase opacity-70">Inteligencia Artificial</div>
                 <div className="text-sm">{isGeneratingAI ? 'Analizando...' : 'Análisis IA'}</div>
               </div>
             </button>
@@ -276,7 +276,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
             >
               <ClipboardList className="w-5 h-5" />
               <div className="text-left">
-                <div className="text-[9px] uppercase opacity-70">Resumen mensual</div>
+                <div className="text-xs uppercase opacity-70">Resumen mensual</div>
                 <div className="text-sm">Productividad</div>
               </div>
             </button>
@@ -286,7 +286,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
             >
               <Printer className="w-5 h-5" />
               <div className="text-left">
-                <div className="text-[9px] uppercase opacity-70">Vista actual</div>
+                <div className="text-xs uppercase opacity-70">Vista actual</div>
                 <div className="text-sm">Imprimir</div>
               </div>
             </button>
@@ -303,7 +303,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
       >
         <MessageCircle className="w-8 h-8 shrink-0 group-hover:animate-bounce" />
         <div>
-          <div className="text-[9px] uppercase opacity-80 leading-none mb-1">Comunidad Médica</div>
+          <div className="text-xs uppercase opacity-80 leading-none mb-1">Comunidad Médica</div>
           <div className="text-base">UNIRSE AL GRUPO WHATSAPP</div>
         </div>
       </a>
@@ -319,7 +319,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
             <input type="password" placeholder="Nueva Contraseña" className="bg-stone-50 border border-emerald-100 p-3 rounded-xl outline-none focus:border-emerald-500 text-slate-800 text-sm" value={newPass} onChange={(e) => setNewPass(e.target.value)} />
             <button onClick={handleChangePassword} className="bg-emerald-600 text-white font-black rounded-xl hover:scale-105 active:scale-95 transition-transform shadow-lg shadow-emerald-500/20 text-sm">ACTUALIZAR</button>
           </div>
-          <p className="text-[10px] text-slate-400 mt-3 italic">Frecuencia de cambio obligatoria: Cada 90 días.</p>
+          <p className="text-xs text-slate-400 mt-3 italic">Frecuencia de cambio obligatoria: Cada 90 días.</p>
         </div>
       )}
 
@@ -342,7 +342,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-emerald-50 text-[10px] text-emerald-800 font-bold uppercase tracking-wider">
+                <tr className="bg-emerald-50 text-xs text-emerald-800 font-bold uppercase tracking-wider">
                   <th className="p-3 rounded-tl-xl">MÉDICO / ROL</th>
                   {serviceMappings.map(m => <th key={m.id} className="p-3 text-center">{m.name}</th>)}
                   <th className="p-3 text-center">OTROS</th>
@@ -354,17 +354,17 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
                   <tr key={i} className="hover:bg-slate-50 transition-colors">
                     <td className="p-3">
                       <div className="font-bold text-slate-800 text-sm">{res.doctor}</div>
-                      <div className="text-[9px] text-slate-400 uppercase font-mono">{res.role}</div>
+                      <div className="text-xs text-slate-400 uppercase font-mono">{res.role}</div>
                     </td>
                     {serviceMappings.map(m => (
                       <td key={m.id} className="p-3 text-center">
-                        <div className="font-black text-emerald-600 text-sm">{res.stats[m.name].shifts}<span className="text-[9px] font-normal text-slate-400 ml-0.5">T</span></div>
-                        <div className="text-[9px] text-slate-400">{res.stats[m.name].hours}h</div>
+                        <div className="font-black text-emerald-600 text-sm">{res.stats[m.name].shifts}<span className="text-xs font-normal text-slate-400 ml-0.5">T</span></div>
+                        <div className="text-xs text-slate-400">{res.stats[m.name].hours}h</div>
                       </td>
                     ))}
                     <td className="p-3 text-center">
-                      <div className="font-black text-amber-600 text-sm">{res.stats['Otros'].shifts}<span className="text-[9px] font-normal text-slate-400 ml-0.5">T</span></div>
-                      <div className="text-[9px] text-slate-400">{res.stats['Otros'].hours}h</div>
+                      <div className="font-black text-amber-600 text-sm">{res.stats['Otros'].shifts}<span className="text-xs font-normal text-slate-400 ml-0.5">T</span></div>
+                      <div className="text-xs text-slate-400">{res.stats['Otros'].hours}h</div>
                     </td>
                     <td className="p-3 text-center font-black text-slate-800 bg-emerald-50/30">
                       <div className="text-sm">{res.totalDocHours}h</div>
@@ -386,7 +386,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
                 XLSX.utils.book_append_sheet(wb, ws, "Productividad");
                 XLSX.writeFile(wb, `Productividad_${MONTH_NAMES[selectedMonth]}_${selectedYear}.xlsx`);
               }}
-              className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl border border-emerald-200 font-bold text-[10px] uppercase flex items-center gap-2"
+              className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl border border-emerald-200 font-bold text-xs uppercase flex items-center gap-2"
             >
               <FileSpreadsheet className="w-4 h-4" /> Exportar Excel
             </button>
@@ -418,13 +418,13 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
             <Markdown>{aiReport}</Markdown>
           </div>
           <div className="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
-            <p className="text-[9px] text-white/40 uppercase font-mono italic">Generado el {new Date().toLocaleString()}</p>
+            <p className="text-xs text-white/40 uppercase font-mono italic">Generado el {new Date().toLocaleString()}</p>
             <button
               onClick={() => {
                 const win = window.open('', '_blank');
                 win?.document.write(`<html><head><title>Informe IA</title><style>body{font-family:sans-serif;padding:40px;line-height:1.6;color:#333}h2{color:#7c3aed}</style></head><body><h2>Informe Estadístico Gerencial - IA</h2><div style="font-size:14px">${aiReport.replace(/\n/g, '<br>')}</div></body></html>`);
               }}
-              className="text-[10px] font-black underline underline-offset-4 hover:text-violet-400"
+              className="text-xs font-black underline underline-offset-4 hover:text-violet-400"
             >ABRIR PARA IMPRIMIR</button>
           </div>
         </motion.div>
@@ -432,7 +432,7 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
 
       {/* ── Estado del Sistema ── */}
       <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
-        <p className="text-[10px] text-slate-400 font-mono leading-relaxed">
+        <p className="text-xs text-slate-400 font-mono leading-relaxed">
           <span className="font-bold text-slate-500">Motor V27.0</span> — El cálculo "Triple Sum" consolida las 24h por profesional antes de computar los semáforos semanales.
         </p>
       </div>

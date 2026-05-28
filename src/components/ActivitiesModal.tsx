@@ -44,11 +44,11 @@ export function ActivitiesModal({
               </div>
               <div className="flex-1">
                 <h2 className="text-2xl font-black text-slate-800 tracking-tight">PIC - Programa Institucional de Capacitaciones</h2>
-                <p className="text-[10px] text-amber-600 font-bold uppercase tracking-widest tracking-tighter">Plan de Capacitación HDSAR - {monthName} {selectedYear}</p>
+                <p className="text-xs text-amber-600 font-bold uppercase tracking-widest tracking-tighter">Plan de Capacitación HDSAR - {monthName} {selectedYear}</p>
               </div>
               <div className="flex gap-2">
-                <button onClick={onExportExcel} className="px-3 py-2 text-[10px] font-black bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-colors uppercase border border-emerald-100">Excel</button>
-                <button onClick={onExportPDF} className="px-3 py-2 text-[10px] font-black bg-rose-50 text-rose-700 rounded-xl hover:bg-rose-100 transition-colors uppercase border border-rose-100">PDF</button>
+                <button onClick={onExportExcel} className="px-3 py-2 text-xs font-black bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-colors uppercase border border-emerald-100">Excel</button>
+                <button onClick={onExportPDF} className="px-3 py-2 text-xs font-black bg-rose-50 text-rose-700 rounded-xl hover:bg-rose-100 transition-colors uppercase border border-rose-100">PDF</button>
               </div>
             </div>
 
@@ -58,26 +58,26 @@ export function ActivitiesModal({
                   <h4 className="text-xs font-black text-amber-700 uppercase mb-4 tracking-widest">Información de la Actividad</h4>
                   <div className="space-y-4">
                     <div>
-                      <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Nombre de la Actividad</label>
+                      <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Nombre de la Actividad</label>
                       <input placeholder="Nombre de la capacitación" className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" value={newActivity.activityName || ''} onChange={e => setNewActivity({ ...newActivity, activityName: e.target.value })} />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Día</label>
+                        <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Día</label>
                         <input type="number" min={1} max={31} value={newActivity.day || ''} onChange={e => setNewActivity({ ...newActivity, day: Number(e.target.value) })} className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" />
                       </div>
                       <div>
-                        <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Horas</label>
+                        <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Horas</label>
                         <input type="number" value={newActivity.hours || ''} onChange={e => setNewActivity({ ...newActivity, hours: Number(e.target.value) })} className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" />
                       </div>
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Lugar / Ubicación</label>
+                      <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Lugar / Ubicación</label>
                       <input placeholder="Ej: Auditorio HSE" className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" value={newActivity.place || ''} onChange={e => setNewActivity({ ...newActivity, place: e.target.value })} />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Modalidad</label>
+                        <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Modalidad</label>
                         <select value={newActivity.modality} onChange={e => setNewActivity({ ...newActivity, modality: e.target.value as any })} className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold">
                           <option value="presencial">Presencial</option>
                           <option value="virtual">Virtual</option>
@@ -85,17 +85,17 @@ export function ActivitiesModal({
                         </select>
                       </div>
                       <div>
-                        <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Dirigida a</label>
+                        <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Dirigida a</label>
                         <input placeholder="Personal" className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" value={newActivity.targetGroup || ''} onChange={e => setNewActivity({ ...newActivity, targetGroup: e.target.value })} />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Responsable</label>
+                        <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Responsable</label>
                         <input placeholder="Nombre" className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" value={newActivity.responsible || ''} onChange={e => setNewActivity({ ...newActivity, responsible: e.target.value })} />
                       </div>
                       <div>
-                        <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Población Objetivo</label>
+                        <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Población Objetivo</label>
                         <input placeholder="Ej: Médicos" className="w-full bg-white border border-slate-100 p-4 rounded-xl font-bold" value={newActivity.targetPopulation || ''} onChange={e => setNewActivity({ ...newActivity, targetPopulation: e.target.value })} />
                       </div>
                     </div>
@@ -116,7 +116,7 @@ export function ActivitiesModal({
                       { key: 'postTest', label: 'Post-test / Evaluación', icon: FileText }
                     ].map((item) => (
                       <div key={item.key} className="bg-white p-4 rounded-[20px] border border-slate-100 group">
-                        <p className="text-[9px] uppercase font-black text-slate-400 mb-2">{item.label}</p>
+                        <p className="text-xs uppercase font-black text-slate-400 mb-2">{item.label}</p>
                         <div className="flex items-center gap-3">
                           <label className="flex-1 flex items-center justify-between px-4 py-3 bg-stone-50 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-amber-50 hover:border-amber-500 transition-all">
                             <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
@@ -137,13 +137,13 @@ export function ActivitiesModal({
                   </div>
 
                   <div className="mt-8 pt-6 border-t border-slate-200">
-                    <h5 className="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest text-center italic">Actividades del Mes Actual</h5>
+                    <h5 className="text-xs font-black text-slate-400 uppercase mb-4 tracking-widest text-center italic">Actividades del Mes Actual</h5>
                     <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                       {monthActivities.map(a => (
                         <div key={a.id} className="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center group shadow-sm transition-all hover:border-amber-200">
                           <div>
                             <p className="text-xs font-bold text-slate-800 leading-tight">{a.activityName}</p>
-                            <p className="text-[9px] text-amber-600 font-bold uppercase">Día {a.day} • {a.modality} • {a.hours}h</p>
+                            <p className="text-xs text-amber-600 font-bold uppercase">Día {a.day} • {a.modality} • {a.hours}h</p>
                           </div>
                           <button onClick={() => onDelete(a.id)} className="p-2 text-rose-400 hover:bg-rose-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
                             <Trash2 className="w-3.5 h-3.5" />
@@ -151,7 +151,7 @@ export function ActivitiesModal({
                         </div>
                       ))}
                       {monthActivities.length === 0 && (
-                        <p className="text-[10px] text-slate-300 text-center italic py-4">No hay actividades para {monthName}.</p>
+                        <p className="text-xs text-slate-300 text-center italic py-4">No hay actividades para {monthName}.</p>
                       )}
                     </div>
                   </div>

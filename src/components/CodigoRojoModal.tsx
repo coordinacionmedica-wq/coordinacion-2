@@ -38,19 +38,19 @@ export function CodigoRojoModal({ isOpen, onClose }: Props) {
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-white/10 p-3 rounded-2xl border border-white/20">
-                    <div className="text-[10px] uppercase opacity-70 font-bold mb-1">Sensorio</div>
+                    <div className="text-xs uppercase opacity-70 font-bold mb-1">Sensorio</div>
                     <div className="text-xs font-black">Normal / Agitado / Letárgico</div>
                   </div>
                   <div className="bg-white/10 p-3 rounded-2xl border border-white/20">
-                    <div className="text-[10px] uppercase opacity-70 font-bold mb-1">Perfusión</div>
+                    <div className="text-xs uppercase opacity-70 font-bold mb-1">Perfusión</div>
                     <div className="text-xs font-black">Normal / Pálida / Fría / Sudorosa</div>
                   </div>
                   <div className="bg-white/10 p-3 rounded-2xl border border-white/20">
-                    <div className="text-[10px] uppercase opacity-70 font-bold mb-1">Pulso (LPM)</div>
+                    <div className="text-xs uppercase opacity-70 font-bold mb-1">Pulso (LPM)</div>
                     <div className="text-xs font-black">60-90 / 91-100 / 101-120 / &gt;120</div>
                   </div>
                   <div className="bg-white/10 p-3 rounded-2xl border border-white/20">
-                    <div className="text-[10px] uppercase opacity-70 font-bold mb-1">Presión Sistólica</div>
+                    <div className="text-xs uppercase opacity-70 font-bold mb-1">Presión Sistólica</div>
                     <div className="text-xs font-black">&gt;90 / 80-90 / 70-79 / &lt;70 mmHg</div>
                   </div>
                 </div>
@@ -103,7 +103,7 @@ export function CodigoRojoModal({ isOpen, onClose }: Props) {
                   <h3 className="font-black text-slate-800 text-xs mb-4 uppercase flex items-center gap-2">
                     <HeartPulse className="w-4 h-4" /> MINUTO 20-60: HEMOSTASIA
                   </h3>
-                  <div className="space-y-2 text-[10px] font-bold text-slate-500">
+                  <div className="space-y-2 text-xs font-bold text-slate-500">
                     <div className="p-2 bg-slate-100 rounded-lg">Masaje Uterino Bimanual Permanente</div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-2 bg-rose-50 text-rose-700 rounded-lg">Oxitocina: 40 UI IV</div>
@@ -119,7 +119,7 @@ export function CodigoRojoModal({ isOpen, onClose }: Props) {
                   <h3 className="font-black text-rose-500 text-xs mb-4 uppercase flex items-center gap-2">
                     <AlertCircle className="w-4 h-4" /> MANEJO AVANZADO
                   </h3>
-                  <p className="text-[10px] opacity-70 mb-4 italic leading-relaxed">Si la hemorragia persiste tras 60 minutos o el choque es grave:</p>
+                  <p className="text-xs opacity-70 mb-4 italic leading-relaxed">Si la hemorragia persiste tras 60 minutos o el choque es grave:</p>
                   <ul className="space-y-3 text-xs font-black">
                     <li className="flex gap-3 items-center text-rose-400">
                       <div className="w-4 h-4 rounded-full border border-rose-500 flex items-center justify-center text-[8px]">1</div>
@@ -136,7 +136,7 @@ export function CodigoRojoModal({ isOpen, onClose }: Props) {
                   </ul>
                 </div>
                 <div className="p-4 rounded-2xl border-2 border-dashed border-rose-200 text-center">
-                  <p className="text-[9px] font-black text-rose-400 uppercase">🚨 LLAMADO PRIORITARIO: GINECO-OBSTETRICIA</p>
+                  <p className="text-xs font-black text-rose-400 uppercase">🚨 LLAMADO PRIORITARIO: GINECO-OBSTETRICIA</p>
                 </div>
               </div>
             </div>

@@ -84,7 +84,7 @@ export function AyudaView() {
               <FileText className="w-5 h-5" />
             </div>
             <h4 className="font-bold mb-2">Informes de Función</h4>
-            <p className="text-[10px] text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-400 leading-relaxed">
               Resumen para Administrador: Este panel consolida todas las reglas de negocio aplicadas al motor de turnos del hospital.
             </p>
           </div>
@@ -95,7 +95,7 @@ export function AyudaView() {
           <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 overflow-x-auto">
             <table className="w-full text-left text-sm font-medium text-slate-600">
               <thead>
-                <tr className="border-b border-slate-200 uppercase text-[10px] font-black tracking-widest text-slate-400">
+                <tr className="border-b border-slate-200 uppercase text-xs font-black tracking-widest text-slate-400">
                   <th className="pb-4 py-2">Comando / Función</th>
                   <th className="pb-4 py-2">Propósito Operativo</th>
                   <th className="pb-4 py-2">Acceso</th>
@@ -105,22 +105,22 @@ export function AyudaView() {
                 <tr>
                   <td className="py-4 font-bold text-slate-800">cycleShift()</td>
                   <td className="py-4">Ciclar turnos en la cuadrícula mensual</td>
-                  <td className="py-4"><span className="px-2 py-1 bg-sky-100 text-sky-700 rounded-lg text-[10px] font-black">ADMIN</span></td>
+                  <td className="py-4"><span className="px-2 py-1 bg-sky-100 text-sky-700 rounded-lg text-xs font-black">ADMIN</span></td>
                 </tr>
                 <tr>
                   <td className="py-4 font-bold text-slate-800">pushNotification()</td>
                   <td className="py-4">Enviar alertas push a dispositivos registrados</td>
-                  <td className="py-4"><span className="px-2 py-1 bg-sky-100 text-sky-700 rounded-lg text-[10px] font-black">ADMIN / ENF JEF</span></td>
+                  <td className="py-4"><span className="px-2 py-1 bg-sky-100 text-sky-700 rounded-lg text-xs font-black">ADMIN / ENF JEF</span></td>
                 </tr>
                 <tr>
                   <td className="py-4 font-bold text-slate-800">handleCallAvailability()</td>
                   <td className="py-4">Activar protocolo de médico de guardia</td>
-                  <td className="py-4"><span className="px-2 py-1 bg-rose-100 text-rose-700 rounded-lg text-[10px] font-black">ADMIN / ENF JEF</span></td>
+                  <td className="py-4"><span className="px-2 py-1 bg-rose-100 text-rose-700 rounded-lg text-xs font-black">ADMIN / ENF JEF</span></td>
                 </tr>
                 <tr>
                   <td className="py-4 font-bold text-slate-800">updateDoctorMonth()</td>
                   <td className="py-4">Persistencia granular por profesional</td>
-                  <td className="py-4"><span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black">SISTEMA</span></td>
+                  <td className="py-4"><span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-black">SISTEMA</span></td>
                 </tr>
               </tbody>
             </table>

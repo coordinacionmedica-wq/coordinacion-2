@@ -48,18 +48,18 @@ export function CallModal({
               </div>
               <div>
                 <h2 className="text-2xl font-black text-slate-800">Llamado a Disponibilidad</h2>
-                <p className="text-[10px] text-rose-500 font-bold uppercase tracking-widest">Protocolo de Asistencia Institucional</p>
+                <p className="text-xs text-rose-500 font-bold uppercase tracking-widest">Protocolo de Asistencia Institucional</p>
               </div>
             </div>
 
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Día</label>
+                  <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Día</label>
                   <input type="number" min={1} max={daysInMonth} value={callDay} onChange={e => { setCallDay(Number(e.target.value)); setCallTargetId(null); }} className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-bold" />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Jornada</label>
+                  <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Jornada</label>
                   <select value={callSlot} onChange={e => { setCallSlot(e.target.value as SlotType); setCallTargetId(null); }} className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-bold">
                     <option value="m">Mañana</option>
                     <option value="t">Tarde</option>
@@ -69,7 +69,7 @@ export function CallModal({
               </div>
 
               <div>
-                <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Asistencial a Llamar</label>
+                <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Asistencial a Llamar</label>
                 <select
                   value={callTargetId || ''}
                   onChange={e => setCallTargetId(Number(e.target.value))}
@@ -92,7 +92,7 @@ export function CallModal({
 
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Servicio o Labor Administrativa</label>
+                  <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Servicio o Labor Administrativa</label>
                   <select
                     value={callService}
                     onChange={e => setCallService(e.target.value)}
@@ -111,7 +111,7 @@ export function CallModal({
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Administrador / Enfermero que llama</label>
+                  <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Administrador / Enfermero que llama</label>
                   <input
                     type="text"
                     placeholder={sessionName || "Nombre del responsable"}

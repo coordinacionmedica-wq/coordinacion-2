@@ -144,7 +144,7 @@ export function ResetPasswordPage() {
 
         <div className="space-y-3 text-left mb-6">
           <div>
-            <label className="text-[10px] uppercase font-black text-emerald-600 mb-1 block">Nueva contraseña</label>
+            <label className="text-xs uppercase font-black text-emerald-600 mb-1 block">Nueva contraseña</label>
             <div className="relative">
               <input
                 type={showNew ? 'text' : 'password'}
@@ -159,7 +159,7 @@ export function ResetPasswordPage() {
             </div>
           </div>
           <div>
-            <label className="text-[10px] uppercase font-black text-emerald-600 mb-1 block">Confirmar contraseña</label>
+            <label className="text-xs uppercase font-black text-emerald-600 mb-1 block">Confirmar contraseña</label>
             <div className="relative">
               <input
                 type={showConfirm ? 'text' : 'password'}
@@ -186,7 +186,7 @@ export function ResetPasswordPage() {
             : <><ShieldCheck className="w-4 h-4" /> GUARDAR CONTRASEÑA</>
           }
         </button>
-        <p className="text-[10px] text-slate-400 mt-4 uppercase tracking-widest font-mono">COORDINACIÓN MÉDICA HDSAR</p>
+        <p className="text-xs text-slate-400 mt-4 uppercase tracking-widest font-mono">COORDINACIÓN MÉDICA HDSAR</p>
       </motion.div>
     </div>
   );

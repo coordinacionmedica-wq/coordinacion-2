@@ -163,41 +163,41 @@ export function RuralView() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Fecha y Hora del Llamado *</label>
+                  <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Fecha y Hora del Llamado *</label>
                   <div className="flex gap-2">
                     <input type="date" className="flex-1 bg-slate-50 border border-slate-200 px-2 py-1.5 rounded-lg text-sm text-slate-800 outline-none" value={ruralCallDate} onChange={e => setRuralCallDate(e.target.value)} />
                     <input type="time" className="w-28 bg-slate-50 border border-slate-200 px-2 py-1.5 rounded-lg text-sm text-slate-800 outline-none" value={ruralCallTime} onChange={e => setRuralCallTime(e.target.value)} />
                   </div>
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Hora de Llegada al Hospital</label>
+                  <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Hora de Llegada al Hospital</label>
                   <input type="time" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none focus:border-emerald-500" value={ruralHospitalArrival} onChange={e => setRuralHospitalArrival(e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Nombre del Paciente *</label>
+                  <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Nombre del Paciente *</label>
                   <input type="text" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none focus:border-emerald-500" value={ruralPatientName} onChange={e => setRuralPatientName(e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">ID / Cédula del Paciente</label>
+                  <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">ID / Cédula del Paciente</label>
                   <input type="text" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none focus:border-emerald-500" value={ruralPatientId} onChange={e => setRuralPatientId(e.target.value)} />
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Diagnóstico</label>
+                  <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Diagnóstico</label>
                   <input type="text" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none focus:border-emerald-500" value={ruralDiagnosis} onChange={e => setRuralDiagnosis(e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Lugar de Aceptación / Remisión</label>
+                  <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Lugar de Aceptación / Remisión</label>
                   <input type="text" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none focus:border-emerald-500" value={ruralAcceptancePlace} onChange={e => setRuralAcceptancePlace(e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">¿Quién lo llamó?</label>
+                  <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">¿Quién lo llamó?</label>
                   <input type="text" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none focus:border-emerald-500" value={ruralCalledBy} onChange={e => setRuralCalledBy(e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block">Fecha y Hora de Término *</label>
+                  <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block">Fecha y Hora de Término *</label>
                   <div className="flex gap-2">
                     <input type="date" className="flex-1 bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none focus:border-emerald-500" value={ruralEndDate} onChange={e => setRuralEndDate(e.target.value)} />
                     <input type="time" className="w-32 bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none focus:border-emerald-500" value={ruralEndTime} onChange={e => setRuralEndTime(e.target.value)} />
@@ -206,7 +206,7 @@ export function RuralView() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block font-bold">Tipo de Actividad *</label>
+                <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block font-bold">Tipo de Actividad *</label>
                 <select
                   className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-800 outline-none mb-4 focus:border-emerald-500"
                   value={ruralActivityType}
@@ -217,7 +217,7 @@ export function RuralView() {
                   ))}
                 </select>
 
-                <label className="text-[10px] text-slate-400 uppercase font-black ml-2 mb-1 block font-bold">Actividad (Texto Libre)</label>
+                <label className="text-xs text-slate-400 uppercase font-black ml-2 mb-1 block font-bold">Actividad (Texto Libre)</label>
                 <textarea className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-800 outline-none min-h-[100px] focus:border-emerald-500" value={ruralActivity} onChange={e => setRuralActivity(e.target.value)} placeholder="Describa detalles adicionales de la actividad realizada..." />
               </div>
             </div>
@@ -244,14 +244,14 @@ export function RuralView() {
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-bold text-slate-800 uppercase text-sm"> paciente: {r.patientName}</span>
-                        <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-black border border-emerald-200">{r.totalHours} HORAS</span>
+                        <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-black border border-emerald-200">{r.totalHours} HORAS</span>
                       </div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-3">
+                      <div className="text-sm text-slate-500 flex items-center gap-3">
                         <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(r.callDateTime).toLocaleDateString()}</span>
                         <span className="flex items-center gap-1"><Info className="w-3 h-3" /> {r.acceptancePlace || 'Sin destino'}</span>
                       </div>
-                      <p className="text-[11px] text-slate-400 mt-2 line-clamp-1 italic">"{r.activity}"</p>
-                      {isAdminUser && <div className="text-[9px] text-slate-400 mt-1">Médico: {r.doctorName}</div>}
+                      <p className="text-sm text-slate-400 mt-2 line-clamp-1 italic">"{r.activity}"</p>
+                      {isAdminUser && <div className="text-xs text-slate-400 mt-1">Médico: {r.doctorName}</div>}
                     </div>
                     {isAdminUser && (
                       <button
@@ -276,7 +276,7 @@ export function RuralView() {
           <div className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm">
             <div className="space-y-4">
               <div>
-                <p className="text-[10px] text-emerald-600 uppercase font-black mb-2 flex justify-between">Horas Totales (Mes) <Clock className="w-3 h-3" /></p>
+                <p className="text-xs text-emerald-600 uppercase font-black mb-2 flex justify-between">Horas Totales (Mes) <Clock className="w-3 h-3" /></p>
                 <div className="text-4xl font-black text-slate-800">
                   {ruralAvailabilities
                     .filter(r => r.targetMonth === selectedMonth && r.targetYear === selectedYear)
@@ -285,7 +285,7 @@ export function RuralView() {
               </div>
 
               <div className="pt-6 border-t border-slate-100">
-                <p className="text-[10px] text-emerald-600 uppercase font-black mb-4">Top Lugares de Aceptación</p>
+                <p className="text-xs text-emerald-600 uppercase font-black mb-4">Top Lugares de Aceptación</p>
                 <div className="space-y-2">
                   {Object.entries(
                     ruralAvailabilities
@@ -305,7 +305,7 @@ export function RuralView() {
               </div>
 
               <div className="pt-6 border-t border-slate-100">
-                <p className="text-[10px] text-emerald-600 uppercase font-black mb-4">Top Diagnósticos</p>
+                <p className="text-xs text-emerald-600 uppercase font-black mb-4">Top Diagnósticos</p>
                 <div className="space-y-2">
                   {Object.entries(
                     ruralAvailabilities
@@ -328,7 +328,7 @@ export function RuralView() {
 
           <div className="bg-white p-6 rounded-3xl border border-emerald-100 shadow-sm">
             <h4 className="text-xs font-black text-emerald-600 uppercase mb-4">Información de Períodos</h4>
-            <p className="text-[10px] text-slate-400 leading-relaxed italic">
+            <p className="text-xs text-slate-400 leading-relaxed italic">
               Los reportes se consolidan mensualmente. Como administrador, puede filtrar por mes arriba para ver estadísticas de períodos anteriores. Para reportes trimestrales o semestrales, el sistema analiza el acumulado del año actual.
             </p>
 
@@ -340,7 +340,7 @@ export function RuralView() {
                     const filtered = ruralAvailabilities.filter(r => r.targetMonth >= qStartMonth && r.targetMonth <= qStartMonth + 2 && r.targetYear === selectedYear);
                     alert(`Horas totales en el Trimestre: ${filtered.reduce((a, c) => a + c.totalHours, 0).toFixed(1)}h`);
                   }}
-                  className="w-full bg-slate-50 border border-slate-200 text-emerald-600 py-3 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-50 transition-colors"
+                  className="w-full bg-slate-50 border border-slate-200 text-emerald-600 py-3 rounded-xl text-xs font-black uppercase hover:bg-emerald-50 transition-colors"
                 >
                   Cálculo Trimestral Actual
                 </button>
@@ -350,7 +350,7 @@ export function RuralView() {
                     const filtered = ruralAvailabilities.filter(r => r.targetMonth >= sStartMonth && r.targetMonth <= sStartMonth + 5 && r.targetYear === selectedYear);
                     alert(`Horas totales en el Semestre: ${filtered.reduce((a, c) => a + c.totalHours, 0).toFixed(1)}h`);
                   }}
-                  className="w-full bg-slate-50 border border-slate-200 text-emerald-600 py-3 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-50 transition-colors"
+                  className="w-full bg-slate-50 border border-slate-200 text-emerald-600 py-3 rounded-xl text-xs font-black uppercase hover:bg-emerald-50 transition-colors"
                 >
                   Cálculo Semestral Actual
                 </button>

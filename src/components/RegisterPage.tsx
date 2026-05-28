@@ -159,7 +159,7 @@ export function RegisterPage() {
             Su solicitud fue recibida. Un <span className="font-bold text-emerald-600">administrador</span> revisará sus datos y le enviará sus credenciales de acceso al correo registrado.
           </p>
           <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100 text-left space-y-2">
-            <p className="text-[10px] uppercase font-black text-amber-600/60 mb-3">Sus datos registrados</p>
+            <p className="text-xs uppercase font-black text-amber-600/60 mb-3">Sus datos registrados</p>
             <div className="flex justify-between text-sm"><span className="text-slate-500">Nombre</span><span className="font-bold text-slate-700">{regNombre} {regApellidos}</span></div>
             <div className="flex justify-between text-sm"><span className="text-slate-500">Cédula</span><span className="font-bold text-slate-700">{regCedula}</span></div>
             <div className="flex justify-between text-sm"><span className="text-slate-500">Correo</span><span className="font-bold text-slate-700 text-right max-w-[60%] break-all">{regEmail}</span></div>
@@ -188,7 +188,7 @@ export function RegisterPage() {
 
         {inviteData?.message && (
           <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mb-6 text-sm text-emerald-700">
-            <span className="font-black text-[10px] uppercase block mb-1 text-emerald-500">Mensaje del administrador</span>
+            <span className="font-black text-xs uppercase block mb-1 text-emerald-500">Mensaje del administrador</span>
             {inviteData.message}
           </div>
         )}
@@ -202,34 +202,34 @@ export function RegisterPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="space-y-4">
             <div>
-              <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Nombres *</label>
+              <label className="text-xs uppercase font-black text-emerald-600 ml-2 mb-1 block">Nombres *</label>
               <input className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regNombre} onChange={e => setRegNombre(e.target.value)} />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Apellidos *</label>
+              <label className="text-xs uppercase font-black text-emerald-600 ml-2 mb-1 block">Apellidos *</label>
               <input className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regApellidos} onChange={e => setRegApellidos(e.target.value)} />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Cédula de Ciudadanía *</label>
+              <label className="text-xs uppercase font-black text-emerald-600 ml-2 mb-1 block">Cédula de Ciudadanía *</label>
               <input className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regCedula} onChange={e => setRegCedula(e.target.value)} />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Registro Médico / Tarjeta Prof.</label>
+              <label className="text-xs uppercase font-black text-emerald-600 ml-2 mb-1 block">Registro Médico / Tarjeta Prof.</label>
               <input className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regRegistroMedico} onChange={e => setRegRegistroMedico(e.target.value)} />
             </div>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Correo Electrónico *</label>
+              <label className="text-xs uppercase font-black text-emerald-600 ml-2 mb-1 block">Correo Electrónico *</label>
               <input type="email" className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regEmail} onChange={e => setRegEmail(e.target.value)} />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Teléfono / WhatsApp</label>
+              <label className="text-xs uppercase font-black text-emerald-600 ml-2 mb-1 block">Teléfono / WhatsApp</label>
               <input className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regTelefono} onChange={e => setRegTelefono(e.target.value)} />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Cargo / Rol *</label>
+              <label className="text-xs uppercase font-black text-emerald-600 ml-2 mb-1 block">Cargo / Rol *</label>
               <select className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regRol} onChange={e => setRegRol(e.target.value)}>
                 <option value="Médico General">Médico General</option>
                 <option value="Médico Rural">Médico Rural</option>
@@ -244,7 +244,7 @@ export function RegisterPage() {
               </select>
             </div>
             <div>
-              <label className="text-[10px] uppercase font-black text-emerald-600 ml-2 mb-1 block">Sexo *</label>
+              <label className="text-xs uppercase font-black text-emerald-600 ml-2 mb-1 block">Sexo *</label>
               <select className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:border-emerald-500 font-bold" value={regGenero} onChange={e => setRegGenero(e.target.value as 'M' | 'F')}>
                 <option value="M">Masculino (Dr.)</option>
                 <option value="F">Femenino (Dra.)</option>
@@ -268,7 +268,7 @@ export function RegisterPage() {
           )}
         </button>
 
-        <p className="text-center text-[10px] text-slate-400 mt-6 uppercase tracking-widest font-mono">
+        <p className="text-center text-xs text-slate-400 mt-6 uppercase tracking-widest font-mono">
           Sus datos serán revisados por el administrador antes de activar su acceso
         </p>
       </motion.div>

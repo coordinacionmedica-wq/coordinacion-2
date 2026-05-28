@@ -39,18 +39,18 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
         </div>
         <div className="flex-1">
           <h2 className="text-sm font-black text-slate-800">PIC — Programa Institucional de Capacitaciones</h2>
-          <p className="text-[10px] text-amber-600 font-bold uppercase tracking-widest tracking-tighter">Plan de Capacitación HDSAR - {MONTH_NAMES[selectedMonth]} {selectedYear}</p>
+          <p className="text-xs text-amber-600 font-bold uppercase tracking-widest tracking-tighter">Plan de Capacitación HDSAR - {MONTH_NAMES[selectedMonth]} {selectedYear}</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={onExportExcel}
-            className="px-4 py-2 text-[10px] font-black bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-colors uppercase border border-emerald-100 h-fit"
+            className="px-4 py-2 text-xs font-black bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-colors uppercase border border-emerald-100 h-fit"
           >
             Excel
           </button>
           <button
             onClick={onExportPDF}
-            className="px-4 py-2 text-[10px] font-black bg-rose-50 text-rose-700 rounded-xl hover:bg-rose-100 transition-colors uppercase border border-rose-100 h-fit"
+            className="px-4 py-2 text-xs font-black bg-rose-50 text-rose-700 rounded-xl hover:bg-rose-100 transition-colors uppercase border border-rose-100 h-fit"
           >
             PDF
           </button>
@@ -63,7 +63,7 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
             <h4 className="text-xs font-black text-amber-700 uppercase mb-3">Información de la Actividad</h4>
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Nombre de la Actividad</label>
+                <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Nombre de la Actividad</label>
                 <input
                   placeholder="Nombre de la capacitación"
                   className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm"
@@ -73,21 +73,21 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Día</label>
+                  <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Día</label>
                   <input type="number" min={1} max={31} value={newActivity.day || ''} onChange={e => setNewActivity({ ...newActivity, day: Number(e.target.value) })} className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm" />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Horas</label>
+                  <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Horas</label>
                   <input type="number" value={newActivity.hours || ''} onChange={e => setNewActivity({ ...newActivity, hours: Number(e.target.value) })} className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm" />
                 </div>
               </div>
               <div>
-                <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Lugar / Ubicación</label>
+                <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Lugar / Ubicación</label>
                 <input placeholder="Ej: Auditorio HSE" className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm" value={newActivity.place || ''} onChange={e => setNewActivity({ ...newActivity, place: e.target.value })} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Modalidad</label>
+                  <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Modalidad</label>
                   <select value={newActivity.modality} onChange={e => setNewActivity({ ...newActivity, modality: e.target.value as any })} className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm">
                     <option value="presencial">Presencial</option>
                     <option value="virtual">Virtual</option>
@@ -95,17 +95,17 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Dirigida a</label>
+                  <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Dirigida a</label>
                   <input placeholder="Personal" className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm" value={newActivity.targetGroup || ''} onChange={e => setNewActivity({ ...newActivity, targetGroup: e.target.value })} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Responsable</label>
+                  <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Responsable</label>
                   <input placeholder="Nombre" className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm" value={newActivity.responsible || ''} onChange={e => setNewActivity({ ...newActivity, responsible: e.target.value })} />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-black text-slate-400 mb-1 ml-2 block">Población Objetivo</label>
+                  <label className="text-xs uppercase font-black text-slate-400 mb-1 ml-2 block">Población Objetivo</label>
                   <input placeholder="Ej: Médicos" className="w-full bg-white border border-slate-100 px-3 py-2 rounded-lg font-bold text-sm" value={newActivity.targetPopulation || ''} onChange={e => setNewActivity({ ...newActivity, targetPopulation: e.target.value })} />
                 </div>
               </div>
@@ -131,7 +131,7 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
                 { key: 'postTest', label: 'Post-test / Evaluación', icon: FileText }
               ].map((item) => (
                 <div key={item.key} className="bg-white p-3 rounded-lg border border-slate-100 group shadow-sm">
-                  <p className="text-[9px] uppercase font-black text-slate-400 mb-2">{item.label}</p>
+                  <p className="text-xs uppercase font-black text-slate-400 mb-2">{item.label}</p>
                   <div className="flex items-center gap-3">
                     <label className="flex-1 flex items-center justify-between px-4 py-3 bg-stone-50 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-amber-50 hover:border-amber-500 transition-all">
                       <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
@@ -191,15 +191,15 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
                   </div>
                   <div className="flex-1">
                     <h5 className="font-black text-slate-800 uppercase text-xs truncate">{a.activityName}</h5>
-                    <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase">
+                    <div className="flex items-center gap-2 text-xs text-slate-400 font-bold uppercase">
                       <Clock className="w-3 h-3" /> {a.hours}h • {a.modality}
                     </div>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between p-2 bg-slate-50 rounded-xl">
-                    <span className="text-[9px] uppercase font-black text-slate-400">Progreso</span>
-                    <span className="text-[9px] uppercase font-black text-emerald-600">
+                    <span className="text-xs uppercase font-black text-slate-400">Progreso</span>
+                    <span className="text-xs uppercase font-black text-emerald-600">
                       {Object.values(a.files || {}).filter(Boolean).length}/4 Soportes
                     </span>
                   </div>

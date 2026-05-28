@@ -86,7 +86,7 @@ export function ProductivityStatsView({ doctors, currentMonthData, variables, se
             <Clock className="w-8 h-8" />
           </div>
           <div>
-            <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Horas Totales</p>
+            <p className="text-xs uppercase font-black text-slate-400 tracking-widest">Horas Totales</p>
             <p className="text-3xl font-black text-slate-800">{stats.totalHours.toLocaleString()}h</p>
             <p className="text-xs text-slate-500">Ejecutadas en {monthName}</p>
           </div>
@@ -97,7 +97,7 @@ export function ProductivityStatsView({ doctors, currentMonthData, variables, se
             <Activity className="w-8 h-8" />
           </div>
           <div>
-            <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Promedio Diario</p>
+            <p className="text-xs uppercase font-black text-slate-400 tracking-widest">Promedio Diario</p>
             <p className="text-3xl font-black text-slate-800">{(stats.totalHours / daysInMonth).toFixed(1)}h</p>
             <p className="text-xs text-slate-500">Horas por día</p>
           </div>
@@ -108,7 +108,7 @@ export function ProductivityStatsView({ doctors, currentMonthData, variables, se
             <Users className="w-8 h-8" />
           </div>
           <div>
-            <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Productividad Media</p>
+            <p className="text-xs uppercase font-black text-slate-400 tracking-widest">Productividad Media</p>
             <p className="text-3xl font-black text-slate-800">{(stats.totalHours / doctors.filter(d => d.st === 'activo').length).toFixed(1)}h</p>
             <p className="text-xs text-slate-500">Por médico activo</p>
           </div>
