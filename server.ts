@@ -243,6 +243,24 @@ async function startServer() {
     }
   });
 
+  // Default permissions per role (mirrors src/constants.ts)
+  const SERVER_DEFAULT_PERMISSIONS: Record<string, string[]> = {
+    'Médico General':             ['solicitar_turno', 'call_availability', 'ver_pic', 'ver_guias', 'ver_protocolo_rojo', 'ver_protocolo_azul'],
+    'Médico Rural':               ['solicitar_turno', 'call_availability', 'ver_pic', 'ver_guias', 'ver_protocolo_azul'],
+    'Médico Especialista':        ['solicitar_turno', 'ver_pic', 'ver_guias', 'ver_protocolo_rojo', 'ver_protocolo_azul'],
+    'Especialista':               ['solicitar_turno', 'ver_pic', 'ver_guias', 'ver_protocolo_rojo', 'ver_protocolo_azul'],
+    'Médico Obstetra/Ginecólogo': ['solicitar_turno', 'ver_pic', 'ver_guias', 'ver_protocolo_rojo', 'ver_protocolo_azul'],
+    'Enfermero Jefe':             ['ver_pic', 'ver_guias', 'ver_protocolo_rojo', 'ver_protocolo_azul'],
+    'Jefe de Partos':             ['ver_pic', 'ver_guias', 'ver_protocolo_rojo'],
+    'Auxiliar Enfermería':        ['ver_pic', 'ver_guias'],
+    'Interno':                    ['solicitar_turno', 'ver_pic', 'ver_guias', 'ver_protocolo_azul'],
+    'Triage':                     ['ver_pic', 'ver_guias', 'ver_protocolo_azul'],
+    'Odontólogo':                 ['solicitar_turno', 'ver_pic', 'ver_guias'],
+    'Laboratorio':                ['ver_pic', 'ver_guias'],
+    'Fisioterapeuta':             ['ver_pic', 'ver_guias'],
+    'Rayos X':                    ['ver_pic', 'ver_guias'],
+  };
+
   // API Route: Approve a registration request (admin only — called from frontend with admin session)
   app.post("/api/approve-registration", async (req, res) => {
     if (!dbAdmin || !authAdmin) {
@@ -297,7 +315,8 @@ async function startServer() {
         password,
         passwordLastChanged: now,
         createdAt: now,
-        mustChangePassword: true
+        mustChangePassword: true,
+        permissions: SERVER_DEFAULT_PERMISSIONS[assignedRol] || []
       });
 
       await reqRef.update({ status: "approved", reviewedAt: now, reviewedBy: reviewedBy || "Admin", assignedId: newId });

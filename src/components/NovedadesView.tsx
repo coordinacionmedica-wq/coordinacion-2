@@ -28,7 +28,7 @@ interface Props {
   setAiReport: (r: string | null) => void;
   onPushNotification: (doctorId: number, message: string) => void;
   registrationRequests: RegistrationRequest[];
-  onApproveRegistration: (requestId: string, assignedRol: string, assignedCat: string) => Promise<{ username: string; password: string } | void>;
+  onApproveRegistration: (requestId: string, assignedRol: string, assignedCat: string) => Promise<{ username: string; password: string } | undefined>;
   onRejectRegistration: (requestId: string, reason: string) => Promise<void>;
 }
 
@@ -137,9 +137,6 @@ export function NovedadesView({
           </button>
           <button onClick={onExportPDF} className="bg-rose-50 text-rose-700 px-4 py-2 rounded-xl border border-rose-200 font-bold text-[10px] uppercase flex items-center gap-2 hover:bg-rose-100 transition-all">
             <Printer className="w-4 h-4" /> PDF
-          </button>
-          <button onClick={onGenerateAI} className="bg-violet-600 text-white px-6 py-2 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 hover:bg-violet-700 shadow-lg shadow-violet-500/20 animate-pulse">
-            <Sparkles className="w-4 h-4" /> Análisis IA
           </button>
         </div>
       </div>

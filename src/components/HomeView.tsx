@@ -59,17 +59,15 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
   const canSeeCodigoRojo = useMemo(() => {
     if (session?.r === 'admin') return true;
     if (!currentUserProfile) return false;
-    const role = currentUserProfile.rol;
-    return ['Jefe de Partos', 'Enfermero Jefe', 'Médico Obstetra/Ginecólogo', 'Médico Especialista'].includes(role) ||
-           (currentUserProfile.cat === 'Disponibilidad' && (role.includes('Médico') || role.includes('Especialista')));
+    const perms = currentUserProfile.permissions;
+    return perms === undefined ? false : perms.includes('ver_protocolo_rojo');
   }, [session?.r, currentUserProfile]);
 
   const canSeeCodigoAzul = useMemo(() => {
     if (session?.r === 'admin') return true;
     if (!currentUserProfile) return false;
-    const role = currentUserProfile.rol;
-    return ['Médico Rural', 'Médico General', 'Triage', 'Enfermero Jefe', 'Médico Especialista', 'Intensivista'].some(r => role.includes(r)) ||
-           (currentUserProfile.cat === 'Planta' && role.includes('Médico'));
+    const perms = currentUserProfile.permissions;
+    return perms === undefined ? false : perms.includes('ver_protocolo_azul');
   }, [session?.r, currentUserProfile]);
 
   const handleChangePassword = async () => {
@@ -224,15 +222,24 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
         <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2 ml-1">Accesos Rápidos</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { id: 'turnos',      label: 'Turnero',       icon: Calendar,      color: 'text-emerald-600 bg-emerald-50  border-emerald-100' },
-            { id: 'solicitudes', label: 'Solicitudes',   icon: Send,          color: 'text-amber-600  bg-amber-50    border-amber-100'   },
-            { id: 'rural',       label: 'Rural',         icon: MapPin,        color: 'text-sky-600    bg-sky-50      border-sky-100'     },
-            { id: 'novedades',   label: 'Novedades',     icon: ClipboardList, color: 'text-violet-600 bg-violet-50   border-violet-100'  },
-            { id: 'pic',         label: 'Capacitaciones', icon: BrainCircuit, color: 'text-orange-600 bg-orange-50   border-orange-100'  },
-            { id: 'bd',          label: 'Talento Humano', icon: Users,        color: 'text-slate-600  bg-slate-50    border-slate-100'   },
-            { id: 'docs',        label: 'Guías',         icon: FileText,      color: 'text-teal-600   bg-teal-50     border-teal-100'    },
-            { id: 'stats',       label: 'Estadísticas',  icon: BarChart3,     color: 'text-rose-600   bg-rose-50     border-rose-100'    },
-          ].map(item => {
+            { id: 'turnos',      label: 'Turnero',        icon: Calendar,      color: 'text-emerald-600 bg-emerald-50  border-emerald-100', adminOnly: false, perm: null },
+            { id: 'solicitudes', label: 'Solicitudes',    icon: Send,          color: 'text-amber-600  bg-amber-50    border-amber-100',   adminOnly: false, perm: 'solicitar_turno' },
+            { id: 'rural',       label: 'Rural',          icon: MapPin,        color: 'text-sky-600    bg-sky-50      border-sky-100',     adminOnly: false, perm: 'call_availability' },
+            { id: 'novedades',   label: 'Novedades',      icon: ClipboardList, color: 'text-violet-600 bg-violet-50   border-violet-100',  adminOnly: true,  perm: null },
+            { id: 'pic',         label: 'Capacitaciones', icon: BrainCircuit,  color: 'text-orange-600 bg-orange-50   border-orange-100',  adminOnly: false, perm: 'ver_pic' },
+            { id: 'bd',          label: 'Talento Humano', icon: Users,         color: 'text-slate-600  bg-slate-50    border-slate-100',   adminOnly: true,  perm: null },
+            { id: 'docs',        label: 'Guías',          icon: FileText,      color: 'text-teal-600   bg-teal-50     border-teal-100',    adminOnly: false, perm: 'ver_guias' },
+            { id: 'stats',       label: 'Estadísticas',   icon: BarChart3,     color: 'text-rose-600   bg-rose-50     border-rose-100',    adminOnly: true,  perm: null },
+          ].filter(item => {
+            const isPrivileged = session.r === 'admin' || session.r === 'read';
+            if (item.adminOnly && !isPrivileged) return false;
+            if (item.perm && !isPrivileged) {
+              const perms = currentUserProfile?.permissions;
+              return perms === undefined ? true : perms.includes(item.perm);
+            }
+            return true;
+          })
+          .map(item => {
             const Icon = item.icon;
             return (
               <button

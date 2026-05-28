@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { Download, FileText, Upload, Edit, Trash2, Clock, Database, Plus, Check, X, Search, Shield, Filter } from 'lucide-react';
+import { Download, FileText, Upload, Edit, Trash2, Clock, Database, Plus, Check, X, Search, Shield, Filter, RotateCcw } from 'lucide-react';
 import { Doctor, MonthlyData, VarSlotConfig, SlotType } from '../types';
+import { PERMISSION_LABELS, DEFAULT_ROLE_PERMISSIONS, ALL_PERMISSIONS } from '../constants';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -354,64 +355,105 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
       </div>
 
       {/* Modal de Gestión de Permisos */}
-      {editingPermissionsDoc && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[300] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl p-8 border border-emerald-100">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
-                  <Shield className="w-6 h-6 text-emerald-600" />
-                  Configurar Permisos
-                </h3>
-                <p className="text-sm text-slate-500">{editingPermissionsDoc.nombre} {editingPermissionsDoc.apellidos || ''}</p>
-              </div>
-              <button 
-                onClick={() => setEditingPermissionsDoc(null)}
-                className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
+      {editingPermissionsDoc && (() => {
+        const roleDefaults = DEFAULT_ROLE_PERMISSIONS[editingPermissionsDoc.rol] || [];
+        const currentPerms = editingPermissionsDoc.permissions ?? roleDefaults;
 
-            <div className="space-y-4 py-4">
-              <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-emerald-200 cursor-pointer transition-all group">
-                <div className="flex-1">
-                  <span className="block font-bold text-slate-700">Llamado a disponibilidad</span>
-                  <span className="block text-[10px] text-slate-400 uppercase font-black tracking-wider">Permite reportar actividades de disponibilidad rural</span>
+        const togglePerm = (key: string, checked: boolean) => {
+          const updated = checked
+            ? [...currentPerms.filter(p => p !== key), key]
+            : currentPerms.filter(p => p !== key);
+          if (onUpdateDoctorPermissions) onUpdateDoctorPermissions(editingPermissionsDoc.id, updated);
+          setEditingPermissionsDoc({ ...editingPermissionsDoc, permissions: updated });
+        };
+
+        const resetToDefaults = () => {
+          if (onUpdateDoctorPermissions) onUpdateDoctorPermissions(editingPermissionsDoc.id, roleDefaults);
+          setEditingPermissionsDoc({ ...editingPermissionsDoc, permissions: roleDefaults });
+        };
+
+        return (
+          <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[300] flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-lg rounded-[32px] shadow-2xl border border-emerald-100 flex flex-col max-h-[90vh]">
+              {/* Header */}
+              <div className="p-6 pb-4 border-b border-slate-100">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-emerald-600" />
+                      Permisos de Acceso
+                    </h3>
+                    <p className="text-sm font-bold text-slate-700 mt-0.5">{editingPermissionsDoc.nombre} {editingPermissionsDoc.apellidos || ''}</p>
+                    <span className="inline-block text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full mt-1">
+                      {editingPermissionsDoc.rol}
+                    </span>
+                  </div>
+                  <button onClick={() => setEditingPermissionsDoc(null)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400">
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-                <input 
-                  type="checkbox"
-                  className="w-6 h-6 accent-emerald-600 rounded-lg cursor-pointer"
-                  checked={(editingPermissionsDoc.permissions || []).includes('call_availability')}
-                  onChange={(e) => {
-                    const current = editingPermissionsDoc.permissions || [];
-                    const updated = e.target.checked 
-                      ? [...current, 'call_availability']
-                      : current.filter(p => p !== 'call_availability');
-                    
-                    if (onUpdateDoctorPermissions) {
-                      onUpdateDoctorPermissions(editingPermissionsDoc.id, updated);
-                    }
-                    setEditingPermissionsDoc({ ...editingPermissionsDoc, permissions: updated });
-                  }}
-                />
-              </label>
+                <button
+                  onClick={resetToDefaults}
+                  className="mt-3 flex items-center gap-2 text-xs font-bold text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-xl transition-all"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Restaurar permisos por defecto del rol
+                </button>
+              </div>
 
-              {/* Espacio para futuros permisos */}
-              <div className="p-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 text-center">
-                <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Futuros permisos disponibles próximamente</p>
+              {/* Permissions list */}
+              <div className="overflow-y-auto p-6 space-y-2">
+                {ALL_PERMISSIONS.map(key => {
+                  const { label, description, icon } = PERMISSION_LABELS[key];
+                  const isDefault = roleDefaults.includes(key);
+                  const isChecked = currentPerms.includes(key);
+                  return (
+                    <label
+                      key={key}
+                      className={`flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${
+                        isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100 hover:border-slate-200'
+                      }`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{icon}</span>
+                          <span className="font-bold text-slate-800 text-sm">{label}</span>
+                          {isDefault && (
+                            <span className="text-[9px] font-black uppercase bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full">defecto</span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-0.5 ml-6">{description}</p>
+                      </div>
+                      <div className="shrink-0 mt-0.5">
+                        <div
+                          onClick={() => togglePerm(key, !isChecked)}
+                          className={`w-11 h-6 rounded-full transition-all cursor-pointer relative ${
+                            isChecked ? 'bg-emerald-500' : 'bg-slate-300'
+                          }`}
+                        >
+                          <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${
+                            isChecked ? 'left-5' : 'left-0.5'
+                          }`} />
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <div className="p-6 pt-4 border-t border-slate-100">
+                <p className="text-[10px] text-slate-400 mb-3 italic text-center">Los cambios se guardan automáticamente en Firestore.</p>
+                <button
+                  onClick={() => setEditingPermissionsDoc(null)}
+                  className="w-full bg-slate-800 text-white font-black py-3.5 rounded-xl hover:bg-slate-700 transition-all"
+                >
+                  CERRAR
+                </button>
               </div>
             </div>
-
-            <button 
-              onClick={() => setEditingPermissionsDoc(null)}
-              className="w-full mt-6 bg-slate-800 text-white font-black py-4 rounded-xl hover:bg-slate-700 transition-all shadow-lg"
-            >
-              CERRAR GESTIÓN
-            </button>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

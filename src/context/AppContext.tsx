@@ -14,7 +14,7 @@ import {
   ServiceMapping,
   RegistrationRequest
 } from '../types';
-import { MASTER_ADMIN, MASTER_READER, DEFAULT_VARS, MONTH_NAMES, STORAGE_KEYS } from '../constants';
+import { MASTER_ADMIN, MASTER_READER, DEFAULT_VARS, MONTH_NAMES, STORAGE_KEYS, DEFAULT_ROLE_PERMISSIONS } from '../constants';
 import {
   collection,
   onSnapshot,
@@ -130,7 +130,7 @@ interface AppContextType {
 
   // Registration Requests
   registrationRequests: RegistrationRequest[];
-  approveRegistration: (requestId: string, assignedRol: string, assignedCat: string) => Promise<{ username: string; password: string } | void>;
+  approveRegistration: (requestId: string, assignedRol: string, assignedCat: string) => Promise<{ username: string; password: string } | undefined>;
   rejectRegistration: (requestId: string, reason: string) => Promise<void>;
 
   // Shift Requests
@@ -737,7 +737,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [notify]);
 
   // ── Registration Requests ──
-  const approveRegistration = useCallback(async (requestId: string, assignedRol: string, assignedCat: string): Promise<{ username: string; password: string } | void> => {
+  const approveRegistration = useCallback(async (requestId: string, assignedRol: string, assignedCat: string): Promise<{ username: string; password: string } | undefined> => {
     // Try server-side first — creates doctor + sends credentials email
     try {
       const res = await fetch('/api/approve-registration', {
@@ -792,7 +792,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         password,
         passwordLastChanged: now,
         createdAt: now,
-        mustChangePassword: true
+        mustChangePassword: true,
+        permissions: DEFAULT_ROLE_PERMISSIONS[assignedRol] || []
       };
 
       await setDoc(doc(db, 'doctors', newId.toString()), newDoctor);

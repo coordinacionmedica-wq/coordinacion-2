@@ -1,4 +1,4 @@
-import { VarSlotConfig } from "./types";
+import { VarSlotConfig, DoctorRole } from "./types";
 
 export const MASTER_ADMIN = { u: '761798', p: '761798' };
 export const MASTER_READER = { u: 'demo' };
@@ -17,4 +17,34 @@ export const STORAGE_KEYS = {
   VARS: 'sys_vars_v27',
   SESSION: 'sys_sess_v27',
   DATA_PREFIX: 'DATA_V27_'
+};
+
+// ── Permission System ──────────────────────────────────────────────────────────
+
+export const PERMISSION_LABELS: Record<string, { label: string; description: string; icon: string }> = {
+  solicitar_turno:    { label: 'Solicitar cambio de turno',   description: 'Puede enviar solicitudes de cambio de turno al coordinador',                icon: '🔄' },
+  call_availability:  { label: 'Disponibilidad rural',        description: 'Puede registrar actividades de llamados y disponibilidad rural',           icon: '📍' },
+  ver_pic:            { label: 'Módulo de capacitaciones',    description: 'Acceso al módulo PIC de capacitaciones y actividades formativas',         icon: '🎓' },
+  ver_guias:          { label: 'Guías y documentos',          description: 'Acceso a guías clínicas, manuales y documentos institucionales',          icon: '📋' },
+  ver_protocolo_rojo: { label: 'Código Rojo (Obstetricia)',   description: 'Acceso al protocolo de atención de emergencia obstétrica Código Rojo',   icon: '🔴' },
+  ver_protocolo_azul: { label: 'Código Azul (RCP / Paro)',    description: 'Acceso al protocolo de Código Azul y reanimación cardiopulmonar',       icon: '🔵' },
+};
+
+export const ALL_PERMISSIONS = Object.keys(PERMISSION_LABELS);
+
+export const DEFAULT_ROLE_PERMISSIONS: Record<DoctorRole | string, string[]> = {
+  'Médico General':             ['solicitar_turno', 'call_availability', 'ver_pic', 'ver_guias', 'ver_protocolo_rojo', 'ver_protocolo_azul'],
+  'Médico Rural':               ['solicitar_turno', 'call_availability', 'ver_pic', 'ver_guias', 'ver_protocolo_azul'],
+  'Médico Especialista':        ['solicitar_turno', 'ver_pic', 'ver_guias', 'ver_protocolo_rojo', 'ver_protocolo_azul'],
+  'Especialista':               ['solicitar_turno', 'ver_pic', 'ver_guias', 'ver_protocolo_rojo', 'ver_protocolo_azul'],
+  'Médico Obstetra/Ginecólogo': ['solicitar_turno', 'ver_pic', 'ver_guias', 'ver_protocolo_rojo', 'ver_protocolo_azul'],
+  'Enfermero Jefe':             ['ver_pic', 'ver_guias', 'ver_protocolo_rojo', 'ver_protocolo_azul'],
+  'Jefe de Partos':             ['ver_pic', 'ver_guias', 'ver_protocolo_rojo'],
+  'Auxiliar Enfermería':        ['ver_pic', 'ver_guias'],
+  'Interno':                    ['solicitar_turno', 'ver_pic', 'ver_guias', 'ver_protocolo_azul'],
+  'Triage':                     ['ver_pic', 'ver_guias', 'ver_protocolo_azul'],
+  'Odontólogo':                 ['solicitar_turno', 'ver_pic', 'ver_guias'],
+  'Laboratorio':                ['ver_pic', 'ver_guias'],
+  'Fisioterapeuta':             ['ver_pic', 'ver_guias'],
+  'Rayos X':                   ['ver_pic', 'ver_guias'],
 };

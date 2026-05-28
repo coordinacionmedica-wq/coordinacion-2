@@ -9,14 +9,17 @@ import {
   Info,
   Trash2,
   FileSpreadsheet,
+  Download,
   Brain as BrainIcon,
 } from 'lucide-react';
 import { RuralAvailability } from '../types';
 import { setDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAppContext } from '../context/AppContext';
+import { useExportActions } from '../hooks/useExportActions';
 
 export function RuralView() {
+  const exports = useExportActions({ showGridHours: false, doctorFilter: [], selectedRoles: [], selectedCategories: [] });
   const {
     session, ruralAvailabilities,
     selectedMonth, selectedYear,
@@ -130,13 +133,22 @@ export function RuralView() {
           <p className="text-xs text-slate-500 font-mono">Reporte de traslados, remisiones y actividades de personal rural</p>
         </div>
         {isAdminUser && (
-          <button
-            onClick={exportCSV}
-            className="bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-black text-xs flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all shadow-sm"
-          >
-            <FileSpreadsheet className="w-5 h-5" />
-            EXPORTAR EXCEL (CSV)
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={exportCSV}
+              className="bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-black text-xs flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all shadow-sm"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              Excel
+            </button>
+            <button
+              onClick={exports.exportRuralPDF}
+              className="bg-rose-600 text-white px-3 py-1.5 rounded-lg font-black text-xs flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all shadow-sm"
+            >
+              <Download className="w-4 h-4" />
+              PDF
+            </button>
+          </div>
         )}
       </div>
 

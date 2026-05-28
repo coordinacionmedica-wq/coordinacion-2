@@ -5,26 +5,31 @@ import {
 import { useAppContext } from '../context/AppContext';
 
 export function BottomNav() {
-  const { session, activeTab, setActiveTab } = useAppContext();
+  const { session, activeTab, setActiveTab, doctors } = useAppContext();
+
+  const isAdmin = session?.r === 'admin';
+  const isAdminOrRoot = session?.r === 'admin' || session?.r === 'root';
+  const userDoc = !isAdmin && session?.doctorId ? doctors.find(d => d.id === session.doctorId) : null;
+  const hasPerm = (key: string): boolean => {
+    if (isAdmin) return true;
+    const perms = userDoc?.permissions;
+    return perms === undefined ? true : perms.includes(key);
+  };
 
   const navItems = [
-    { id: 'home', icon: ChevronRight, label: 'Inicio' },
-    { id: 'turnos', icon: Calendar, label: 'Turnos' },
-    { id: 'pic', icon: BrainCircuit, label: 'PIC' },
-    { id: 'solicitudes', icon: Send, label: 'Solicita' },
-    { id: 'rural', icon: MapPin, label: 'Rural' },
-    ...((session?.r === 'admin' || session?.r === 'root') ? [
-      { id: 'stats', icon: BarChart3, label: 'Stats' }
-    ] : []),
-    { id: 'novedades', icon: ClipboardList, label: 'Novedades' },
-    { id: 'bd', icon: Database, label: 'TH' },
-    { id: 'docs', icon: FileText, label: 'Guías' },
-    ...(session?.r === 'admin' ? [
-      { id: 'admin', icon: Settings, label: 'Admin' },
-      { id: 'toolbox', icon: Database, label: 'AI' },
-      { id: 'ayuda', icon: BookOpen, label: 'Órdenes' }
-    ] : [])
-  ];
+    { id: 'home',        icon: ChevronRight, label: 'Inicio',   show: true },
+    { id: 'turnos',      icon: Calendar,     label: 'Turnos',   show: true },
+    { id: 'pic',         icon: BrainCircuit, label: 'PIC',      show: hasPerm('ver_pic') },
+    { id: 'solicitudes', icon: Send,         label: 'Solicita', show: hasPerm('solicitar_turno') },
+    { id: 'rural',       icon: MapPin,       label: 'Rural',    show: hasPerm('call_availability') },
+    { id: 'stats',       icon: BarChart3,    label: 'Stats',    show: isAdminOrRoot },
+    { id: 'novedades',   icon: ClipboardList,label: 'Novedades',show: !!isAdmin },
+    { id: 'bd',          icon: Database,     label: 'TH',       show: !!isAdmin },
+    { id: 'docs',        icon: FileText,     label: 'Guías',    show: hasPerm('ver_guias') },
+    { id: 'admin',       icon: Settings,     label: 'Admin',    show: !!isAdmin },
+    { id: 'toolbox',     icon: Database,     label: 'AI',       show: !!isAdmin },
+    { id: 'ayuda',       icon: BookOpen,     label: 'Órdenes',  show: !!isAdmin },
+  ].filter(t => t.show);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-emerald-100 z-50 no-print shadow-2xl">

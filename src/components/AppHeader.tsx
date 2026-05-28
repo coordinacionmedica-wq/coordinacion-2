@@ -37,6 +37,7 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
     session,
     activeTab,
     setActiveTab,
+    doctors,
     shiftRequests,
     userNotifications,
     markNotificationRead,
@@ -185,16 +186,25 @@ export function AppHeader({ isAdminUser, showAuthInbox }: AppHeaderProps) {
           const isAdmin = session.r === 'admin';
           const isAdminOrRoot = session.r === 'admin' || session.r === 'root';
 
+          // Permission helper: admin always passes; doctors check their permissions array
+          const userDoc = !isAdmin && session?.doctorId ? doctors.find(d => d.id === session.doctorId) : null;
+          const hasPerm = (key: string): boolean => {
+            if (isAdmin) return true;
+            const perms = userDoc?.permissions;
+            return perms === undefined ? true : perms.includes(key);
+          };
+
           const primaryTabs = [
-            { id: 'home',        label: 'Inicio',        icon: Home },
-            { id: 'turnos',      label: 'Turnos',        icon: Calendar },
-            { id: 'pic',         label: 'PIC',           icon: BrainCircuit },
-            { id: 'solicitudes', label: 'Solicita',      icon: Send },
-            { id: 'rural',       label: 'Rural',         icon: MapPin },
-            ...(isAdminOrRoot ? [{ id: 'stats', label: 'Estadísticas', icon: BarChart3 }] : []),
-            { id: 'novedades',   label: 'Novedades',     icon: ClipboardList },
-            { id: 'bd',          label: 'Talento Humano',icon: Users },
-          ];
+            { id: 'home',        label: 'Inicio',          icon: Home,          show: true },
+            { id: 'turnos',      label: 'Turnos',          icon: Calendar,      show: true },
+            { id: 'pic',         label: 'PIC',             icon: BrainCircuit,  show: hasPerm('ver_pic') },
+            { id: 'solicitudes', label: 'Solicita',        icon: Send,          show: hasPerm('solicitar_turno') },
+            { id: 'rural',       label: 'Rural',           icon: MapPin,        show: hasPerm('call_availability') },
+            { id: 'stats',       label: 'Estadísticas',    icon: BarChart3,     show: isAdminOrRoot },
+            { id: 'docs',        label: 'Guías',           icon: FileText,      show: !isAdmin && hasPerm('ver_guias') },
+            { id: 'novedades',   label: 'Novedades',       icon: ClipboardList, show: isAdmin },
+            { id: 'bd',          label: 'Talento Humano',  icon: Users,         show: isAdmin },
+          ].filter(t => t.show);
 
           const secondaryTabs = isAdmin ? [
             { id: 'docs',    label: 'Guías',   icon: FileText },
