@@ -122,38 +122,38 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
 
     return (
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-        {/* Header */}
-        <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* Order number badge */}
-            <div className="w-8 h-8 bg-sky-500 text-white rounded-xl flex items-center justify-center font-black text-sm shadow-sm">
+        {/* Header - Optimized for small screens */}
+        <div className="bg-slate-50 px-2 sm:px-4 py-2 sm:py-3 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            {/* Order number badge - smaller on tiny screens */}
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-sky-500 text-white rounded-lg sm:rounded-xl flex items-center justify-center font-black text-xs sm:text-sm shadow-sm shrink-0">
               {med.sortOrder || med.id}
             </div>
-            <div>
-              <div className="font-black text-slate-800">{med.genero === 'F' ? 'Dra.' : 'Dr.'} {med.nombre}</div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-slate-500 font-bold">{med.cat}</span>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+            <div className="min-w-0 flex-1">
+              <div className="font-black text-slate-800 text-xs sm:text-sm truncate">{med.genero === 'F' ? 'Dra.' : 'Dr.'} {med.nombre}</div>
+              <div className="flex items-center gap-1 sm:gap-2 mt-0.5">
+                <span className="text-[10px] sm:text-xs text-slate-500 font-bold">{med.cat}</span>
+                <span className={`text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full ${
                   hourStatus === 'low' ? 'bg-amber-100 text-amber-700' :
                   hourStatus === 'high' ? 'bg-rose-100 text-rose-700' :
                   'bg-emerald-100 text-emerald-700'
-                }`}>{medTotalMonth}h/mes</span>
+                }`}>{medTotalMonth}h</span>
               </div>
             </div>
           </div>
           <button
             onClick={() => setFocusedDoctorId(focusedDoctorId === med.id ? null : med.id)}
-            className="p-2 bg-white rounded-xl border border-slate-200 text-sky-600 shadow-sm"
+            className="p-1.5 sm:p-2 bg-white rounded-lg sm:rounded-xl border border-slate-200 text-sky-600 shadow-sm shrink-0"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
           </button>
         </div>
 
-        {/* Days grid - compact view */}
-        <div className="p-3">
-          <div className="grid grid-cols-7 gap-1">
+        {/* Days grid - responsive for small screens */}
+        <div className="p-2 sm:p-3">
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
             {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(d => (
-              <div key={d} className="text-center text-[10px] font-black text-slate-400 py-1">{d}</div>
+              <div key={d} className="text-center text-[9px] sm:text-[10px] font-black text-slate-400 py-0.5 sm:py-1">{d}</div>
             ))}
             {daysData.map(({ day, dow, isWeekend, isSunday, m, t, n }) => {
               const hasShift = m !== 'X' || t !== 'X' || n !== 'X';
@@ -175,7 +175,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                     setEditingValue(val === 'X' ? '' : val);
                   }}
                   className={`
-                    aspect-square rounded-lg flex flex-col items-center justify-center text-[10px] relative
+                    aspect-square rounded-md sm:rounded-lg flex flex-col items-center justify-center text-[9px] sm:text-[10px] relative min-h-[28px] sm:min-h-[36px]
                     ${isSunday ? 'ring-1 ring-sky-300' : ''}
                     ${isWeekend ? 'bg-sky-50/50' : 'bg-white'}
                     ${hasShift ? 'border-2 border-emerald-200' : 'border border-slate-100'}
@@ -185,13 +185,13 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                   <span className="font-bold text-slate-600">{day}</span>
                   {hasShift && (
                     <div className="flex gap-0.5 mt-0.5">
-                      {m !== 'X' && m !== 'PT' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
-                      {t !== 'X' && t !== 'PT' && <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />}
-                      {n !== 'X' && n !== 'PT' && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />}
+                      {m !== 'X' && m !== 'PT' && <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-500" />}
+                      {t !== 'X' && t !== 'PT' && <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-sky-500" />}
+                      {n !== 'X' && n !== 'PT' && <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-indigo-500" />}
                     </div>
                   )}
-                  {hasPT && <span className="text-[8px] text-amber-600 font-black">PT</span>}
-                  {shiftCount > 0 && <span className="text-[8px] text-slate-400 font-bold">{shiftCount}</span>}
+                  {hasPT && <span className="text-[7px] sm:text-[8px] text-amber-600 font-black">PT</span>}
+                  {shiftCount > 0 && <span className="text-[7px] sm:text-[8px] text-slate-400 font-bold">{shiftCount}</span>}
 
                   {/* Editing overlay */}
                   {editingCell?.doctorId === med.id && editingCell?.day === day && (
@@ -218,34 +218,34 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
             })}
           </div>
 
-          {/* Legend */}
-          <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-slate-100">
-            <div className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-[10px] text-slate-500">Mañana</span>
+          {/* Legend - responsive */}
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-slate-100">
+            <div className="flex items-center gap-0.5 sm:gap-1">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500" />
+              <span className="text-[9px] sm:text-[10px] text-slate-500">M</span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-sky-500" />
-              <span className="text-[10px] text-slate-500">Tarde</span>
+            <div className="flex items-center gap-0.5 sm:gap-1">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-sky-500" />
+              <span className="text-[9px] sm:text-[10px] text-slate-500">T</span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-indigo-500" />
-              <span className="text-[10px] text-slate-500">Noche</span>
+            <div className="flex items-center gap-0.5 sm:gap-1">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-indigo-500" />
+              <span className="text-[9px] sm:text-[10px] text-slate-500">N</span>
             </div>
           </div>
         </div>
 
-        {/* Weekly summary */}
-        <div className="bg-slate-50 px-4 py-2 border-t border-slate-200 flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500">Semanas:</span>
-          <div className="flex gap-2">
+        {/* Weekly summary - responsive */}
+        <div className="bg-slate-50 px-2 sm:px-4 py-1.5 sm:py-2 border-t border-slate-200 flex items-center justify-between">
+          <span className="text-[10px] sm:text-xs font-bold text-slate-500">Sem:</span>
+          <div className="flex gap-1 sm:gap-2">
             {weeklyAcc.map((wv, wi) => (
-              <span key={wi} className={`text-xs font-black px-2 py-0.5 rounded-full ${
+              <span key={wi} className={`text-[10px] sm:text-xs font-black px-1 sm:px-2 py-0.5 rounded-full ${
                 wv >= 66 ? 'bg-rose-100 text-rose-700' :
                 wv >= 42 ? 'bg-emerald-100 text-emerald-700' :
                 'bg-slate-200 text-slate-600'
               }`}>
-                S{wi + 1}: {wv}h
+                S{wi + 1}:{wv}
               </span>
             ))}
           </div>
