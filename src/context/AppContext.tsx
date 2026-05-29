@@ -530,7 +530,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
     // Doctor login — client-side validation against Firestore
     try {
-      try { await signInAnonymously(auth); } catch { /* optional */ }
+      // Ensure anonymous auth is established before querying Firestore
+      if (!auth.currentUser) {
+        try {
+          await signInAnonymously(auth);
+        } catch (authErr) {
+          console.error('Anonymous auth failed:', authErr);
+          alert('Error de autenticación. Por favor recargue la página e intente de nuevo.');
+          return;
+        }
+      }
+
+      // Wait a moment for auth to propagate
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       const q = query(collection(db, 'doctors'), where('username', '==', loginU));
       const snap = await getDocs(q);
       if (snap.empty) { alert('Credenciales inválidas.'); return; }
@@ -549,7 +562,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
     } catch (err) {
       console.error('Login error:', err);
-      alert('Error al iniciar sesión. Intente de nuevo.');
+      alert('Error al iniciar sesión. Verifique su conexión e intente de nuevo.');
     }
   }, []);
 

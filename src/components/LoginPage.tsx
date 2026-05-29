@@ -149,7 +149,12 @@ export function LoginPage() {
     const trimP = loginP.trim();
     if (trimU && trimP) {
       try {
-        if (!auth.currentUser) { await signInAnonymously(auth); }
+        // Ensure auth is established
+        if (!auth.currentUser) {
+          await signInAnonymously(auth);
+          // Small delay to let auth propagate
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
         const q = query(collection(db, 'doctors'), where('username', '==', trimU));
         const snap = await getDocs(q);
         if (!snap.empty) {
@@ -161,7 +166,15 @@ export function LoginPage() {
             return;
           }
         }
-      } catch { /* fall through to normal login */ }
+      } catch (err) {
+        console.error('Pre-login check failed:', err);
+        // If it's an auth error, alert the user
+        if (err instanceof Error && err.message.includes('auth')) {
+          alert('Error de autenticación. Por favor recargue la página e intente de nuevo.');
+          return;
+        }
+        // Otherwise continue to normal login
+      }
     }
     handleLogin(trimU, trimP);
   };
