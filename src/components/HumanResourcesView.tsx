@@ -7,7 +7,7 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-// Componente de input de orden que permite borrar y escribir libremente
+// Componente de input de orden que edita el sortOrder directamente
 interface OrderInputProps {
   doc: Doctor & { totalHours?: number };
   orderedDoctors: (Doctor & { totalHours?: number })[];
@@ -15,28 +15,31 @@ interface OrderInputProps {
 }
 
 function OrderInput({ doc, orderedDoctors, onReorder }: OrderInputProps) {
-  const currentPos = orderedDoctors.findIndex(d => d.id === doc.id) + 1;
-  const [tempValue, setTempValue] = useState(String(currentPos));
+  // Show the actual sortOrder value, not the position
+  const sortOrderValue = doc.sortOrder ?? doc.id;
+  const [tempValue, setTempValue] = useState(String(sortOrderValue));
 
-  // Update temp value when position changes externally (drag)
+  // Update temp value when doc.sortOrder changes externally
   React.useEffect(() => {
-    setTempValue(String(currentPos));
-  }, [currentPos]);
+    setTempValue(String(doc.sortOrder ?? doc.id));
+  }, [doc.sortOrder, doc.id]);
 
   const applyChange = () => {
-    const newPos = parseInt(tempValue, 10);
-    if (isNaN(newPos) || newPos < 1 || newPos > orderedDoctors.length) {
-      setTempValue(String(currentPos)); // Reset on invalid
+    const newSortOrder = parseInt(tempValue, 10);
+    if (isNaN(newSortOrder) || newSortOrder < 1) {
+      setTempValue(String(sortOrderValue)); // Reset on invalid
       return;
     }
-    if (newPos === currentPos) return;
+    if (newSortOrder === sortOrderValue) return;
 
-    const targetIndex = newPos - 1;
-    const currentIndex = orderedDoctors.findIndex(d => d.id === doc.id);
+    // Update this doctor's sortOrder
+    const newOrder = orderedDoctors.map(d =>
+      d.id === doc.id ? { ...d, sortOrder: newSortOrder } : d
+    );
 
-    const newOrder = [...orderedDoctors];
-    const [moved] = newOrder.splice(currentIndex, 1);
-    newOrder.splice(targetIndex, 0, moved);
+    // Re-sort the array by the new sortOrder values
+    newOrder.sort((a, b) => (a.sortOrder ?? a.id) - (b.sortOrder ?? b.id));
+
     onReorder(newOrder);
   };
 
@@ -58,7 +61,7 @@ function OrderInput({ doc, orderedDoctors, onReorder }: OrderInputProps) {
           (e.target as HTMLInputElement).blur();
         }
         if (e.key === 'Escape') {
-          setTempValue(String(currentPos));
+          setTempValue(String(sortOrderValue));
           (e.target as HTMLInputElement).blur();
         }
       }}
