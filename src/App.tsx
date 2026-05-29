@@ -52,7 +52,8 @@ function AppContent() {
     selectedMonth, setSelectedMonth, selectedYear, setSelectedYear, daysInMonth,
     notification, setNotification, notify,
     theme, activeTab,
-    pushNotification, updateMonthlyData,eActivity,
+    pushNotification, updateMonthlyData,
+    saveEditedDoctor, addActivity, deleteActivity, deleteDoctor, saveDoctorOrder,
     submitShiftRequest: ctxSubmitShiftRequest, updateRequestStatus,
     isGeneratingAI, aiReport, setAiReport,
     registrationRequests, approveRegistration, rejectRegistration,
@@ -623,7 +624,7 @@ const handleSubmitShiftRequest = async () => {
               selectedMonth={selectedMonth}
               selectedYear={selectedYear}
               onExport={exports.exportShiftRequests}
-              onUpdateStatus={updateRequestStatus as any}
+              onUpdateStatus={(id, status) => updateRequestStatus(Number(id), status)}
             />
           )}
 
@@ -642,7 +643,7 @@ const handleSubmitShiftRequest = async () => {
               isGeneratingAI={isGeneratingAI}
               aiReport={aiReport}
               setAiReport={setAiReport}
-              onPushNotification={pushNotification}
+              onPushNotification={(id, msg) => { pushNotification(id, msg); }}
               registrationRequests={registrationRequests}
               onApproveRegistration={approveRegistration}
               onRejectRegistration={rejectRegistration}
@@ -674,9 +675,7 @@ const handleSubmitShiftRequest = async () => {
                   setEditingDoc(docData);
                 }}
                 onDeleteDoctor={deleteDoctor}
-                onReorderDoctors={(orderedDoctors) => {
-                  saveDoctorOrder(orderedDoctors.map(d => d.id));
-                }}
+                onSaveDoctorOrder={saveDoctorOrder}
                 onAddDoctorClick={() => {
                   const cleanName = 'nuevo_usuario';
                   const username = `${cleanName}${Math.floor(100 + Math.random() * 900)}`;

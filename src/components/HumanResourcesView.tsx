@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useRef } from 'react';
-import { Download, FileText, Upload, Edit, Trash2, Clock, Database, Plus, Check, X, Search, Shield, Filter, RotateCcw, KeyRound, GripVertical, ListOrdered, Power } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Download, FileText, Upload, Edit, Trash2, Clock, Database, Plus, Check, X, Search, Shield, Filter, RotateCcw, KeyRound, GripVertical, ListOrdered, Power, Save } from 'lucide-react';
 import { Doctor, MonthlyData, VarSlotConfig, SlotType } from '../types';
 import { PERMISSION_LABELS, DEFAULT_ROLE_PERMISSIONS, ALL_PERMISSIONS } from '../constants';
 import { motion, AnimatePresence, Reorder } from 'motion/react';

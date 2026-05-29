@@ -12,7 +12,8 @@ import {
   AvailabilityCall,
   TrainingActivity,
   ServiceMapping,
-  RegistrationRequest
+  RegistrationRequest,
+  DoctorRole
 } from '../types';
 import { MASTER_ADMIN, MASTER_READER, DEFAULT_VARS, MONTH_NAMES, STORAGE_KEYS, DEFAULT_ROLE_PERMISSIONS } from '../constants';
 import {
@@ -318,7 +319,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     const setupListeners = async () => {
-      const isAdminReady = await waitForAdminDoc();
+      await waitForAdminDoc();
 
       // Doctors (any signed-in user)
       unsubs.push(
@@ -826,7 +827,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         passwordLastChanged: now,
         createdAt: now,
         mustChangePassword: true,
-        permissions: DEFAULT_ROLE_PERMISSIONS[assignedRol] || []
+        permissions: DEFAULT_ROLE_PERMISSIONS[assignedRol as DoctorRole] || []
       };
 
       await setDoc(doc(db, 'doctors', newId.toString()), newDoctor);
