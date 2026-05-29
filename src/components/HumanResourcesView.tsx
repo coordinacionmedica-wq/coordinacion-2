@@ -84,7 +84,7 @@ interface Props {
   onUpdateDoctorPermissions?: (id: number, permissions: string[]) => void;
   onImportDoctors?: (doctors: any[]) => void;
   onResetPassword?: (doctor: Doctor) => void;
-  onSaveDoctorOrder?: (orderedIds: number[]) => Promise<void>;
+  onSaveDoctorOrder?: (orderedDoctors: {id: number, sortOrder: number}[]) => Promise<void>;
   evaluations?: Record<string, any>;
   onSaveEvaluation?: (data: any) => Promise<void>;
 }
@@ -200,7 +200,11 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
   const saveOrder = async () => {
     if (!onSaveDoctorOrder) return;
     setSavingOrder(true);
-    await onSaveDoctorOrder(orderedDoctors.map(d => d.id));
+    // Send objects with their updated sortOrder values
+    await onSaveDoctorOrder(orderedDoctors.map((d, idx) => ({
+      id: d.id,
+      sortOrder: d.sortOrder ?? idx + 1  // Use existing sortOrder or position-based
+    })));
     setSavingOrder(false);
     setShowReorderPanel(false);
   };

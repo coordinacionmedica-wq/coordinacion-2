@@ -119,7 +119,7 @@ interface AppContextType {
   deleteDoctor: (id: number) => Promise<void>;
   resetDoctorPass: (id: number) => Promise<void>;
   changePassword: (doctorId: number, oldPass: string, newPass: string) => Promise<void>;
-  saveDoctorOrder: (orderedIds: number[]) => Promise<void>;
+  saveDoctorOrder: (orderedDoctors: {id: number, sortOrder: number}[]) => Promise<void>;
 
   // Variables
   addVariable: (slot: SlotType, code: string, hours: number) => Promise<void>;
@@ -685,17 +685,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [notify]);
 
-  const saveDoctorOrder = useCallback(async (orderedIds: number[]) => {
+  const saveDoctorOrder = useCallback(async (orderedDoctors: {id: number, sortOrder: number}[]) => {
     try {
       await Promise.all(
-        orderedIds.map((id, idx) =>
-          updateDoc(doc(db, 'doctors', id.toString()), { sortOrder: idx })
+        orderedDoctors.map(({ id, sortOrder }) =>
+          updateDoc(doc(db, 'doctors', id.toString()), { sortOrder })
         )
       );
+      notify('Orden actualizado correctamente', 'success');
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, 'doctors/sortOrder');
     }
-  }, []);
+  }, [notify]);
 
   const resetDoctorPass = useCallback(async (id: number) => {
     const defaultPass = `ESE${Math.floor(1000 + Math.random() * 9000)}`;
