@@ -38,10 +38,41 @@ function OrderInput({ doc, orderedDoctors, onReorder }: OrderInputProps) {
     }
     if (newSortOrder === sortOrderValue) return;
 
-    // Update this doctor's sortOrder
-    const newOrder = orderedDoctors.map(d =>
-      d.id === doc.id ? { ...d, sortOrder: newSortOrder } : d
+    // Check if another doctor already has this sortOrder
+    const currentOrderNum = (doc.sortOrder && doc.sortOrder > 0) ? doc.sortOrder : 0;
+    const otherDoctorWithSameOrder = orderedDoctors.find(
+      d => d.id !== doc.id && d.sortOrder === newSortOrder
     );
+
+    let newOrder = [...orderedDoctors];
+
+    if (otherDoctorWithSameOrder) {
+      // Swap: the other doctor gets this doctor's old position
+      newOrder = newOrder.map(d => {
+        if (d.id === doc.id) {
+          return { ...d, sortOrder: newSortOrder };
+        }
+        if (d.id === otherDoctorWithSameOrder.id) {
+          // If current doctor had no order, find next available for the other
+          if (currentOrderNum === 0) {
+            // Find an available slot
+            const usedOrders = new Set(
+              newOrder.map(doc => doc.sortOrder).filter((n): n is number => typeof n === 'number' && n > 0 && n !== newSortOrder)
+            );
+            let nextAvailable = 1;
+            while (usedOrders.has(nextAvailable)) nextAvailable++;
+            return { ...d, sortOrder: nextAvailable };
+          }
+          return { ...d, sortOrder: currentOrderNum };
+        }
+        return d;
+      });
+    } else {
+      // No conflict, just update this doctor
+      newOrder = newOrder.map(d =>
+        d.id === doc.id ? { ...d, sortOrder: newSortOrder } : d
+      );
+    }
 
     // Re-sort the array by the new sortOrder values
     newOrder.sort((a, b) => {
@@ -202,48 +233,70 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
   }, [doctors, currentMonthData, variables, selectedMonth, selectedYear]);
 
   const openReorderPanel = () => {
-    // Sort by existing sortOrder (treating 0/undefined as high values), then by id
-    const sorted = [...docsWithHours].sort((a, b) => {
-      const aOrder = (a.sortOrder && a.sortOrder > 0) ? a.sortOrder : 999999;
-      const bOrder = (b.sortOrder && b.sortOrder > 0) ? b.sortOrder : 999999;
-      if (aOrder !== bOrder) return aOrder - bOrder;
-      return a.id - b.id;
-    });
+    // First pass: collect all valid existing sortOrders
+    const existingOrders = new Set<number>();
+    const docsWithValidOrder: typeof docsWithHours = [];
+    const docsWithoutOrder: typeof docsWithHours = [];
 
-    // Assign consecutive sortOrder starting from 1
-    // Fill gaps: if someone has 15, next gets 1,2,3... avoiding 15
-    const usedOrders = new Set(
-      sorted.map(d => d.sortOrder).filter((n): n is number => typeof n === 'number' && n > 0)
-    );
-
-    let nextAvailable = 1;
-    const withAssignedOrder = sorted.map(doc => {
-      const hasValidOrder = doc.sortOrder && doc.sortOrder > 0;
-      if (hasValidOrder) {
-        // Keep existing order
-        return doc;
+    for (const doc of docsWithHours) {
+      if (doc.sortOrder && doc.sortOrder > 0) {
+        existingOrders.add(doc.sortOrder);
+        docsWithValidOrder.push(doc);
+      } else {
+        docsWithoutOrder.push(doc);
       }
-      // Find next available slot
-      while (usedOrders.has(nextAvailable)) {
+    }
+
+    // Sort those with valid orders
+    docsWithValidOrder.sort((a, b) => a.sortOrder! - b.sortOrder!);
+
+    // Assign orders to those without, filling gaps
+    let nextAvailable = 1;
+    const newlyAssigned: typeof docsWithHours = [];
+
+    for (const doc of docsWithoutOrder) {
+      while (existingOrders.has(nextAvailable)) {
         nextAvailable++;
       }
-      const assignedOrder = nextAvailable++;
-      usedOrders.add(assignedOrder);
-      return { ...doc, sortOrder: assignedOrder };
+      newlyAssigned.push({ ...doc, sortOrder: nextAvailable });
+      existingOrders.add(nextAvailable);
+      nextAvailable++;
+    }
+
+    // Combine and final sort
+    const allDocs = [...docsWithValidOrder, ...newlyAssigned];
+    allDocs.sort((a, b) => {
+      const aOrder = (a.sortOrder && a.sortOrder > 0) ? a.sortOrder : 999999;
+      const bOrder = (b.sortOrder && b.sortOrder > 0) ? b.sortOrder : 999999;
+      return aOrder - bOrder;
     });
 
-    setOrderedDoctors(withAssignedOrder);
+    setOrderedDoctors(allDocs);
     setShowReorderPanel(true);
   };
 
   const saveOrder = async () => {
     if (!onSaveDoctorOrder) return;
     setSavingOrder(true);
-    // Send objects with their updated sortOrder values
-    await onSaveDoctorOrder(orderedDoctors.map((d, idx) => ({
-      id: d.id,
-      sortOrder: d.sortOrder ?? idx + 1  // Use existing sortOrder or position-based
-    })));
+
+    // Detect and fix any duplicate sortOrders before saving
+    const usedOrders = new Set<number>();
+    const finalOrder = orderedDoctors.map((d, idx) => {
+      const requestedOrder = d.sortOrder && d.sortOrder > 0 ? d.sortOrder : idx + 1;
+
+      if (usedOrders.has(requestedOrder)) {
+        // Find next available
+        let nextAvailable = 1;
+        while (usedOrders.has(nextAvailable)) nextAvailable++;
+        usedOrders.add(nextAvailable);
+        return { id: d.id, sortOrder: nextAvailable };
+      }
+
+      usedOrders.add(requestedOrder);
+      return { id: d.id, sortOrder: requestedOrder };
+    });
+
+    await onSaveDoctorOrder(finalOrder);
     setSavingOrder(false);
     setShowReorderPanel(false);
   };
