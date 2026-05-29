@@ -21,6 +21,7 @@ import {
   Flame,
   Activity,
   Bell,
+  Star,
   Info,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -42,10 +43,15 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
     selectedMonth, selectedYear, isMonthPublished, isOnline,
     isGeneratingAI, aiReport, setAiReport,
     setActiveTab, serviceMappings, variables, currentMonthData,
-    changePassword,
+    changePassword, evaluations
   } = useAppContext();
 
   // Local form state
+  const myRating = useMemo(() => {
+    if (!session?.doctorId) return null;
+    return evaluations[`${selectedYear}_${selectedMonth}_${session.doctorId}`];
+  }, [evaluations, session, selectedMonth, selectedYear]);
+
   const [oldPass, setOldPass] = useState('');
   const [newPass, setNewPass] = useState('');
   const [showProductivityStats, setShowProductivityStats] = useState(false);
@@ -160,6 +166,30 @@ export function HomeView({ globalTotalHours, onShowCodigoRojo, onShowCodigoAzul,
           </div>
         </div>
       </div>
+
+      {/* ── Visualización de Calificación (Médicos) ── */}
+      {session.r === 'doctor' && myRating && (
+        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border-2 border-amber-100 rounded-3xl p-6 shadow-xl shadow-amber-500/5 relative overflow-hidden">
+           <div className="absolute -right-4 -top-4 opacity-5"><Star className="w-32 h-32 text-amber-500 fill-amber-500" /></div>
+           <div className="flex items-start gap-5 relative z-10">
+              <div className="bg-amber-50 p-4 rounded-2xl flex flex-col items-center justify-center border border-amber-100 shrink-0">
+                 <span className="text-3xl font-black text-amber-600">{myRating.score}</span>
+                 <div className="flex gap-0.5 mt-1">
+                   {[...Array(5)].map((_, i) => (
+                     <Star key={i} className={`w-2.5 h-2.5 ${i < myRating.score ? 'text-amber-500 fill-amber-500' : 'text-slate-200'}`} />
+                   ))}
+                 </div>
+              </div>
+              <div className="flex-1">
+                 <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-1 flex items-center gap-2">
+                   <Star className="w-4 h-4 text-amber-500" /> Mi Valoración de {MONTH_NAMES[selectedMonth]}
+                 </h3>
+                 <p className="text-sm text-slate-600 leading-relaxed font-medium">"{myRating.comments || 'Sin comentarios adicionales.'}"</p>
+                 <p className="text-[10px] text-slate-400 mt-3 font-bold uppercase">Calificado por: {myRating.adminName} · {new Date(myRating.timestamp).toLocaleDateString()}</p>
+              </div>
+           </div>
+        </motion.div>
+      )}
 
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

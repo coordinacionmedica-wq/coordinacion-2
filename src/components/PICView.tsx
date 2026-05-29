@@ -11,12 +11,11 @@ import {
   Clock,
 } from 'lucide-react';
 import { TrainingActivity } from '../types';
-import { deleteDoc, doc } from 'firebase/firestore';
-import { db, handleFirestoreError } from '../firebase';
 import { MONTH_NAMES } from '../constants';
 import { useAppContext } from '../context/AppContext';
 
 interface PICViewProps {
+  onDeleteActivity: (id: string) => void;
   newActivity: Partial<TrainingActivity>;
   setNewActivity: React.Dispatch<React.SetStateAction<Partial<TrainingActivity>>>;
   onAddActivity: () => void;
@@ -24,7 +23,7 @@ interface PICViewProps {
   onExportPDF: () => void;
 }
 
-export function PICView({ newActivity, setNewActivity, onAddActivity, onExportExcel, onExportPDF }: PICViewProps) {
+export function PICView({ onDeleteActivity, newActivity, setNewActivity, onAddActivity, onExportExcel, onExportPDF }: PICViewProps) {
   const { activities, selectedMonth, selectedYear } = useAppContext();
 
   return (
@@ -171,15 +170,7 @@ export function PICView({ newActivity, setNewActivity, onAddActivity, onExportEx
               <div key={a.id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm relative group overflow-hidden">
                 <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
-                    onClick={async () => {
-                      if (confirm('¿Deseas eliminar esta actividad?')) {
-                        try {
-                          await deleteDoc(doc(db, 'activities', a.id));
-                        } catch (e) {
-                          handleFirestoreError(e, 'delete' as any, 'activities');
-                        }
-                      }
-                    }}
+                    onClick={() => onDeleteActivity(a.id)}
                     className="p-2 text-rose-500 hover:bg-rose-50 rounded-full transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />

@@ -118,12 +118,12 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
 
       <div
         ref={useDragScroll<HTMLDivElement>()}
-        className="overflow-x-auto border border-slate-200 rounded-xl md:rounded-[18px] bg-white shadow-xl overflow-y-hidden custom-scrollbar -mx-1 md:mx-0 select-none"
+        className="overflow-auto border border-slate-200 rounded-xl md:rounded-[18px] bg-white shadow-xl max-h-[calc(100vh-280px)] custom-scrollbar -mx-1 md:mx-0 select-none"
       >
         <table className="w-full text-xs md:text-xs text-center border-collapse">
-          <thead>
+          <thead className="sticky top-0 z-40">
             <tr className="bg-slate-50">
-              <th className="sticky left-0 bg-slate-50 z-30 min-w-[110px] md:min-w-[180px] text-left px-2 md:px-4 py-3 md:py-4 text-sky-700 border-r-2 border-sky-500 border-b border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-xs font-black">
+              <th className="sticky left-0 top-0 bg-slate-50 z-50 min-w-[110px] md:min-w-[180px] text-left px-2 md:px-4 py-3 md:py-4 text-sky-700 border-r-2 border-sky-500 border-b border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-xs font-black">
                 MÉDICO
               </th>
               <th className="w-6 md:w-8 border border-slate-200 text-slate-400 font-black border-b text-xs">J.</th>
@@ -131,18 +131,18 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                 const day = i + 1;
                 const dow = new Date(selectedYear, selectedMonth, day).getDay();
                 return (
-                  <th key={day} className={`px-0.5 md:px-2 py-1 md:py-2 border border-slate-200 border-b ${dow === 0 ? 'border-r-2 border-r-sky-500' : ''} ${dow === 0 || dow === 6 ? 'bg-sky-50/50' : ''}`}>
+                  <th key={day} className={`px-0.5 md:px-2 py-1 md:py-2 border border-slate-200 border-b bg-slate-50 ${dow === 0 ? 'border-r-2 border-r-sky-500' : ''} ${dow === 0 || dow === 6 ? 'bg-sky-50/50' : ''}`}>
                     <div className="text-slate-800 text-xs md:text-sm font-bold">{day}</div>
                     <div className="text-[9px] md:text-xs text-emerald-600 uppercase font-bold">{DAY_NAMES[dow]}</div>
                   </th>
                 );
               })}
               {sundays.map((_, i) => (
-                <th key={i} className="min-w-[30px] md:min-w-[40px] px-1 md:px-2 bg-slate-100 border border-slate-200 border-b text-[7px] md:text-[8px] text-sky-600 font-bold">
+                <th key={i} className="min-w-[30px] md:min-w-[40px] px-1 md:px-2 bg-slate-100 border border-slate-200 border-b text-[7px] md:text-[8px] text-sky-600 font-bold sticky top-0">
                   S{i + 1}
                 </th>
               ))}
-              <th className="sticky right-0 z-30 bg-sky-500 text-white font-black px-2 md:px-4 min-w-[40px] md:min-w-[60px] border-b border-slate-200 shadow-[-2px_0_5px_rgba(0,0,0,0.1)] text-[8px] md:text-xs">TOT</th>
+              <th className="sticky right-0 top-0 z-50 bg-sky-500 text-white font-black px-2 md:px-4 min-w-[40px] md:min-w-[60px] border-b border-slate-200 shadow-[-2px_0_5px_rgba(0,0,0,0.1)] text-[8px] md:text-xs">TOT</th>
             </tr>
           </thead>
           <tbody>

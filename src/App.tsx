@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Bell, Info, WifiOff } from 'lucide-react';
-import { Doctor, DoctorRole, MonthlyData, SlotType, AvailabilityCall, TrainingActivity } from './types';
+import { Doctor, DoctorRole, MonthlyData, SlotType, AvailabilityCall, TrainingActivity, RegistrationRequest } from './types';
 import { MONTH_NAMES } from './constants';
 import { setDoc, doc, updateDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from './firebase';
@@ -52,7 +52,7 @@ function AppContent() {
     selectedMonth, setSelectedMonth, selectedYear, setSelectedYear, daysInMonth,
     notification, setNotification, notify,
     theme, activeTab,
-    pushNotification, updateMonthlyData,
+    pushNotification, updateMonthlyData, evaluations, saveEvaluation,
     saveEditedDoctor, addActivity, deleteActivity, deleteDoctor, saveDoctorOrder,
     submitShiftRequest: ctxSubmitShiftRequest, updateRequestStatus,
     isGeneratingAI, aiReport, setAiReport,
@@ -582,6 +582,7 @@ const handleSubmitShiftRequest = async () => {
 
           {activeTab === 'pic' && (
             <PICView
+              onDeleteActivity={deleteActivity}
               newActivity={newActivity}
               setNewActivity={setNewActivity}
               onAddActivity={handleAddActivity}
@@ -676,6 +677,8 @@ const handleSubmitShiftRequest = async () => {
                 }}
                 onDeleteDoctor={deleteDoctor}
                 onSaveDoctorOrder={saveDoctorOrder}
+                evaluations={evaluations}
+                onSaveEvaluation={saveEvaluation}
                 onAddDoctorClick={() => {
                   const cleanName = 'nuevo_usuario';
                   const username = `${cleanName}${Math.floor(100 + Math.random() * 900)}`;

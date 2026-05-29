@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PhoneIncoming, Users, Clock, Eye, EyeOff } from 'lucide-react';
-import { SlotType, Doctor } from '../types';
+import { SlotType, Doctor, MonthlyData } from '../types';
 import { useAppContext } from '../context/AppContext';
 import { useShiftActions } from '../hooks/useShiftActions';
 import { useTurneroFilters } from '../hooks/useTurneroFilters';
@@ -41,7 +41,7 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
   // AI Suggestions via unified hook
   const { generateAISuggestions, applyAISuggestions } = useAIActions();
   const [aiIsGenerating, setAiIsGenerating] = React.useState(false);
-  const [aiSuggestions, setAiSuggestions] = React.useState<import('../types').MonthlyData | null>(null);
+  const [aiSuggestions, setAiSuggestions] = React.useState<MonthlyData | null>(null);
 
   const ai = {
     isGenerating: aiIsGenerating,
@@ -435,4 +435,3 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
     </motion.div>
   );
 }
-

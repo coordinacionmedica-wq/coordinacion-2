@@ -76,6 +76,8 @@ interface AppContextType {
   activities: TrainingActivity[];
   serviceMappings: ServiceMapping[];
   setServiceMappings: React.Dispatch<React.SetStateAction<ServiceMapping[]>>;
+  evaluations: Record<string, any>;
+  saveEvaluation: (evalData: any) => Promise<void>;
   userNotifications: { id: string; message: string; timestamp: number; read: boolean }[];
   isMonthPublished: boolean;
 
@@ -196,6 +198,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [activities, setActivities] = useState<TrainingActivity[]>([]);
   const [serviceMappings, setServiceMappings] = useState<ServiceMapping[]>([]);
   const [userNotifications, setUserNotifications] = useState<{ id: string; message: string; timestamp: number; read: boolean }[]>([]);
+  const [evaluations, setEvaluations] = useState<Record<string, any>>({});
   const [registrationRequests, setRegistrationRequests] = useState<RegistrationRequest[]>([]);
   const [isMonthPublished, setIsMonthPublished] = useState(false);
 
@@ -387,6 +390,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             if (data?.mappings) setServiceMappings(data.mappings);
           }
         }, (err) => console.error('ServiceMappings listener error:', err))
+      );
+
+      // Evaluations listener
+      unsubs.push(
+        onSnapshot(collection(db, 'evaluations'), (snap) => {
+          const evals: Record<string, any> = {};
+          snap.docs.forEach(d => { evals[d.id] = d.data(); });
+          setEvaluations(evals);
+        }, (err) => console.error('Evaluations listener error:', err))
       );
 
       // Registration Requests — admin-only (rules reject non-admins)
@@ -611,6 +623,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
     await Promise.all(promises);
   }, [selectedMonth, selectedYear]);
+
+  const saveEvaluation = useCallback(async (evalData: any) => {
+    const key = `${evalData.year}_${evalData.month}_${evalData.doctorId}`;
+    try {
+      await setDoc(doc(db, 'evaluations', key), { ...evalData, id: key, timestamp: Date.now(), adminName: session?.n || 'Admin' });
+      notify('Calificación guardada correctamente', 'success');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `evaluations/${key}`);
+    }
+  }, [session, notify]);
 
   const updateThemeAction = useCallback(async (newTheme: { primary: string; font: string }) => {
     try {
@@ -915,6 +937,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     saveEditedDoctor, toggleDoctorStatus, deleteDoctor, saveDoctorOrder, resetDoctorPass, changePassword,
     addVariable, removeVariable,
     addActivity, deleteActivity,
+    evaluations, saveEvaluation,
     saveServiceMappings,
     registrationRequests, approveRegistration, rejectRegistration,
     submitShiftRequest, updateRequestStatus,

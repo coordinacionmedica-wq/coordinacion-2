@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Download, FileText, Upload, Edit, Trash2, Clock, Database, Plus, Check, X, Search, Shield, Filter, RotateCcw, KeyRound, GripVertical, ListOrdered, Power, Save } from 'lucide-react';
-import { Doctor, MonthlyData, VarSlotConfig, SlotType } from '../types';
+import { Download, FileText, Upload, Edit, Trash2, Clock, Database, Plus, Check, X, Search, Shield, Filter, RotateCcw, KeyRound, GripVertical, ListOrdered, Power, Save, Star } from 'lucide-react';
+import { Doctor, MonthlyData, VarSlotConfig, SlotType, DoctorRole } from '../types';
 import { PERMISSION_LABELS, DEFAULT_ROLE_PERMISSIONS, ALL_PERMISSIONS } from '../constants';
 import { motion, AnimatePresence, Reorder } from 'motion/react';
 import * as XLSX from 'xlsx';
@@ -22,10 +22,12 @@ interface Props {
   onImportDoctors?: (doctors: any[]) => void;
   onResetPassword?: (doctor: Doctor) => void;
   onSaveDoctorOrder?: (orderedIds: number[]) => Promise<void>;
+  evaluations?: Record<string, any>;
+  onSaveEvaluation?: (data: any) => Promise<void>;
 }
 
-export function HumanResourcesView({ doctors, currentMonthData, variables, selectedMonth, selectedYear, isAdmin, onUpdateDoctorStatus, onEditDoctor, onDeleteDoctor, onAddDoctorClick, onUpdateDoctorPermissions, onImportDoctors, onResetPassword, onSaveDoctorOrder }: Props) {
-  
+export function HumanResourcesView({ doctors, currentMonthData, variables, selectedMonth, selectedYear, isAdmin, onUpdateDoctorStatus, onEditDoctor, onDeleteDoctor, onAddDoctorClick, onUpdateDoctorPermissions, onImportDoctors, onResetPassword, onSaveDoctorOrder, evaluations, onSaveEvaluation }: Props) {
+
   const [cedulaSearch, setCedulaSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [editingPermissionsDoc, setEditingPermissionsDoc] = useState<Doctor | null>(null);
@@ -33,7 +35,28 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
   const [showReorderPanel, setShowReorderPanel] = useState(false);
   const [orderedDoctors, setOrderedDoctors] = useState<(Doctor & { totalHours?: number })[]>([]);
   const [savingOrder, setSavingOrder] = useState(false);
+  const [ratingDoc, setRatingDoc] = useState<(Doctor & { totalHours?: number }) | null>(null);
+  const [ratingScore, setRatingScore] = useState(5);
+  const [ratingComment, setRatingComment] = useState('');
+  const [isSavingRating, setIsSavingRating] = useState(false);
   const monthName = new Date(selectedYear, selectedMonth).toLocaleString('es-ES', { month: 'long' });
+
+  const handleSaveRating = async () => {
+    if (!ratingDoc || !onSaveEvaluation) return;
+    setIsSavingRating(true);
+    await onSaveEvaluation({
+      doctorId: ratingDoc.id,
+      month: selectedMonth,
+      year: selectedYear,
+      score: ratingScore,
+      comment: ratingComment,
+      timestamp: Date.now()
+    });
+    setIsSavingRating(false);
+    setRatingDoc(null);
+    setRatingScore(5);
+    setRatingComment('');
+  };
 
   const downloadTemplate = () => {
     const templateData = [
@@ -70,9 +93,9 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
           registroMedico: (item.Registro_Medico || item.registro_medico || item['Registro Médico'] || '').toString(),
           email: (item.Email || item.email || '').toString(),
           telefono: (item.Telefono || item.telefono || item['Teléfono'] || '').toString(),
-          cat: (item.Categoria || item.categoria || item['Categoría'] || 'Planta').toString(),
-          rol: (item.Rol || item.rol || 'Médico General').toString(),
-          st: (item.Estado || item.estado || 'activo').toString(),
+          cat: (item.Categoria || item.categoria || item['Categoría'] || 'Planta').toString() as 'Planta' | 'CTA' | 'APS' | 'Rural' | 'Disponibilidad',
+          rol: (item.Rol || item.rol || 'Médico General').toString() as DoctorRole,
+          st: (item.Estado || item.estado || 'activo').toString() as 'activo' | 'inactivo',
           username: (item.Username || item.username || '').toString(),
           password: (item.Password || item.password || '123456').toString()
         }));
@@ -582,6 +605,54 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
           </div>
         );
       })()}
+
+      {/* Modal de Calificación */}
+      <AnimatePresence>
+        {ratingDoc && (
+          <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[400] flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white w-full max-w-md rounded-[32px] shadow-2xl p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                  <Star className="w-6 h-6 text-amber-500 fill-amber-500" />
+                  Calificar Desempeño
+                </h3>
+                <button onClick={() => setRatingDoc(null)} className="text-slate-400 hover:text-rose-500"><X className="w-6 h-6" /></button>
+              </div>
+              <p className="text-sm text-slate-500 mb-6 font-bold uppercase tracking-tight">Médico: <span className="text-emerald-600">{ratingDoc.nombre}</span> <br/> Período: {monthName} {selectedYear}</p>
+              
+              <div className="space-y-6">
+                <div>
+                  <label className="text-xs font-black uppercase text-slate-400 mb-3 block text-center">Puntuación (1 a 5 estrellas)</label>
+                  <div className="flex justify-center gap-2">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <button key={star} onClick={() => setRatingScore(star)} className="transition-transform active:scale-90">
+                        <Star className={`w-10 h-10 ${star <= ratingScore ? 'text-amber-500 fill-amber-500' : 'text-slate-200'}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-black uppercase text-slate-400 mb-2 block">Observaciones y Retroalimentación</label>
+                  <textarea 
+                    className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none focus:border-emerald-500 font-bold text-sm min-h-[120px] resize-none"
+                    placeholder="Escriba aquí los puntos destacados o áreas de mejora..."
+                    value={ratingComment}
+                    onChange={e => setRatingComment(e.target.value)}
+                  />
+                </div>
+                <button 
+                  onClick={handleSaveRating}
+                  disabled={isSavingRating}
+                  className="w-full bg-emerald-600 text-white font-black py-4 rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+                >
+                  {isSavingRating ? <RotateCcw className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                  GUARDAR VALORACIÓN
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
