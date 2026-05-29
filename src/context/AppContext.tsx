@@ -116,6 +116,7 @@ interface AppContextType {
   deleteDoctor: (id: number) => Promise<void>;
   resetDoctorPass: (id: number) => Promise<void>;
   changePassword: (doctorId: number, oldPass: string, newPass: string) => Promise<void>;
+  saveDoctorOrder: (orderedIds: number[]) => Promise<void>;
 
   // Variables
   addVariable: (slot: SlotType, code: string, hours: number) => Promise<void>;
@@ -322,7 +323,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // Doctors (any signed-in user)
       unsubs.push(
         onSnapshot(collection(db, 'doctors'), (snap) => {
-          setDoctors(snap.docs.map(d => ({ id: Number(d.id), ...d.data() } as Doctor)));
+          const docs = snap.docs.map(d => ({ id: Number(d.id), ...d.data() } as Doctor));
+          // Ordenar por sortOrder (si no existe, va al final)
+          setDoctors(docs.sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999)));
         }, (err) => console.error('Doctors listener error:', err))
       );
 
@@ -650,11 +653,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [doctors]);
 
   const deleteDoctor = useCallback(async (id: number) => {
-    if (!confirm('¿Eliminar permanentemente?')) return;
+    if (!confirm('¿Eliminar permanentemente? Esta acción no se puede deshacer.')) return;
     try {
       await deleteDoc(doc(db, 'doctors', id.toString()));
+      notify('Médico eliminado correctamente', 'success');
     } catch (err) {
       handleFirestoreError(err, OperationType.DELETE, `doctors/${id}`);
+    }
+  }, [notify]);
+
+  const saveDoctorOrder = useCallback(async (orderedIds: number[]) => {
+    try {
+      await Promise.all(
+        orderedIds.map((id, idx) =>
+          updateDoc(doc(db, 'doctors', id.toString()), { sortOrder: idx })
+        )
+      );
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, 'doctors/sortOrder');
     }
   }, []);
 
@@ -671,8 +687,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const changePassword = useCallback(async (doctorId: number, oldPass: string, newPass: string) => {
     const d = doctors.find(doc => doc.id === doctorId);
     if (!d) return;
-    if (d.password !== oldPass) { alert('La contraseña actual es incorrecta'); return; }
-    if (newPass.length < 4) { alert('La nueva contraseña debe tener al menos 4 caracteres'); return; }
+    if (d.password !== oldPass) { notify('La contraseña actual es incorrecta', 'error'); return; }
+    if (newPass.length < 6) { notify('La nueva contraseña debe tener al menos 6 caracteres', 'error'); return; }
     try {
       await updateDoc(doc(db, 'doctors', doctorId.toString()), { password: newPass, passwordLastChanged: Date.now(), mustChangePassword: false });
       notify('Contraseña actualizada con éxito', 'success');
@@ -895,7 +911,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     activeTab, setActiveTab,
     handleLogin, handleGoogleLogin, handleLogout,
     pushNotification, markNotificationRead, updateDoctorMonth, updateMonthlyData,
-    saveEditedDoctor, toggleDoctorStatus, deleteDoctor, resetDoctorPass, changePassword,
+    saveEditedDoctor, toggleDoctorStatus, deleteDoctor, saveDoctorOrder, resetDoctorPass, changePassword,
     addVariable, removeVariable,
     addActivity, deleteActivity,
     saveServiceMappings,

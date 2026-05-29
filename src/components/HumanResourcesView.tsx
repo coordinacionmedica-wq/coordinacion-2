@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
-import { Download, FileText, Upload, Edit, Trash2, Clock, Database, Plus, Check, X, Search, Shield, Filter, RotateCcw, KeyRound } from 'lucide-react';
+import React, { useMemo, useState, useRef } from 'react';
+import { Download, FileText, Upload, Edit, Trash2, Clock, Database, Plus, Check, X, Search, Shield, Filter, RotateCcw, KeyRound, GripVertical, ListOrdered, Power } from 'lucide-react';
 import { Doctor, MonthlyData, VarSlotConfig, SlotType } from '../types';
 import { PERMISSION_LABELS, DEFAULT_ROLE_PERMISSIONS, ALL_PERMISSIONS } from '../constants';
+import { motion, AnimatePresence, Reorder } from 'motion/react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -15,18 +16,23 @@ interface Props {
   isAdmin: boolean;
   onUpdateDoctorStatus: (id: number, status: 'activo' | 'inactivo') => void;
   onEditDoctor: (doctor: Doctor) => void;
+  onDeleteDoctor?: (id: number) => void;
   onAddDoctorClick: () => void;
   onUpdateDoctorPermissions?: (id: number, permissions: string[]) => void;
   onImportDoctors?: (doctors: any[]) => void;
   onResetPassword?: (doctor: Doctor) => void;
+  onSaveDoctorOrder?: (orderedIds: number[]) => Promise<void>;
 }
 
-export function HumanResourcesView({ doctors, currentMonthData, variables, selectedMonth, selectedYear, isAdmin, onUpdateDoctorStatus, onEditDoctor, onAddDoctorClick, onUpdateDoctorPermissions, onImportDoctors, onResetPassword }: Props) {
+export function HumanResourcesView({ doctors, currentMonthData, variables, selectedMonth, selectedYear, isAdmin, onUpdateDoctorStatus, onEditDoctor, onDeleteDoctor, onAddDoctorClick, onUpdateDoctorPermissions, onImportDoctors, onResetPassword, onSaveDoctorOrder }: Props) {
   
   const [cedulaSearch, setCedulaSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [editingPermissionsDoc, setEditingPermissionsDoc] = useState<Doctor | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [showReorderPanel, setShowReorderPanel] = useState(false);
+  const [orderedDoctors, setOrderedDoctors] = useState<(Doctor & { totalHours?: number })[]>([]);
+  const [savingOrder, setSavingOrder] = useState(false);
   const monthName = new Date(selectedYear, selectedMonth).toLocaleString('es-ES', { month: 'long' });
 
   const downloadTemplate = () => {
@@ -98,6 +104,20 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
       return { ...doc, totalHours };
     });
   }, [doctors, currentMonthData, variables, selectedMonth, selectedYear]);
+
+  const openReorderPanel = () => {
+    const sorted = [...docsWithHours].sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
+    setOrderedDoctors(sorted);
+    setShowReorderPanel(true);
+  };
+
+  const saveOrder = async () => {
+    if (!onSaveDoctorOrder) return;
+    setSavingOrder(true);
+    await onSaveDoctorOrder(orderedDoctors.map(d => d.id));
+    setSavingOrder(false);
+    setShowReorderPanel(false);
+  };
 
   const filteredDocs = useMemo(() => {
     return docsWithHours.filter(d => {
@@ -217,6 +237,14 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
                 </button>
 
                 <button 
+                  onClick={openReorderPanel}
+                  className="bg-sky-600 text-white px-4 py-2.5 rounded-xl font-black text-xs uppercase flex items-center gap-2 hover:bg-sky-700 transition-all shadow-lg hover:-translate-y-0.5"
+                  title="Cambiar orden de visualización"
+                >
+                  <ListOrdered className="w-4 h-4" /> Organizar
+                </button>
+
+                <button 
                   onClick={downloadTemplate}
                   className="bg-white text-slate-600 border border-slate-200 px-3 py-2.5 rounded-xl font-black text-xs uppercase flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm"
                   title="Descargar plantilla Excel"
@@ -315,15 +343,24 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
                         </button>
                         <button 
                           onClick={() => onUpdateDoctorStatus(doc.id, doc.st === 'activo' ? 'inactivo' : 'activo')}
-                          className={`p-1.5 rounded-lg transition-colors border border-transparent ${
+                          className={`p-1.5 rounded-lg transition-all border border-transparent ${
                             doc.st === 'activo' 
-                              ? 'text-slate-400 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200' 
+                              ? 'text-slate-400 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200' 
                               : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200'
                           }`}
                           title={doc.st === 'activo' ? 'Desactivar' : 'Activar'}
                         >
-                          {doc.st === 'activo' ? <Trash2 className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+                          {doc.st === 'activo' ? <Power className="w-4 h-4" /> : <Check className="w-4 h-4" />}
                         </button>
+                        {onDeleteDoctor && (
+                          <button 
+                            onClick={() => onDeleteDoctor(doc.id)}
+                            className="p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all border border-transparent hover:border-rose-200"
+                            title="Eliminar registro"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                         <button 
                           onClick={() => setEditingPermissionsDoc(doc)}
                           className="p-1.5 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-colors border border-transparent hover:border-emerald-200"
@@ -363,6 +400,87 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
           )}
         </div>
       </div>
+
+      {/* Modal de Reordenamiento con Tarjetas */}
+      <AnimatePresence>
+        {showReorderPanel && (
+          <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[350] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-4xl rounded-[40px] shadow-2xl border border-emerald-100 flex flex-col max-h-[90vh]"
+            >
+              <div className="p-8 pb-4 border-b border-slate-100 flex justify-between items-center">
+                <div>
+                  <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3">
+                    <ListOrdered className="w-7 h-7 text-sky-500" />
+                    Organizar Personal
+                  </h3>
+                  <p className="text-slate-500 font-medium">Arrastra las tarjetas para cambiar el orden de visualización y análisis de desempeño.</p>
+                </div>
+                <button onClick={() => setShowReorderPanel(false)} className="p-2 bg-slate-100 rounded-full text-slate-400 hover:text-rose-500 transition-colors">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                <Reorder.Group 
+                  axis="y" 
+                  values={orderedDoctors} 
+                  onReorder={setOrderedDoctors}
+                  className="space-y-3"
+                >
+                  {orderedDoctors.map((doc) => (
+                    <Reorder.Item 
+                      key={doc.id} 
+                      value={doc}
+                      className="bg-white border border-slate-200 p-5 rounded-[24px] flex items-center gap-5 shadow-sm hover:border-emerald-400 transition-all cursor-grab active:cursor-grabbing group select-none"
+                    >
+                      <div className="p-3 bg-slate-50 rounded-2xl text-slate-300 group-hover:text-emerald-500 group-hover:bg-emerald-50 transition-all">
+                        <GripVertical className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1 flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                          <div className="font-black text-slate-800 text-lg">{doc.nombre} {doc.apellidos || ''}</div>
+                          <div className="flex items-center gap-2">
+                             <span className="text-[10px] font-black uppercase bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{doc.rol}</span>
+                             <span className="text-[10px] font-black uppercase bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">{doc.cat}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-6">
+                           <div className="text-right">
+                              <p className="text-[10px] font-black text-slate-400 uppercase leading-none">Carga Horaria</p>
+                              <p className="text-xl font-black text-slate-800">{doc.totalHours || 0}h</p>
+                           </div>
+                           <div className={`w-3 h-3 rounded-full ${doc.st === 'activo' ? 'bg-emerald-500' : 'bg-rose-500'} shadow-sm shadow-black/10`} title={doc.st} />
+                        </div>
+                      </div>
+                    </Reorder.Item>
+                  ))}
+                </Reorder.Group>
+              </div>
+
+              <div className="p-8 pt-4 border-t border-slate-100 flex gap-4">
+                <button
+                  onClick={() => setShowReorderPanel(false)}
+                  className="flex-1 bg-slate-100 text-slate-500 font-black py-4 rounded-2xl hover:bg-slate-200 transition-all uppercase text-xs tracking-widest"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={saveOrder}
+                  disabled={savingOrder}
+                  className="flex-[2] bg-emerald-600 text-white font-black py-4 rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 uppercase text-xs tracking-widest"
+                >
+                  {savingOrder ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  Guardar Nuevo Orden
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Modal de Gestión de Permisos */}
       {editingPermissionsDoc && (() => {

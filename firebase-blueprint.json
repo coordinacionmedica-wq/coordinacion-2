@@ -13,7 +13,8 @@
         "contacto": { "type": "string" },
         "username": { "type": "string" },
         "password": { "type": "string" },
-        "passwordLastChanged": { "type": "number" }
+        "passwordLastChanged": { "type": "number" },
+        "sortOrder": { "type": "number" }
       },
       "required": ["id", "nombre", "cat", "rol", "st", "username", "password"]
     },

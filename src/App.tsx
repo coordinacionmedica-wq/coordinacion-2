@@ -52,8 +52,7 @@ function AppContent() {
     selectedMonth, setSelectedMonth, selectedYear, setSelectedYear, daysInMonth,
     notification, setNotification, notify,
     theme, activeTab,
-    pushNotification, updateMonthlyData,
-    saveEditedDoctor, addActivity, deleteActivity,
+    pushNotification, updateMonthlyData,eActivity,
     submitShiftRequest: ctxSubmitShiftRequest, updateRequestStatus,
     isGeneratingAI, aiReport, setAiReport,
     registrationRequests, approveRegistration, rejectRegistration,
@@ -673,6 +672,10 @@ const handleSubmitShiftRequest = async () => {
                 }}
                 onEditDoctor={(docData) => {
                   setEditingDoc(docData);
+                }}
+                onDeleteDoctor={deleteDoctor}
+                onReorderDoctors={(orderedDoctors) => {
+                  saveDoctorOrder(orderedDoctors.map(d => d.id));
                 }}
                 onAddDoctorClick={() => {
                   const cleanName = 'nuevo_usuario';

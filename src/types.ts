@@ -34,6 +34,7 @@ export interface Doctor {
   passwordLastChanged?: number;
   createdAt?: number;
   mustChangePassword?: boolean;
+  sortOrder?: number;
 }
 
 export interface RegistrationRequest {

@@ -51,6 +51,32 @@ export function AppStyles({ theme }: AppStylesProps) {
           .h-low, .h-ok, .h-over { color: black !important; border: 1px solid #ccc !important; }
         }
         
+        /* Mejoras para dispositivos móviles - Inmovilizar Paneles */
+        .turns-table-container {
+          max-height: 80vh;
+          overflow: auto;
+          position: relative;
+        }
+
+        .turns-table thead th {
+          position: sticky;
+          top: 0;
+          z-index: 30;
+          background-color: #f8fafc; /* slate-50 */
+        }
+
+        .turns-table .sticky-col {
+          position: sticky;
+          left: 0;
+          z-index: 20;
+          background-color: white;
+          box-shadow: 2px 0 5px -2px rgba(0,0,0,0.1);
+        }
+
+        .turns-table thead th.sticky-col {
+          z-index: 40; /* Intersección esquina superior izquierda */
+        }
+
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #fafaf9; }
         ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
