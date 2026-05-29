@@ -7,6 +7,66 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+// Componente de input de orden que permite borrar y escribir libremente
+interface OrderInputProps {
+  doc: Doctor & { totalHours?: number };
+  orderedDoctors: (Doctor & { totalHours?: number })[];
+  onReorder: (newOrder: (Doctor & { totalHours?: number })[]) => void;
+}
+
+function OrderInput({ doc, orderedDoctors, onReorder }: OrderInputProps) {
+  const currentPos = orderedDoctors.findIndex(d => d.id === doc.id) + 1;
+  const [tempValue, setTempValue] = useState(String(currentPos));
+
+  // Update temp value when position changes externally (drag)
+  React.useEffect(() => {
+    setTempValue(String(currentPos));
+  }, [currentPos]);
+
+  const applyChange = () => {
+    const newPos = parseInt(tempValue, 10);
+    if (isNaN(newPos) || newPos < 1 || newPos > orderedDoctors.length) {
+      setTempValue(String(currentPos)); // Reset on invalid
+      return;
+    }
+    if (newPos === currentPos) return;
+
+    const targetIndex = newPos - 1;
+    const currentIndex = orderedDoctors.findIndex(d => d.id === doc.id);
+
+    const newOrder = [...orderedDoctors];
+    const [moved] = newOrder.splice(currentIndex, 1);
+    newOrder.splice(targetIndex, 0, moved);
+    onReorder(newOrder);
+  };
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      value={tempValue}
+      onChange={(e) => {
+        // Allow only numbers and empty string
+        const val = e.target.value.replace(/[^0-9]/g, '');
+        setTempValue(val);
+      }}
+      onBlur={applyChange}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyChange();
+          (e.target as HTMLInputElement).blur();
+        }
+        if (e.key === 'Escape') {
+          setTempValue(String(currentPos));
+          (e.target as HTMLInputElement).blur();
+        }
+      }}
+      className="w-14 h-8 text-center bg-slate-50 border border-slate-200 rounded-lg font-black text-slate-700 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+    />
+  );
+}
+
 interface Props {
   doctors: Doctor[];
   currentMonthData: MonthlyData;
@@ -480,22 +540,10 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
                           <div className="flex items-center gap-4">
                            <div className="flex flex-col items-center">
                               <label className="text-[9px] font-black text-slate-400 uppercase">Orden</label>
-                              <input
-                                type="number"
-                                min={1}
-                                max={orderedDoctors.length}
-                                value={orderedDoctors.findIndex(d => d.id === doc.id) + 1}
-                                onChange={(e) => {
-                                  const newPos = parseInt(e.target.value) - 1;
-                                  if (newPos >= 0 && newPos < orderedDoctors.length) {
-                                    const currentIdx = orderedDoctors.findIndex(d => d.id === doc.id);
-                                    const newOrder = [...orderedDoctors];
-                                    const [moved] = newOrder.splice(currentIdx, 1);
-                                    newOrder.splice(newPos, 0, moved);
-                                    setOrderedDoctors(newOrder);
-                                  }
-                                }}
-                                className="w-14 h-8 text-center bg-slate-50 border border-slate-200 rounded-lg font-black text-slate-700 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                              <OrderInput
+                                doc={doc}
+                                orderedDoctors={orderedDoctors}
+                                onReorder={setOrderedDoctors}
                               />
                            </div>
                            <div className="text-right">
