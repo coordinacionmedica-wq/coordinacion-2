@@ -276,10 +276,32 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
       )}
 
       {/* MOBILE CARD VIEW - Hidden on md and up */}
-      <div className="md:hidden space-y-4 pb-4">
+      <div className="md:hidden space-y-4 pb-20">
         {(focusedDoctorId !== null ? doctors.filter(d => d.id === focusedDoctorId) : doctors).map(med => (
           <MobileDoctorCard key={med.id} med={med} />
         ))}
+      </div>
+
+      {/* MOBILE LEGEND - Color guide for shifts */}
+      <div className="md:hidden fixed bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-3 z-50">
+        <div className="flex items-center justify-center gap-4 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-emerald-100 border border-emerald-300" />
+            <span className="text-[10px] font-bold text-slate-600">Asignado</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-amber-100 border border-amber-300" />
+            <span className="text-[10px] font-bold text-slate-600">Cerca límite</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-rose-100 border border-rose-300" />
+            <span className="text-[10px] font-bold text-slate-600">Excede</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-slate-100 border border-slate-300" />
+            <span className="text-[10px] font-bold text-slate-600">Sin asignar</span>
+          </div>
+        </div>
       </div>
 
       {/* DESKTOP TABLE VIEW - Hidden on mobile */}
