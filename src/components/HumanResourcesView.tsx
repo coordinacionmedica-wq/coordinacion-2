@@ -15,16 +15,22 @@ interface OrderInputProps {
 }
 
 function OrderInput({ doc, orderedDoctors, onReorder }: OrderInputProps) {
-  // Show the actual sortOrder value, not the position
-  const sortOrderValue = doc.sortOrder ?? doc.id;
+  // Show the actual sortOrder value, or empty if not set
+  const sortOrderValue = (doc.sortOrder && doc.sortOrder > 0) ? doc.sortOrder : '';
   const [tempValue, setTempValue] = useState(String(sortOrderValue));
 
   // Update temp value when doc.sortOrder changes externally
   React.useEffect(() => {
-    setTempValue(String(doc.sortOrder ?? doc.id));
-  }, [doc.sortOrder, doc.id]);
+    setTempValue(String((doc.sortOrder && doc.sortOrder > 0) ? doc.sortOrder : ''));
+  }, [doc.sortOrder]);
 
   const applyChange = () => {
+    // Handle empty value - don't change anything
+    if (!tempValue || tempValue.trim() === '') {
+      setTempValue(String(sortOrderValue));
+      return;
+    }
+
     const newSortOrder = parseInt(tempValue, 10);
     if (isNaN(newSortOrder) || newSortOrder < 1) {
       setTempValue(String(sortOrderValue)); // Reset on invalid
@@ -38,7 +44,11 @@ function OrderInput({ doc, orderedDoctors, onReorder }: OrderInputProps) {
     );
 
     // Re-sort the array by the new sortOrder values
-    newOrder.sort((a, b) => (a.sortOrder ?? a.id) - (b.sortOrder ?? b.id));
+    newOrder.sort((a, b) => {
+      const aVal = (a.sortOrder && a.sortOrder > 0) ? a.sortOrder : 9999;
+      const bVal = (b.sortOrder && b.sortOrder > 0) ? b.sortOrder : 9999;
+      return aVal - bVal;
+    });
 
     onReorder(newOrder);
   };
@@ -192,8 +202,37 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
   }, [doctors, currentMonthData, variables, selectedMonth, selectedYear]);
 
   const openReorderPanel = () => {
-    const sorted = [...docsWithHours].sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
-    setOrderedDoctors(sorted);
+    // Sort by existing sortOrder (treating 0/undefined as high values), then by id
+    const sorted = [...docsWithHours].sort((a, b) => {
+      const aOrder = (a.sortOrder && a.sortOrder > 0) ? a.sortOrder : 999999;
+      const bOrder = (b.sortOrder && b.sortOrder > 0) ? b.sortOrder : 999999;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return a.id - b.id;
+    });
+
+    // Assign consecutive sortOrder starting from 1
+    // Fill gaps: if someone has 15, next gets 1,2,3... avoiding 15
+    const usedOrders = new Set(
+      sorted.map(d => d.sortOrder).filter((n): n is number => typeof n === 'number' && n > 0)
+    );
+
+    let nextAvailable = 1;
+    const withAssignedOrder = sorted.map(doc => {
+      const hasValidOrder = doc.sortOrder && doc.sortOrder > 0;
+      if (hasValidOrder) {
+        // Keep existing order
+        return doc;
+      }
+      // Find next available slot
+      while (usedOrders.has(nextAvailable)) {
+        nextAvailable++;
+      }
+      const assignedOrder = nextAvailable++;
+      usedOrders.add(assignedOrder);
+      return { ...doc, sortOrder: assignedOrder };
+    });
+
+    setOrderedDoctors(withAssignedOrder);
     setShowReorderPanel(true);
   };
 
@@ -392,11 +431,11 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredDocs.map(doc => (
+              {filteredDocs.map((doc, index) => (
                 <tr key={doc.id} className={`hover:bg-slate-50 transition-colors ${doc.st !== 'activo' && 'opacity-60 bg-rose-50/30'}`}>
                   <td className="px-4 py-4">
-                    <div className="w-10 h-10 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-black text-lg shadow-sm">
-                      {doc.sortOrder || doc.id}
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shadow-sm ${doc.sortOrder && doc.sortOrder > 0 ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-400'}`}>
+                      {doc.sortOrder && doc.sortOrder > 0 ? doc.sortOrder : '-'}
                     </div>
                   </td>
                   <td className="px-6 py-4">
