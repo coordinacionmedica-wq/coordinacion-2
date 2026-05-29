@@ -216,11 +216,11 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
     reader.readAsBinaryString(file);
   };
 
-  // Compute stats and sanitize sortOrder for display
+  // Compute stats and detect duplicate sortOrders for display
   const docsWithHours = useMemo(() => {
     const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
 
-    // First pass: calculate hours
+    // Calculate hours
     const withHours = doctors.map(doc => {
       let totalHours = 0;
       for (let d = 1; d <= daysInMonth; d++) {
@@ -233,9 +233,27 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
       return { ...doc, totalHours };
     });
 
-    // Sanitize sortOrder: detect duplicates and reassign for display only
-    const orderCount = new Map<number, typeof withHours>();
+    // Detect duplicate sortOrders
+    const orderCount = new Map<number, number>();
     for (const doc of withHours) {
+      if (doc.sortOrder && doc.sortOrder > 0) {
+        orderCount.set(doc.sortOrder, (orderCount.get(doc.sortOrder) || 0) + 1);
+      }
+    }
+
+    // Mark duplicates
+    return withHours.map(doc => ({
+      ...doc,
+      isDuplicateOrder: doc.sortOrder && doc.sortOrder > 0 && (orderCount.get(doc.sortOrder) || 0) > 1
+    }));
+  }, [doctors, currentMonthData, variables, selectedMonth, selectedYear]);
+
+  const openReorderPanel = () => {
+    // Sanitize: detect and fix duplicates
+    const orderCount = new Map<number, typeof docsWithHours>();
+
+    // Group doctors by their sortOrder
+    for (const doc of docsWithHours) {
       if (doc.sortOrder && doc.sortOrder > 0) {
         if (!orderCount.has(doc.sortOrder)) {
           orderCount.set(doc.sortOrder, []);
@@ -244,77 +262,51 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
       }
     }
 
-    const usedOrders = new Set<number>();
-    const displayOrderMap = new Map<number, number>(); // doctorId -> displayOrder
+    const existingOrders = new Set<number>();
+    const sanitizedDocs: typeof docsWithHours = [];
+    const docsNeedingAssignment: typeof docsWithHours = [];
 
-    // First pass: assign to unique orders
-    for (const doc of withHours) {
-      if (!doc.sortOrder || doc.sortOrder <= 0) continue;
+    for (const doc of docsWithHours) {
+      if (!doc.sortOrder || doc.sortOrder <= 0) {
+        docsNeedingAssignment.push(doc);
+        continue;
+      }
 
       const duplicates = orderCount.get(doc.sortOrder);
       if (duplicates && duplicates.length > 1) {
-        // Keep first occurrence, mark others for reassignment
+        // This is a duplicate - only keep the first one with this order
         const isFirst = duplicates[0].id === doc.id;
         if (isFirst) {
-          usedOrders.add(doc.sortOrder);
-          displayOrderMap.set(doc.id, doc.sortOrder);
+          existingOrders.add(doc.sortOrder);
+          sanitizedDocs.push(doc);
+        } else {
+          // Reassign this duplicate later
+          docsNeedingAssignment.push(doc);
         }
       } else {
-        usedOrders.add(doc.sortOrder);
-        displayOrderMap.set(doc.id, doc.sortOrder);
+        // No duplicate, keep as-is
+        existingOrders.add(doc.sortOrder);
+        sanitizedDocs.push(doc);
       }
     }
 
-    // Second pass: assign new orders to duplicates and unassigned
+    // Sort those with valid orders
+    sanitizedDocs.sort((a, b) => (a.sortOrder! - b.sortOrder!));
+
+    // Assign orders to those needing reassignment, filling gaps
     let nextAvailable = 1;
-    for (const doc of withHours) {
-      if (displayOrderMap.has(doc.id)) continue; // Already assigned
-
-      while (usedOrders.has(nextAvailable)) {
-        nextAvailable++;
-      }
-      displayOrderMap.set(doc.id, nextAvailable);
-      usedOrders.add(nextAvailable);
-    }
-
-    // Apply display orders
-    return withHours.map(doc => ({
-      ...doc,
-      displaySortOrder: displayOrderMap.get(doc.id) || doc.sortOrder || 0
-    }));
-  }, [doctors, currentMonthData, variables, selectedMonth, selectedYear]);
-
-  const openReorderPanel = () => {
-    // Use displaySortOrder which is already sanitized (no duplicates)
-    // Just need to ensure everyone has a valid order number
-    const existingOrders = new Set<number>();
-    const withOrders: typeof docsWithHours = [];
-    const withoutOrders: typeof docsWithHours = [];
-
-    for (const doc of docsWithHours) {
-      const effectiveOrder = doc.displaySortOrder || doc.sortOrder || 0;
-      if (effectiveOrder > 0) {
-        existingOrders.add(effectiveOrder);
-        withOrders.push({ ...doc, sortOrder: effectiveOrder });
-      } else {
-        withoutOrders.push(doc);
-      }
-    }
-
-    // Assign orders to those without
-    let nextAvailable = 1;
-    for (const doc of withoutOrders) {
+    for (const doc of docsNeedingAssignment) {
       while (existingOrders.has(nextAvailable)) {
         nextAvailable++;
       }
-      withOrders.push({ ...doc, sortOrder: nextAvailable });
+      sanitizedDocs.push({ ...doc, sortOrder: nextAvailable });
       existingOrders.add(nextAvailable);
     }
 
-    // Sort by sortOrder
-    withOrders.sort((a, b) => (a.sortOrder! - b.sortOrder!));
+    // Final sort
+    sanitizedDocs.sort((a, b) => (a.sortOrder! - b.sortOrder!));
 
-    setOrderedDoctors(withOrders);
+    setOrderedDoctors(sanitizedDocs);
     setShowReorderPanel(true);
   };
 
@@ -530,8 +522,17 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
               {filteredDocs.map((doc, index) => (
                 <tr key={doc.id} className={`hover:bg-slate-50 transition-colors ${doc.st !== 'activo' && 'opacity-60 bg-rose-50/30'}`}>
                   <td className="px-4 py-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shadow-sm ${(doc.displaySortOrder || doc.sortOrder) > 0 ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-400'}`}>
-                      {(doc.displaySortOrder || doc.sortOrder) > 0 ? (doc.displaySortOrder || doc.sortOrder) : '-'}
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shadow-sm ${
+                        doc.isDuplicateOrder
+                          ? 'bg-rose-100 text-rose-700 border-2 border-rose-300'
+                          : doc.sortOrder && doc.sortOrder > 0
+                            ? 'bg-sky-100 text-sky-700'
+                            : 'bg-slate-100 text-slate-400'
+                      }`}
+                      title={doc.isDuplicateOrder ? 'Orden duplicado - use Organizar para corregir' : ''}
+                    >
+                      {doc.sortOrder && doc.sortOrder > 0 ? doc.sortOrder : '-'}
                     </div>
                   </td>
                   <td className="px-6 py-4">
