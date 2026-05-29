@@ -233,45 +233,70 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
   }, [doctors, currentMonthData, variables, selectedMonth, selectedYear]);
 
   const openReorderPanel = () => {
-    // First pass: collect all valid existing sortOrders
-    const existingOrders = new Set<number>();
-    const docsWithValidOrder: typeof docsWithHours = [];
-    const docsWithoutOrder: typeof docsWithHours = [];
+    // Sanitize: detect and fix duplicates in existing data
+    const orderCount = new Map<number, typeof docsWithHours>();
 
+    // Group doctors by their sortOrder
     for (const doc of docsWithHours) {
       if (doc.sortOrder && doc.sortOrder > 0) {
-        existingOrders.add(doc.sortOrder);
-        docsWithValidOrder.push(doc);
+        if (!orderCount.has(doc.sortOrder)) {
+          orderCount.set(doc.sortOrder, []);
+        }
+        orderCount.get(doc.sortOrder)!.push(doc);
+      }
+    }
+
+    // Fix duplicates: keep first, reassign others
+    const existingOrders = new Set<number>();
+    const sanitizedDocs: typeof docsWithHours = [];
+    const docsNeedingAssignment: typeof docsWithHours = [];
+
+    for (const doc of docsWithHours) {
+      if (!doc.sortOrder || doc.sortOrder <= 0) {
+        docsNeedingAssignment.push(doc);
+        continue;
+      }
+
+      const duplicates = orderCount.get(doc.sortOrder);
+      if (duplicates && duplicates.length > 1) {
+        // This is a duplicate - only keep the first one with this order
+        const isFirst = duplicates[0].id === doc.id;
+        if (isFirst) {
+          existingOrders.add(doc.sortOrder);
+          sanitizedDocs.push(doc);
+        } else {
+          // Reassign this duplicate later
+          docsNeedingAssignment.push(doc);
+        }
       } else {
-        docsWithoutOrder.push(doc);
+        // No duplicate, keep as-is
+        existingOrders.add(doc.sortOrder);
+        sanitizedDocs.push(doc);
       }
     }
 
     // Sort those with valid orders
-    docsWithValidOrder.sort((a, b) => a.sortOrder! - b.sortOrder!);
+    sanitizedDocs.sort((a, b) => (a.sortOrder! - b.sortOrder!));
 
-    // Assign orders to those without, filling gaps
+    // Assign orders to those needing reassignment, filling gaps
     let nextAvailable = 1;
-    const newlyAssigned: typeof docsWithHours = [];
-
-    for (const doc of docsWithoutOrder) {
+    for (const doc of docsNeedingAssignment) {
       while (existingOrders.has(nextAvailable)) {
         nextAvailable++;
       }
-      newlyAssigned.push({ ...doc, sortOrder: nextAvailable });
+      sanitizedDocs.push({ ...doc, sortOrder: nextAvailable });
       existingOrders.add(nextAvailable);
       nextAvailable++;
     }
 
-    // Combine and final sort
-    const allDocs = [...docsWithValidOrder, ...newlyAssigned];
-    allDocs.sort((a, b) => {
+    // Final sort
+    sanitizedDocs.sort((a, b) => {
       const aOrder = (a.sortOrder && a.sortOrder > 0) ? a.sortOrder : 999999;
       const bOrder = (b.sortOrder && b.sortOrder > 0) ? b.sortOrder : 999999;
       return aOrder - bOrder;
     });
 
-    setOrderedDoctors(allDocs);
+    setOrderedDoctors(sanitizedDocs);
     setShowReorderPanel(true);
   };
 
