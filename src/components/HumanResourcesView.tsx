@@ -311,6 +311,7 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="px-4 py-4 text-xs uppercase font-black text-slate-500 tracking-wide w-16">Orden</th>
                 <th className="px-6 py-4 text-xs uppercase font-black text-slate-500 tracking-wide">Personal / Identificación</th>
                 <th className="px-6 py-4 text-xs uppercase font-black text-slate-500 tracking-wide">Contacto</th>
                 <th className="px-6 py-4 text-xs uppercase font-black text-slate-500 tracking-wide">Cargo & Categoría</th>
@@ -326,6 +327,11 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
             <tbody className="divide-y divide-slate-100">
               {filteredDocs.map(doc => (
                 <tr key={doc.id} className={`hover:bg-slate-50 transition-colors ${doc.st !== 'activo' && 'opacity-60 bg-rose-50/30'}`}>
+                  <td className="px-4 py-4">
+                    <div className="w-10 h-10 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-black text-lg shadow-sm">
+                      {doc.sortOrder || doc.id}
+                    </div>
+                  </td>
                   <td className="px-6 py-4">
                     <div className="font-bold text-slate-800 text-base">{doc.nombre} {doc.apellidos || ''}</div>
                     <div className="text-xs text-slate-500 font-mono mt-0.5">CC: {doc.cedula || 'N/R'}</div>
@@ -471,7 +477,27 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
                              <span className="text-[10px] font-black uppercase bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">{doc.cat}</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-6">
+                          <div className="flex items-center gap-4">
+                           <div className="flex flex-col items-center">
+                              <label className="text-[9px] font-black text-slate-400 uppercase">Orden</label>
+                              <input
+                                type="number"
+                                min={1}
+                                max={orderedDoctors.length}
+                                value={orderedDoctors.findIndex(d => d.id === doc.id) + 1}
+                                onChange={(e) => {
+                                  const newPos = parseInt(e.target.value) - 1;
+                                  if (newPos >= 0 && newPos < orderedDoctors.length) {
+                                    const currentIdx = orderedDoctors.findIndex(d => d.id === doc.id);
+                                    const newOrder = [...orderedDoctors];
+                                    const [moved] = newOrder.splice(currentIdx, 1);
+                                    newOrder.splice(newPos, 0, moved);
+                                    setOrderedDoctors(newOrder);
+                                  }
+                                }}
+                                className="w-14 h-8 text-center bg-slate-50 border border-slate-200 rounded-lg font-black text-slate-700 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                              />
+                           </div>
                            <div className="text-right">
                               <p className="text-[10px] font-black text-slate-400 uppercase leading-none">Carga Horaria</p>
                               <p className="text-xl font-black text-slate-800">{doc.totalHours || 0}h</p>

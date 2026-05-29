@@ -827,6 +827,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       let newId = 1;
       while (usedIds.has(newId)) newId++;
 
+      // Find the lowest available sortOrder (reuse gaps from deleted/inactive doctors)
+      const existingSortOrders = allDocs.docs
+        .map(d => (d.data() as Doctor).sortOrder)
+        .filter((n): n is number => typeof n === 'number' && n > 0);
+      const usedSortOrders = new Set(existingSortOrders);
+      let newSortOrder = 1;
+      while (usedSortOrders.has(newSortOrder)) newSortOrder++;
+
       const cleanName = reqData.nombre.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '').substring(0, 5);
       const username = `${cleanName}${reqData.cedula.slice(-4)}`;
       const password = `ESE${Math.floor(1000 + Math.random() * 9000)}`;
@@ -834,6 +842,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       const newDoctor: Doctor = {
         id: newId,
+        sortOrder: newSortOrder,
         nombre: `${reqData.nombre} ${reqData.apellidos}`,
         apellidos: reqData.apellidos,
         cedula: reqData.cedula,

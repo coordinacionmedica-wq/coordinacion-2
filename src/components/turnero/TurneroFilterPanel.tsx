@@ -81,15 +81,22 @@ export function TurneroFilterPanel(props: TurneroFilterPanelProps) {
           </div>
         </div>
 
-        {/* Doctor filter */}
+        {/* Doctor filter - Improved mobile experience */}
         <div className="col-span-2 md:col-span-1">
-          <label className="text-xs md:text-xs uppercase text-sky-600 ml-1 mb-1 block font-bold">Médico</label>
+          <label className="text-xs md:text-xs uppercase text-sky-600 ml-1 mb-1 block font-bold flex items-center gap-1">
+            <span className="hidden md:inline">Filtrar por</span> Médico
+          </label>
           <select
             onChange={(e) => { addDoctorFilter(parseInt(e.target.value)); e.target.value = ""; }}
-            className="w-full bg-slate-50 border border-slate-200 p-2 md:p-3 rounded-lg md:rounded-xl text-xs md:text-sm text-slate-800 outline-none focus:border-sky-500"
+            className="w-full bg-slate-50 border border-slate-200 p-2 md:p-3 rounded-lg md:rounded-xl text-xs md:text-sm text-slate-800 outline-none focus:border-sky-500 touch-manipulation"
+            style={{ fontSize: '16px' }} // Prevents iOS zoom on focus
           >
-            <option value="">Seleccionar...</option>
-            {doctors.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}
+            <option value="">Todos los médicos...</option>
+            {doctors.map(d => (
+              <option key={d.id} value={d.id}>
+                #{d.sortOrder || d.id} - {d.nombre} {d.apellidos || ''} ({d.cat})
+              </option>
+            ))}
           </select>
         </div>
 

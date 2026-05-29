@@ -116,12 +116,21 @@ function AppContent() {
   // -- Admin Actions --
   const addDoctor = async () => {
     if (!newDocName) return;
+
+    // Find lowest available sortOrder (reuse gaps)
+    const existingSortOrders = doctors
+      .map(d => d.sortOrder)
+      .filter((n): n is number => typeof n === 'number' && n > 0);
+    const usedSortOrders = new Set(existingSortOrders);
+    let newSortOrder = 1;
+    while (usedSortOrders.has(newSortOrder)) newSortOrder++;
+
     const cleanName = newDocName.toLowerCase().replace(/\s+/g, '').substring(0, 8);
     const username = `${cleanName}${Math.floor(100 + Math.random() * 900)}`;
     const password = `ESE${Math.floor(1000 + Math.random() * 9000)}`;
     const id = Date.now();
     const newDoc: Doctor = {
-      id, nombre: newDocName, email: newDocEmail || undefined,
+      id, sortOrder: newSortOrder, nombre: newDocName, email: newDocEmail || undefined,
       cat: newDocCat, rol: newDocRol, st: 'activo',
       contacto: newDocContact || undefined, username, password,
       passwordLastChanged: Date.now()
@@ -138,12 +147,20 @@ function AppContent() {
 
   const handleBatchImportDoctors = async (importedDoctors: any[]) => {
     if (session?.r !== 'admin') return;
-    
+
     if (!confirm(`¿Desea importar/actualizar ${importedDoctors.length} registros? Se actualizarán los datos existentes.`)) return;
 
     setNotification({ message: "Procesando Talento Humano...", type: 'info' });
     let successCount = 0;
     let errorCount = 0;
+
+    // Get existing sortOrders and find starting point for new assignments
+    const existingSortOrders = doctors
+      .map(d => d.sortOrder)
+      .filter((n): n is number => typeof n === 'number' && n > 0);
+    const usedSortOrders = new Set(existingSortOrders);
+    let nextSortOrder = 1;
+    while (usedSortOrders.has(nextSortOrder)) nextSortOrder++;
 
     for (const docData of importedDoctors) {
       try {
@@ -151,8 +168,13 @@ function AppContent() {
         const cleanCedula = (docData.cedula || '').toString().trim();
         if (!cleanCedula || !docData.nombre) continue;
 
+        // Check if doctor already exists to preserve their sortOrder
+        const existingDoc = doctors.find(d => d.id === Number(id));
+        const sortOrder = existingDoc?.sortOrder ?? nextSortOrder++;
+
         const doctorData: Doctor = {
           id: Number(id),
+          sortOrder,
           nombre: docData.nombre.toString().trim(),
           apellidos: (docData.apellidos || '').toString().trim(),
           cedula: cleanCedula,
@@ -175,9 +197,9 @@ function AppContent() {
         errorCount++;
       }
     }
-  setNotification({ message: `Importación finalizada. Éxito: ${successCount}, Errores: ${errorCount}`, type: 'success' });
-  setTimeout(() => window.location.reload(), 2000);
-};
+    setNotification({ message: `Importación finalizada. Éxito: ${successCount}, Errores: ${errorCount}`, type: 'success' });
+    setTimeout(() => window.location.reload(), 2000);
+  };
 
 const handleSubmitShiftRequest = async () => {
   await ctxSubmitShiftRequest(reqDay, reqSlot, reqReason);
