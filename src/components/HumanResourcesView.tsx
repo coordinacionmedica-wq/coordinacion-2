@@ -216,10 +216,12 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
     reader.readAsBinaryString(file);
   };
 
-  // Compute stats
+  // Compute stats and sanitize sortOrder for display
   const docsWithHours = useMemo(() => {
     const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
-    return doctors.map(doc => {
+
+    // First pass: calculate hours
+    const withHours = doctors.map(doc => {
       let totalHours = 0;
       for (let d = 1; d <= daysInMonth; d++) {
         (['m', 't', 'n'] as SlotType[]).forEach(slot => {
@@ -230,14 +232,10 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
       }
       return { ...doc, totalHours };
     });
-  }, [doctors, currentMonthData, variables, selectedMonth, selectedYear]);
 
-  const openReorderPanel = () => {
-    // Sanitize: detect and fix duplicates in existing data
-    const orderCount = new Map<number, typeof docsWithHours>();
-
-    // Group doctors by their sortOrder
-    for (const doc of docsWithHours) {
+    // Sanitize sortOrder: detect duplicates and reassign for display only
+    const orderCount = new Map<number, typeof withHours>();
+    for (const doc of withHours) {
       if (doc.sortOrder && doc.sortOrder > 0) {
         if (!orderCount.has(doc.sortOrder)) {
           orderCount.set(doc.sortOrder, []);
@@ -246,57 +244,77 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
       }
     }
 
-    // Fix duplicates: keep first, reassign others
-    const existingOrders = new Set<number>();
-    const sanitizedDocs: typeof docsWithHours = [];
-    const docsNeedingAssignment: typeof docsWithHours = [];
+    const usedOrders = new Set<number>();
+    const displayOrderMap = new Map<number, number>(); // doctorId -> displayOrder
 
-    for (const doc of docsWithHours) {
-      if (!doc.sortOrder || doc.sortOrder <= 0) {
-        docsNeedingAssignment.push(doc);
-        continue;
-      }
+    // First pass: assign to unique orders
+    for (const doc of withHours) {
+      if (!doc.sortOrder || doc.sortOrder <= 0) continue;
 
       const duplicates = orderCount.get(doc.sortOrder);
       if (duplicates && duplicates.length > 1) {
-        // This is a duplicate - only keep the first one with this order
+        // Keep first occurrence, mark others for reassignment
         const isFirst = duplicates[0].id === doc.id;
         if (isFirst) {
-          existingOrders.add(doc.sortOrder);
-          sanitizedDocs.push(doc);
-        } else {
-          // Reassign this duplicate later
-          docsNeedingAssignment.push(doc);
+          usedOrders.add(doc.sortOrder);
+          displayOrderMap.set(doc.id, doc.sortOrder);
         }
       } else {
-        // No duplicate, keep as-is
-        existingOrders.add(doc.sortOrder);
-        sanitizedDocs.push(doc);
+        usedOrders.add(doc.sortOrder);
+        displayOrderMap.set(doc.id, doc.sortOrder);
       }
     }
 
-    // Sort those with valid orders
-    sanitizedDocs.sort((a, b) => (a.sortOrder! - b.sortOrder!));
-
-    // Assign orders to those needing reassignment, filling gaps
+    // Second pass: assign new orders to duplicates and unassigned
     let nextAvailable = 1;
-    for (const doc of docsNeedingAssignment) {
+    for (const doc of withHours) {
+      if (displayOrderMap.has(doc.id)) continue; // Already assigned
+
+      while (usedOrders.has(nextAvailable)) {
+        nextAvailable++;
+      }
+      displayOrderMap.set(doc.id, nextAvailable);
+      usedOrders.add(nextAvailable);
+    }
+
+    // Apply display orders
+    return withHours.map(doc => ({
+      ...doc,
+      displaySortOrder: displayOrderMap.get(doc.id) || doc.sortOrder || 0
+    }));
+  }, [doctors, currentMonthData, variables, selectedMonth, selectedYear]);
+
+  const openReorderPanel = () => {
+    // Use displaySortOrder which is already sanitized (no duplicates)
+    // Just need to ensure everyone has a valid order number
+    const existingOrders = new Set<number>();
+    const withOrders: typeof docsWithHours = [];
+    const withoutOrders: typeof docsWithHours = [];
+
+    for (const doc of docsWithHours) {
+      const effectiveOrder = doc.displaySortOrder || doc.sortOrder || 0;
+      if (effectiveOrder > 0) {
+        existingOrders.add(effectiveOrder);
+        withOrders.push({ ...doc, sortOrder: effectiveOrder });
+      } else {
+        withoutOrders.push(doc);
+      }
+    }
+
+    // Assign orders to those without
+    let nextAvailable = 1;
+    for (const doc of withoutOrders) {
       while (existingOrders.has(nextAvailable)) {
         nextAvailable++;
       }
-      sanitizedDocs.push({ ...doc, sortOrder: nextAvailable });
+      withOrders.push({ ...doc, sortOrder: nextAvailable });
       existingOrders.add(nextAvailable);
-      nextAvailable++;
     }
 
-    // Final sort
-    sanitizedDocs.sort((a, b) => {
-      const aOrder = (a.sortOrder && a.sortOrder > 0) ? a.sortOrder : 999999;
-      const bOrder = (b.sortOrder && b.sortOrder > 0) ? b.sortOrder : 999999;
-      return aOrder - bOrder;
-    });
+    // Sort by sortOrder
+    withOrders.sort((a, b) => (a.sortOrder! - b.sortOrder!));
 
-    setOrderedDoctors(sanitizedDocs);
+    setOrderedDoctors(withOrders);
     setShowReorderPanel(true);
   };
 
@@ -512,8 +530,8 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
               {filteredDocs.map((doc, index) => (
                 <tr key={doc.id} className={`hover:bg-slate-50 transition-colors ${doc.st !== 'activo' && 'opacity-60 bg-rose-50/30'}`}>
                   <td className="px-4 py-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shadow-sm ${doc.sortOrder && doc.sortOrder > 0 ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-400'}`}>
-                      {doc.sortOrder && doc.sortOrder > 0 ? doc.sortOrder : '-'}
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shadow-sm ${(doc.displaySortOrder || doc.sortOrder) > 0 ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-400'}`}>
+                      {(doc.displaySortOrder || doc.sortOrder) > 0 ? (doc.displaySortOrder || doc.sortOrder) : '-'}
                     </div>
                   </td>
                   <td className="px-6 py-4">
