@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Download, FileText, Upload, Edit, Trash2, Clock, Database, Plus, Check, X, Search, Shield, Filter, RotateCcw, KeyRound, GripVertical, ListOrdered, Power, Save, Star } from 'lucide-react';
 import { Doctor, MonthlyData, VarSlotConfig, SlotType, DoctorRole } from '../types';
-import { PERMISSION_LABELS, DEFAULT_ROLE_PERMISSIONS, ALL_PERMISSIONS } from '../constants';
+import { PERMISSION_LABELS, DEFAULT_ROLE_PERMISSIONS, ALL_PERMISSIONS, MONTH_NAMES } from '../constants';
 import { motion, AnimatePresence, Reorder } from 'motion/react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -143,7 +143,7 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
   const [ratingScore, setRatingScore] = useState(5);
   const [ratingComment, setRatingComment] = useState('');
   const [isSavingRating, setIsSavingRating] = useState(false);
-  const monthName = new Date(selectedYear, selectedMonth).toLocaleString('es-ES', { month: 'long' });
+  const monthName = MONTH_NAMES[selectedMonth];
 
   const handleSaveRating = async () => {
     if (!ratingDoc || !onSaveEvaluation) return;
