@@ -23,12 +23,12 @@ export function useTurneroFilters(doctors: Doctor[], currentMonthData: MonthlyDa
 
   const filteredDoctors = useMemo(() => {
     return doctors.filter(d =>
+      d.st === 'activo' && // SOLO médicos activos
       (selectedRoles.length === 0 || selectedRoles.includes(d.rol || 'Médico General')) &&
       (selectedCategories.length === 0 || selectedCategories.includes(d.cat)) &&
-      (doctorFilter.length === 0 || doctorFilter.includes(d.id)) &&
-      (d.st === 'activo' || (currentMonthData[d.id] && Object.values(currentMonthData[d.id]).some(f => Object.keys(f).length > 0)))
+      (doctorFilter.length === 0 || doctorFilter.includes(d.id))
     );
-  }, [doctors, selectedRoles, selectedCategories, doctorFilter, currentMonthData]);
+  }, [doctors, selectedRoles, selectedCategories, doctorFilter]);
 
   const addDoctorFilter = (id: number) => {
     if (id && !doctorFilter.includes(id)) setDoctorFilter([...doctorFilter, id]);

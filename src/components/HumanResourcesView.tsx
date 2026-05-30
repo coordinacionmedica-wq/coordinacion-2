@@ -125,7 +125,7 @@ interface Props {
   onUpdateDoctorPermissions?: (id: number, permissions: string[]) => void;
   onImportDoctors?: (doctors: any[]) => void;
   onResetPassword?: (doctor: Doctor) => void;
-  onSaveDoctorOrder?: (orderedDoctors: {id: number, sortOrder: number}[]) => Promise<void>;
+  onSaveDoctorOrder?: (orderedIds: number[]) => Promise<void>;
   evaluations?: Record<string, any>;
   onSaveEvaluation?: (data: any) => Promise<void>;
 }
@@ -249,11 +249,14 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
   }, [doctors, currentMonthData, variables, selectedMonth, selectedYear]);
 
   const openReorderPanel = () => {
+    // Solo médicos activos pueden ser ordenados
+    const activeDoctors = docsWithHours.filter(doc => doc.st === 'activo');
+    
     // Sanitize: detect and fix duplicates
     const orderCount = new Map<number, typeof docsWithHours>();
 
     // Group doctors by their sortOrder
-    for (const doc of docsWithHours) {
+    for (const doc of activeDoctors) {
       if (doc.sortOrder && doc.sortOrder > 0) {
         if (!orderCount.has(doc.sortOrder)) {
           orderCount.set(doc.sortOrder, []);
@@ -266,7 +269,7 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
     const sanitizedDocs: typeof docsWithHours = [];
     const docsNeedingAssignment: typeof docsWithHours = [];
 
-    for (const doc of docsWithHours) {
+    for (const doc of activeDoctors) {
       if (!doc.sortOrder || doc.sortOrder <= 0) {
         docsNeedingAssignment.push(doc);
         continue;
@@ -331,7 +334,7 @@ export function HumanResourcesView({ doctors, currentMonthData, variables, selec
       return { id: d.id, sortOrder: requestedOrder };
     });
 
-    await onSaveDoctorOrder(finalOrder);
+    await onSaveDoctorOrder(finalOrder.map(d => d.id));
     setSavingOrder(false);
     setShowReorderPanel(false);
   };

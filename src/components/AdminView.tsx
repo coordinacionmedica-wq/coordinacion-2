@@ -304,7 +304,7 @@ export function AdminView({
                     <Save className="w-3.5 h-3.5" />
                   </button>
                   <button
-                    onClick={() => toggleDoctorStatus(d.id)}
+                    onClick={() => toggleDoctorStatus(d.id, d.st === 'activo' ? 'inactivo' : 'activo')}
                     title={d.st === 'activo' ? 'Desactivar médico' : 'Reactivar médico'}
                     className={`p-2 rounded-lg border transition-all shadow-sm ${d.st === 'activo' ? 'bg-white border-emerald-500 text-emerald-600 hover:bg-emerald-500 hover:text-white' : 'bg-white border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white'}`}
                   >

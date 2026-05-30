@@ -102,7 +102,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
         {focusedDoctorId !== null && (
           <button
             onClick={() => setFocusedDoctorId(null)}
-            className="flex items-center gap-1.5 bg-slate-700 text-white text-xs font-black px-3 py-1.5 rounded-full hover:bg-slate-600 transition-all shadow-md"
+            className="flex items-center gap-1.5 bg-slate-700 text-white text-xs font-black px-3 py-1.5 rounded-full hover:bg-slate-600  shadow-md"
           >
             <EyeOff className="w-3.5 h-3.5" />
             Ver todos los médicos
@@ -119,7 +119,8 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
       {/* EXCEL-STYLE TABLE - All devices */}
       <div
         ref={useDragScroll<HTMLDivElement>()}
-        className="overflow-auto border border-slate-200 rounded-xl md:rounded-[18px] bg-white shadow-xl max-h-[calc(100vh-280px)] custom-scrollbar -mx-1 md:mx-0 select-none"
+        className="overflow-auto border border-slate-200 rounded-xl md:rounded-[18px] bg-white shadow-xl max-h-[calc(100vh-280px)] custom-scrollbar -mx-1 md:mx-0"
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <table className="w-full text-xs md:text-xs text-center border-collapse">
           <thead className="sticky top-0 z-40">
@@ -167,8 +168,8 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
               // ── Compact View: single row per doctor ──
               if (compactView) {
                 return (
-                  <tr key={med.id} className="group hover:bg-slate-50 transition-colors border-b-2 border-slate-200">
-                    <td className="sticky left-0 bg-white z-20 text-left px-2 md:px-4 border-r-2 border-sky-500 border-b border-slate-200 shadow-xl group-hover:bg-slate-50">
+                  <tr key={med.id} className="group border-b-2 border-slate-200">
+                    <td className="sticky left-0 bg-white z-20 text-left px-2 md:px-4 border-r-2 border-sky-500 border-b border-slate-200 shadow-xl">
                       <div className="flex items-center justify-between gap-1">
                         <div className="font-black text-slate-800 text-xs md:text-sm whitespace-nowrap truncate max-w-[80px] md:max-w-none">
                           {med.genero === 'F' ? 'Dra.' : 'Dr.'} {med.nombre}
@@ -176,7 +177,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                         <button
                           onClick={() => setFocusedDoctorId(med.id)}
                           title="Ver solo este médico"
-                          className="shrink-0 p-1 rounded-md hover:bg-sky-100 text-sky-500 transition-all"
+                          className="shrink-0 p-1 rounded-md hover:bg-sky-100 text-sky-500 "
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
@@ -245,7 +246,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                         <button
                           onClick={() => setFocusedDoctorId(med.id)}
                           title="Ver solo este médico"
-                          className="shrink-0 p-1 rounded-md hover:bg-sky-100 text-sky-500 transition-all"
+                          className="shrink-0 p-1 rounded-md hover:bg-sky-100 text-sky-500 "
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
@@ -282,7 +283,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                         title={cellConflicts.map(c => c.message).join('\n')}
                         className={`
                           border border-slate-200 py-0.5 md:py-1 cursor-pointer
-                          transition-all duration-150 relative text-center text-[8px] md:text-xs
+                           duration-150 relative text-center text-[8px] md:text-xs
                           ${dow === 0 ? 'border-r-2 border-r-sky-500' : ''}
                           ${dow === 0 || dow === 6 ? 'bg-sky-50/30' : ''}
                           ${isEditing ? 'bg-emerald-50 ring-2 ring-emerald-400 ring-inset z-10' : ''}

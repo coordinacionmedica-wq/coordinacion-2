@@ -115,11 +115,11 @@ interface AppContextType {
 
   // Doctor CRUD
   saveEditedDoctor: (doctor: Doctor) => Promise<void>;
-  toggleDoctorStatus: (id: number) => Promise<void>;
+  toggleDoctorStatus: (id: number, status: 'activo' | 'inactivo') => Promise<void>;
   deleteDoctor: (id: number) => Promise<void>;
   resetDoctorPass: (id: number) => Promise<void>;
   changePassword: (doctorId: number, oldPass: string, newPass: string) => Promise<void>;
-  saveDoctorOrder: (orderedDoctors: {id: number, sortOrder: number}[]) => Promise<void>;
+  saveDoctorOrder: (orderedIds: number[]) => Promise<void>;
 
   // Variables
   addVariable: (slot: SlotType, code: string, hours: number) => Promise<void>;
@@ -678,16 +678,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [notify]);
 
-  const toggleDoctorStatus = useCallback(async (id: number) => {
-    const d = doctors.find(doc => doc.id === id);
-    if (!d) return;
-    try {
-      await updateDoc(doc(db, 'doctors', id.toString()), { st: d.st === 'activo' ? 'inactivo' : 'activo' });
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, `doctors/${id}`);
-    }
-  }, [doctors]);
-
+  
   const deleteDoctor = useCallback(async (id: number) => {
     if (!confirm('¿Eliminar permanentemente? Esta acción no se puede deshacer.')) return;
     try {
@@ -698,11 +689,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [notify]);
 
-  const saveDoctorOrder = useCallback(async (orderedDoctors: {id: number, sortOrder: number}[]) => {
+  const toggleDoctorStatus = useCallback(async (id: number, status: 'activo' | 'inactivo') => {
+    try {
+      await updateDoc(doc(db, 'doctors', id.toString()), { st: status, sortOrder: status === 'inactivo' ? 0 : null });
+      notify(`Médico ${status === 'activo' ? 'activado' : 'inactivado'} correctamente`, 'success');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `doctors/${id}`);
+    }
+  }, [notify]);
+
+  const saveDoctorOrder = useCallback(async (orderedIds: number[]) => {
     try {
       await Promise.all(
-        orderedDoctors.map(({ id, sortOrder }) =>
-          updateDoc(doc(db, 'doctors', id.toString()), { sortOrder })
+        orderedIds.map((id, idx) =>
+          updateDoc(doc(db, 'doctors', id.toString()), { sortOrder: idx + 1 })
         )
       );
       notify('Orden actualizado correctamente', 'success');

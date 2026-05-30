@@ -53,7 +53,7 @@ function AppContent() {
     notification, setNotification, notify,
     theme, activeTab,
     pushNotification, updateMonthlyData, evaluations, saveEvaluation,
-    saveEditedDoctor, addActivity, deleteActivity, deleteDoctor, saveDoctorOrder,
+    saveEditedDoctor, addActivity, deleteActivity, deleteDoctor, saveDoctorOrder, toggleDoctorStatus,
     submitShiftRequest: ctxSubmitShiftRequest, updateRequestStatus,
     isGeneratingAI, aiReport, setAiReport,
     registrationRequests, approveRegistration, rejectRegistration,
@@ -686,14 +686,7 @@ const handleSubmitShiftRequest = async () => {
                 selectedMonth={selectedMonth}
                 selectedYear={selectedYear}
                 isAdmin={session?.r === 'admin'}
-                onUpdateDoctorStatus={async (id, st) => {
-                  if(!confirm(`¿Desea cambiar el estado a ${st.toUpperCase()}?`)) return;
-                  try {
-                    await updateDoc(doc(db, 'doctors', id.toString()), { st });
-                  } catch (e) {
-                    handleFirestoreError(e, OperationType.WRITE, `doctors/${id}`);
-                  }
-                }}
+                onUpdateDoctorStatus={toggleDoctorStatus}
                 onEditDoctor={(docData) => {
                   setEditingDoc(docData);
                 }}
