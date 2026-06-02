@@ -738,7 +738,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addVariable = useCallback(async (slot: SlotType, code: string, hours: number) => {
     if (!code.trim()) { alert('La sigla no puede estar vacía.'); return; }
     const upper = code.trim().toUpperCase();
-    if (['L','CAP','X','PT'].includes(upper)) { alert('Esta sigla es reservada del sistema.'); return; }
+    if (['CAP','X','PT'].includes(upper)) { alert('Esta sigla es reservada del sistema.'); return; }
     const updated = { ...variables, [slot]: { ...variables[slot], [upper]: hours } };
     try {
       await setDoc(doc(db, 'settings', 'variables'), updated);
@@ -749,7 +749,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [variables, notify]);
 
   const removeVariable = useCallback(async (slot: SlotType, code: string) => {
-    if (['L','CAP','X'].includes(code)) { alert('Esta sigla es reservada del sistema.'); return; }
+    if (['CAP','X'].includes(code)) { alert('Esta sigla es reservada del sistema.'); return; }
     if (!confirm(`¿Eliminar la sigla ${code}?`)) return;
     const newSlot = { ...variables[slot] };
     delete newSlot[code];

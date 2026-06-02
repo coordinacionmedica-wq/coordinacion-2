@@ -196,7 +196,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                       const m = currentMonthData[med.id]?.m?.[d] || 'X';
                       const t = currentMonthData[med.id]?.t?.[d] || 'X';
                       const n = currentMonthData[med.id]?.n?.[d] || 'X';
-                      const activeCount = [m, t, n].filter(v => v !== 'X' && v !== 'PT').length;
+                      const activeCount = [m, t, n].filter(v => v !== 'X' && v !== 'PT' && v !== 'L' && v !== 'CAP').length;
                       const hasPT = [m, t, n].includes('PT');
                       const bg = activeCount === 0 ? '' : activeCount === 1 ? 'bg-emerald-100' : activeCount >= 2 ? 'bg-sky-200' : '';
                       return (

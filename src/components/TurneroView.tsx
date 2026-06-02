@@ -76,7 +76,7 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
           { s: 'm' as SlotType, v: m },
           { s: 't' as SlotType, v: t },
           { s: 'n' as SlotType, v: n }
-        ].filter(x => x.v !== 'X' && x.v !== 'PT');
+        ].filter(x => x.v !== 'X' && x.v !== 'PT' && x.v !== 'L' && x.v !== 'CAP');
         if (activeSlots.length > 1) {
           activeSlots.forEach(as => {
             const key = `${doc.id}-${d}-${as.s}`;
@@ -84,9 +84,9 @@ export function TurneroView({ onOpenCallModal, onDownloadTemplate, onImportExcel
             map[key].push({ type: 'overlap', message: `Sobrecarga: El médico tiene múltiples turnos activos el mismo día (${activeSlots.map(x => x.s.toUpperCase()).join(', ')}).` });
           });
         }
-        if (n !== 'X' && n !== 'PT' && d < daysInMonth) {
+        if (n !== 'X' && n !== 'PT' && n !== 'L' && n !== 'CAP' && d < daysInMonth) {
           const nextM = currentMonthData[doc.id]?.m?.[d + 1] || 'X';
-          if (nextM !== 'X' && nextM !== 'PT') {
+          if (nextM !== 'X' && nextM !== 'PT' && nextM !== 'L' && nextM !== 'CAP') {
             const keyN = `${doc.id}-${d}-n`;
             const keyM = `${doc.id}-${d + 1}-m`;
             if (!map[keyN]) map[keyN] = [];
