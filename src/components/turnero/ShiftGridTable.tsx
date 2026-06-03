@@ -99,6 +99,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
     if (rows.length === 0) return;
 
     let cellCount = 0;
+    let errorCount = 0;
     for (let ri = 0; ri < rows.length; ri++) {
       const cells = rows[ri].split('\t');
       const currentRowIdx = startRowIdx + ri;
@@ -109,13 +110,18 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
         const day = startDay + ci;
         if (day > daysInMonth) break;
         const value = cells[ci].trim() || 'X';
-        await onSetShift(doctorId, day, slot, value);
-        cellCount++;
+        try {
+          await onSetShift(doctorId, day, slot, value);
+          cellCount++;
+        } catch (err) {
+          errorCount++;
+        }
       }
     }
 
     if (editingCell) setEditingCell(null);
-    setPasteMessage(`✓ ${cellCount} celdas pegadas`);
+    const errorMsg = errorCount > 0 ? ` (${errorCount} con error)` : '';
+    setPasteMessage(`✓ ${cellCount} celdas pegadas${errorMsg}`);
     setTimeout(() => setPasteMessage(''), 3000);
   };
 
