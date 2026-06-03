@@ -62,16 +62,41 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
 
   // Bulk paste handler: parses tab/newline-separated clipboard data from Excel
   const handleBulkPaste = async (e: React.ClipboardEvent) => {
-    if (!isAdmin || !editingCell) return;
+    if (!isAdmin) return;
+    
     const text = e.clipboardData.getData('text/plain');
-    if (!text || !text.includes('\t')) return; // Only handle multi-cell paste (has tabs)
+    if (!text) return;
 
+    // If no editing cell, use first visible doctor/slot as starting point
+    const startRowIdx = editingCell 
+      ? rowOrder.findIndex(r => r.doctorId === editingCell.doctorId && r.slot === editingCell.slot)
+      : 0;
+    
+    const startDay = editingCell ? editingCell.day : 1;
+
+    // Handle single cell paste (no tabs)
+    if (!text.includes('\t')) {
+      e.preventDefault();
+      const value = text.trim() || 'X';
+      // Paste to current editing cell or first visible cell
+      if (editingCell) {
+        await onSetShift(editingCell.doctorId, editingCell.day, editingCell.slot, value);
+        setEditingCell(null);
+        setPasteMessage(`✓ 1 celda pegada`);
+      } else if (rowOrder.length > 0) {
+        // Paste to first visible cell
+        const { doctorId, slot } = rowOrder[0];
+        await onSetShift(doctorId, startDay, slot, value);
+        setPasteMessage(`✓ 1 celda pegada`);
+      }
+      setTimeout(() => setPasteMessage(''), 3000);
+      return;
+    }
+
+    // Handle multi-cell paste (with tabs)
     e.preventDefault();
     const rows = text.split(/\r?\n/).filter(r => r.trim());
     if (rows.length === 0) return;
-
-    const startRowIdx = rowOrder.findIndex(r => r.doctorId === editingCell.doctorId && r.slot === editingCell.slot);
-    const startDay = editingCell.day;
 
     let cellCount = 0;
     for (let ri = 0; ri < rows.length; ri++) {
@@ -89,7 +114,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
       }
     }
 
-    setEditingCell(null);
+    if (editingCell) setEditingCell(null);
     setPasteMessage(`✓ ${cellCount} celdas pegadas`);
     setTimeout(() => setPasteMessage(''), 3000);
   };
