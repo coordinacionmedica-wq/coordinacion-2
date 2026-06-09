@@ -502,6 +502,38 @@ async function startServer() {
     }
   });
 
+  // Temporary endpoint to import siglas directly from JSON file
+  app.post("/api/import-siglas", async (req, res) => {
+    if (!dbAdmin) {
+      return res.status(500).json({ success: false, error: "Firebase Admin not configured" });
+    }
+
+    try {
+      const siglasPath = path.join(__dirname, "siglas_configuradas.json");
+      if (!fs.existsSync(siglasPath)) {
+        return res.status(404).json({ success: false, error: "siglas_configuradas.json not found" });
+      }
+
+      const siglasData = JSON.parse(fs.readFileSync(siglasPath, "utf-8"));
+      
+      await dbAdmin.collection("settings").doc("variables").set(siglasData);
+      
+      console.log("Siglas importadas exitosamente a Firebase");
+      res.json({ 
+        success: true, 
+        message: "Siglas importadas exitosamente",
+        count: {
+          mañana: Object.keys(siglasData.m || {}).length,
+          tarde: Object.keys(siglasData.t || {}).length,
+          noche: Object.keys(siglasData.n || {}).length
+        }
+      });
+    } catch (error) {
+      console.error("Error importing siglas:", error);
+      res.status(500).json({ success: false, error: (error as Error).message });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

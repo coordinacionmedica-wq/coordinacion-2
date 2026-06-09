@@ -384,6 +384,75 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
         </div>
       </div>
 
+      {/* SIGLAS POR JORNADA */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2.5 bg-purple-50 rounded-xl text-purple-600">
+             <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-black text-slate-800">Siglas por Jornada</h3>
+            <p className="text-xs text-purple-600 font-bold uppercase tracking-widest">Organización de Códigos Horarios</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Mañana */}
+          <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+            <h4 className="font-black text-amber-800 uppercase text-sm mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 bg-amber-500 rounded-full"></span> Mañana (M)
+            </h4>
+            <div className="max-h-48 overflow-y-auto space-y-1">
+              {Object.entries(variables.m || {}).sort(([a], [b]) => a.localeCompare(b)).map(([sigla, horas]) => (
+                <div key={sigla} className="flex justify-between items-center text-xs bg-white px-2 py-1 rounded border border-amber-200">
+                  <span className="font-bold text-slate-700">{sigla}</span>
+                  <span className="text-amber-600 font-black">{horas}h</span>
+                </div>
+              ))}
+              {Object.keys(variables.m || {}).length === 0 && (
+                <p className="text-xs text-slate-400 italic">No hay siglas configuradas</p>
+              )}
+            </div>
+          </div>
+
+          {/* Tarde */}
+          <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+            <h4 className="font-black text-blue-800 uppercase text-sm mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 bg-blue-500 rounded-full"></span> Tarde (T)
+            </h4>
+            <div className="max-h-48 overflow-y-auto space-y-1">
+              {Object.entries(variables.t || {}).sort(([a], [b]) => a.localeCompare(b)).map(([sigla, horas]) => (
+                <div key={sigla} className="flex justify-between items-center text-xs bg-white px-2 py-1 rounded border border-blue-200">
+                  <span className="font-bold text-slate-700">{sigla}</span>
+                  <span className="text-blue-600 font-black">{horas}h</span>
+                </div>
+              ))}
+              {Object.keys(variables.t || {}).length === 0 && (
+                <p className="text-xs text-slate-400 italic">No hay siglas configuradas</p>
+              )}
+            </div>
+          </div>
+
+          {/* Noche */}
+          <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
+            <h4 className="font-black text-indigo-800 uppercase text-sm mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 bg-indigo-500 rounded-full"></span> Noche (N)
+            </h4>
+            <div className="max-h-48 overflow-y-auto space-y-1">
+              {Object.entries(variables.n || {}).sort(([a], [b]) => a.localeCompare(b)).map(([sigla, horas]) => (
+                <div key={sigla} className="flex justify-between items-center text-xs bg-white px-2 py-1 rounded border border-indigo-200">
+                  <span className="font-bold text-slate-700">{sigla}</span>
+                  <span className="text-indigo-600 font-black">{horas}h</span>
+                </div>
+              ))}
+              {Object.keys(variables.n || {}).length === 0 && (
+                <p className="text-xs text-slate-400 italic">No hay siglas configuradas</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* IMPORT TEMPLATES */}
       <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
@@ -442,7 +511,7 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
                 <h4 className="font-black text-slate-800 uppercase text-sm tracking-tight">Catálogo de Siglas</h4>
                 <p className="text-xs text-slate-400 font-bold leading-relaxed uppercase">Configurar códigos horarios y su respectiva carga horaria.</p>
             </button>
-            <label className="flex items-center justify-center gap-2 p-4 bg-amber-50 text-amber-700 rounded-2xl cursor-pointer hover:bg-amber-100 transition-all font-black text-xs uppercase tracking-widest border border-amber-200">
+            <label className="flex items-center justify-center gap-2 p-4 bg-amber-50 text-amber-700 rounded-2xl cursor-pointer hover:bg-amber-100 transition-all font-black text-xs uppercase tracking-widest border border-amber-200 shadow-sm">
               <Database className="w-4 h-4" /> Importar Siglas
               <input type="file" className="hidden" accept=".xlsx,.xls" onChange={(e) => handleFileUpload(e, 'siglas')} />
             </label>
