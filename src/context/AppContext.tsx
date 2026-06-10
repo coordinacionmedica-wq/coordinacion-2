@@ -557,7 +557,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         alert('Su contraseña ha expirado (vence cada 3 meses). Por favor cámbiela.');
       }
       const prefix = docData.genero === 'F' ? 'Dra.' : 'Dr.';
-      const sess: UserSession = { r: 'doctor', n: `${prefix} ${docData.nombre}`, doctorId: docData.id };
+      // Normalizar nombre a formato título (primera letra mayúscula, resto minúsculas)
+      const normalizeName = (name: string) => {
+        return name
+          .toLowerCase()
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      };
+      const normalizedNombre = normalizeName(docData.nombre);
+      const sess: UserSession = { r: 'doctor', n: `${prefix} ${normalizedNombre}`, doctorId: docData.id };
       setSession(sess);
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
     } catch (err) {
@@ -573,7 +582,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (result?.user?.email) {
         const email = result.user.email;
         if (ADMIN_EMAILS.includes(email)) {
-          const sess: UserSession = { r: 'admin', n: result.user.displayName || email };
+          // Normalizar nombre a formato título (primera letra mayúscula, resto minúsculas)
+          const normalizeName = (name: string) => {
+            return name
+              .toLowerCase()
+              .split(' ')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
+          };
+          const displayName = result.user.displayName || email;
+          const normalizedDisplayName = normalizeName(displayName);
+          const sess: UserSession = { r: 'admin', n: normalizedDisplayName };
           setSession(sess);
           localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sess));
         }
