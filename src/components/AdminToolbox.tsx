@@ -10,12 +10,30 @@ import {
   CheckCircle,
   Database,
   Users as UsersIcon,
-  Clock
+  Clock,
+  GripVertical
 } from 'lucide-react';
 import { AIEngineSettings, SlotType, VarSlotConfig, Doctor } from '../types';
 import * as XLSX from 'xlsx';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface AdminToolboxProps {
   onNotify: (msg: string, type: 'success' | 'error' | 'info') => void;
@@ -25,6 +43,44 @@ interface AdminToolboxProps {
   isGenerating: boolean;
   selectedMonth: number;
   selectedYear: number;
+}
+
+interface SiglaItem {
+  id: string;
+  sigla: string;
+  horas: number;
+}
+
+// Sortable item component
+function SortableSigla({ id, sigla, horas, color }: { id: string; sigla: string; horas: number; color: string }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex justify-between items-center text-xs bg-white px-2 py-1 rounded border hover:shadow-md cursor-move"
+      {...attributes}
+      {...listeners}
+    >
+      <div className="flex items-center gap-2">
+        <GripVertical className="w-3 h-3 text-slate-400" />
+        <span className="font-bold text-slate-700">{sigla}</span>
+      </div>
+      <span className={`${color} font-black`}>{horas}h</span>
+    </div>
+  );
 }
 
 export const AdminToolbox: React.FC<AdminToolboxProps> = ({ 
@@ -49,6 +105,84 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
   });
 
   const [isLoading, setIsLoading] = useState(true);
+
+  // Convert variables object to arrays for drag and drop
+  const [siglasState, setSiglasState] = useState<{
+    m: SiglaItem[];
+    t: SiglaItem[];
+    n: SiglaItem[];
+  }>({
+    m: Object.entries(variables.m || {}).map(([sigla, horas], idx) => ({ id: `m-${sigla}`, sigla, horas })),
+    t: Object.entries(variables.t || {}).map(([sigla, horas], idx) => ({ id: `t-${sigla}`, sigla, horas })),
+    n: Object.entries(variables.n || {}).map(([sigla, horas], idx) => ({ id: `n-${sigla}`, sigla, horas })),
+  });
+
+  // Update siglasState when variables change
+  useEffect(() => {
+    setSiglasState({
+      m: Object.entries(variables.m || {}).map(([sigla, horas]) => ({ id: `m-${sigla}`, sigla, horas })),
+      t: Object.entries(variables.t || {}).map(([sigla, horas]) => ({ id: `t-${sigla}`, sigla, horas })),
+      n: Object.entries(variables.n || {}).map(([sigla, horas]) => ({ id: `n-${sigla}`, sigla, horas })),
+    });
+  }, [variables]);
+
+  // Sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      // Determine source and destination slots
+      const activeId = active.id as string;
+      const overId = over.id as string;
+      
+      const activeSlot = activeId.charAt(0) as 'm' | 't' | 'n';
+      const overSlot = overId.charAt(0) as 'm' | 't' | 'n';
+      
+      const activeIndex = siglasState[activeSlot].findIndex(item => item.id === activeId);
+      const overIndex = siglasState[overSlot].findIndex(item => item.id === overId);
+      
+      if (activeIndex === -1 || overIndex === -1) return;
+      
+      const newSiglasState = { ...siglasState };
+      
+      if (activeSlot === overSlot) {
+        // Reorder within same slot
+        newSiglasState[activeSlot] = arrayMove(siglasState[activeSlot], activeIndex, overIndex);
+      } else {
+        // Move between slots
+        const [movedItem] = newSiglasState[activeSlot].splice(activeIndex, 1);
+        // Update the id to reflect new slot
+        movedItem.id = `${overSlot}-${movedItem.sigla}`;
+        newSiglasState[overSlot].splice(overIndex, 0, movedItem);
+      }
+      
+      setSiglasState(newSiglasState);
+      
+      // Save to Firestore
+      try {
+        const newVars: VarSlotConfig = { m: {}, t: {}, n: {} };
+        newSiglasState.m.forEach(item => { newVars.m[item.sigla] = item.horas; });
+        newSiglasState.t.forEach(item => { newVars.t[item.sigla] = item.horas; });
+        newSiglasState.n.forEach(item => { newVars.n[item.sigla] = item.horas; });
+        
+        await setDoc(doc(db, 'settings', 'variables'), newVars);
+        onNotify("Orden de siglas actualizado", 'success');
+      } catch (err) {
+        console.error("Error saving siglas order:", err);
+        onNotify("Error al guardar orden de siglas", 'error');
+        // Revert on error
+        setSiglasState(siglasState);
+      }
+    }
+  };
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -386,71 +520,76 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
 
       {/* SIGLAS POR JORNADA */}
       <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2.5 bg-purple-50 rounded-xl text-purple-600">
-             <Clock className="w-5 h-5" />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-purple-50 rounded-xl text-purple-600">
+               <Clock className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-black text-slate-800">Siglas por Jornada</h3>
+              <p className="text-xs text-purple-600 font-bold uppercase tracking-widest">Organización de Códigos Horarios (Drag & Drop)</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-black text-slate-800">Siglas por Jornada</h3>
-            <p className="text-xs text-purple-600 font-bold uppercase tracking-widest">Organización de Códigos Horarios</p>
-          </div>
+          <label className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl cursor-pointer hover:bg-amber-100 transition-all font-black text-xs uppercase tracking-widest border border-amber-200 shadow-sm">
+            <Database className="w-4 h-4" /> Importar Siglas
+            <input type="file" className="hidden" accept=".xlsx,.xls" onChange={(e) => handleFileUpload(e, 'siglas')} />
+          </label>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Mañana */}
-          <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
-            <h4 className="font-black text-amber-800 uppercase text-sm mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 bg-amber-500 rounded-full"></span> Mañana (M)
-            </h4>
-            <div className="max-h-48 overflow-y-auto space-y-1">
-              {Object.entries(variables.m || {}).sort(([a], [b]) => a.localeCompare(b)).map(([sigla, horas]) => (
-                <div key={sigla} className="flex justify-between items-center text-xs bg-white px-2 py-1 rounded border border-amber-200">
-                  <span className="font-bold text-slate-700">{sigla}</span>
-                  <span className="text-amber-600 font-black">{horas}h</span>
-                </div>
-              ))}
-              {Object.keys(variables.m || {}).length === 0 && (
-                <p className="text-xs text-slate-400 italic">No hay siglas configuradas</p>
-              )}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Mañana */}
+            <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+              <h4 className="font-black text-amber-800 uppercase text-sm mb-3 flex items-center gap-2">
+                <span className="w-2 h-2 bg-amber-500 rounded-full"></span> Mañana (M)
+              </h4>
+              <div className="max-h-48 overflow-y-auto space-y-1">
+                <SortableContext items={siglasState.m.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                  {siglasState.m.map((item) => (
+                    <SortableSigla key={item.id} id={item.id} sigla={item.sigla} horas={item.horas} color="text-amber-600" />
+                  ))}
+                </SortableContext>
+                {siglasState.m.length === 0 && (
+                  <p className="text-xs text-slate-400 italic">No hay siglas configuradas</p>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Tarde */}
-          <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-            <h4 className="font-black text-blue-800 uppercase text-sm mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 bg-blue-500 rounded-full"></span> Tarde (T)
-            </h4>
-            <div className="max-h-48 overflow-y-auto space-y-1">
-              {Object.entries(variables.t || {}).sort(([a], [b]) => a.localeCompare(b)).map(([sigla, horas]) => (
-                <div key={sigla} className="flex justify-between items-center text-xs bg-white px-2 py-1 rounded border border-blue-200">
-                  <span className="font-bold text-slate-700">{sigla}</span>
-                  <span className="text-blue-600 font-black">{horas}h</span>
-                </div>
-              ))}
-              {Object.keys(variables.t || {}).length === 0 && (
-                <p className="text-xs text-slate-400 italic">No hay siglas configuradas</p>
-              )}
+            {/* Tarde */}
+            <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+              <h4 className="font-black text-blue-800 uppercase text-sm mb-3 flex items-center gap-2">
+                <span className="w-2 h-2 bg-blue-500 rounded-full"></span> Tarde (T)
+              </h4>
+              <div className="max-h-48 overflow-y-auto space-y-1">
+                <SortableContext items={siglasState.t.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                  {siglasState.t.map((item) => (
+                    <SortableSigla key={item.id} id={item.id} sigla={item.sigla} horas={item.horas} color="text-blue-600" />
+                  ))}
+                </SortableContext>
+                {siglasState.t.length === 0 && (
+                  <p className="text-xs text-slate-400 italic">No hay siglas configuradas</p>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Noche */}
-          <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
-            <h4 className="font-black text-indigo-800 uppercase text-sm mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 bg-indigo-500 rounded-full"></span> Noche (N)
-            </h4>
-            <div className="max-h-48 overflow-y-auto space-y-1">
-              {Object.entries(variables.n || {}).sort(([a], [b]) => a.localeCompare(b)).map(([sigla, horas]) => (
-                <div key={sigla} className="flex justify-between items-center text-xs bg-white px-2 py-1 rounded border border-indigo-200">
-                  <span className="font-bold text-slate-700">{sigla}</span>
-                  <span className="text-indigo-600 font-black">{horas}h</span>
-                </div>
-              ))}
-              {Object.keys(variables.n || {}).length === 0 && (
-                <p className="text-xs text-slate-400 italic">No hay siglas configuradas</p>
-              )}
+            {/* Noche */}
+            <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
+              <h4 className="font-black text-indigo-800 uppercase text-sm mb-3 flex items-center gap-2">
+                <span className="w-2 h-2 bg-indigo-500 rounded-full"></span> Noche (N)
+              </h4>
+              <div className="max-h-48 overflow-y-auto space-y-1">
+                <SortableContext items={siglasState.n.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                  {siglasState.n.map((item) => (
+                    <SortableSigla key={item.id} id={item.id} sigla={item.sigla} horas={item.horas} color="text-indigo-600" />
+                  ))}
+                </SortableContext>
+                {siglasState.n.length === 0 && (
+                  <p className="text-xs text-slate-400 italic">No hay siglas configuradas</p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </DndContext>
       </div>
 
       {/* IMPORT TEMPLATES */}
@@ -509,7 +648,7 @@ export const AdminToolbox: React.FC<AdminToolboxProps> = ({
                   <Clock className="w-6 h-6" />
                 </div>
                 <h4 className="font-black text-slate-800 uppercase text-sm tracking-tight">Catálogo de Siglas</h4>
-                <p className="text-xs text-slate-400 font-bold leading-relaxed uppercase">Configurar códigos horarios y su respectiva carga horaria.</p>
+                <p className="text-xs text-slate-400 font-bold leading-relaxed uppercase">Descargar configuración actual de siglas.</p>
             </button>
             <label className="flex items-center justify-center gap-2 p-4 bg-amber-50 text-amber-700 rounded-2xl cursor-pointer hover:bg-amber-100 transition-all font-black text-xs uppercase tracking-widest border border-amber-200 shadow-sm">
               <Database className="w-4 h-4" /> Importar Siglas
