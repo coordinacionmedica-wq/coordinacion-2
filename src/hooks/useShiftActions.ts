@@ -18,7 +18,8 @@ export function useShiftActions() {
     // Special mapping: '0' maps to 'L' (libre)
     if (trimmed === '0') trimmed = 'L';
     
-    const reservedUpper = ['X', 'PT', 'L', 'CAP'];
+    // Extended reserved list including P and Compensa
+    const reservedUpper = ['X', 'PT', 'L', 'CAP', 'P', 'COMPENSA'];
     const varKeys = Object.keys(variables[slot]);
     // Case-insensitive match: find the canonical key from variables or reserved list
     const matchedVar = varKeys.find(k => k.toUpperCase() === trimmed.toUpperCase());
@@ -29,6 +30,9 @@ export function useShiftActions() {
       notify(`Sigla "${trimmed}" no válida para ${slot === 'm' ? 'Mañana' : slot === 't' ? 'Tarde' : 'Noche'}. Válidas: ${validSiglas}`, 'error');
       return;
     }
+    
+    // Normalize to lowercase for display in grid, but keep canonical form in storage
+    const displaySigla = sigla === 'X' ? 'X' : sigla.toLowerCase();
     const docShifts = currentMonthData[doctorId]
       ? { m: { ...currentMonthData[doctorId].m }, t: { ...currentMonthData[doctorId].t }, n: { ...currentMonthData[doctorId].n } }
       : { m: {}, t: {}, n: {} };

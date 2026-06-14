@@ -43,10 +43,71 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
   const [editingValue, setEditingValue] = useState('');
   const [pasteMessage, setPasteMessage] = useState('');
   const [focusedDoctorId, setFocusedDoctorId] = useState<number | null>(null);
+  const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set());
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectionStart, setSelectionStart] = useState<{ doctorId: number; day: number; slot: SlotType } | null>(null);
 
   const handleSetShift = async (doctorId: number, day: number, slot: SlotType, value: string) => {
     await onSetShift(doctorId, day, slot, value);
     setEditingCell(null);
+  };
+
+  // Multi-cell selection handlers
+  const getCellKey = (doctorId: number, day: number, slot: SlotType) => `${doctorId}-${day}-${slot}`;
+
+  const handleCellClick = (doctorId: number, day: number, slot: SlotType, e: React.MouseEvent) => {
+    if (!isAdmin) return;
+    
+    if (e.shiftKey && selectionStart) {
+      // Range selection
+      const newSelection = new Set<string>();
+      const startIdx = rowOrder.findIndex(r => r.doctorId === selectionStart.doctorId && r.slot === selectionStart.slot);
+      const endIdx = rowOrder.findIndex(r => r.doctorId === doctorId && r.slot === slot);
+      const minIdx = Math.min(startIdx, endIdx);
+      const maxIdx = Math.max(startIdx, endIdx);
+      const minDay = Math.min(selectionStart.day, day);
+      const maxDay = Math.max(selectionStart.day, day);
+      
+      for (let i = minIdx; i <= maxIdx; i++) {
+        const { doctorId: dId, slot: s } = rowOrder[i];
+        for (let d = minDay; d <= maxDay; d++) {
+          newSelection.add(getCellKey(dId, d, s));
+        }
+      }
+      setSelectedCells(newSelection);
+    } else if (e.ctrlKey || e.metaKey) {
+      // Toggle single cell selection
+      const key = getCellKey(doctorId, day, slot);
+      const newSelection = new Set(selectedCells);
+      if (newSelection.has(key)) {
+        newSelection.delete(key);
+      } else {
+        newSelection.add(key);
+      }
+      setSelectedCells(newSelection);
+      setSelectionStart({ doctorId, day, slot });
+    } else {
+      // Normal click - start editing or clear selection
+      if (selectedCells.size > 0) {
+        setSelectedCells(new Set());
+        setSelectionStart(null);
+      }
+      setEditingCell({ doctorId, day, slot });
+      setEditingValue((currentMonthData[doctorId]?.[slot]?.[day] || 'X') === 'X' ? '' : currentMonthData[doctorId]?.[slot]?.[day] || '');
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (!isAdmin || selectedCells.size === 0) return;
+    
+    for (const cellKey of selectedCells) {
+      const [doctorId, day, slot] = cellKey.split('-');
+      await onSetShift(Number(doctorId), Number(day), slot as SlotType, 'X');
+    }
+    setSelectedCells(new Set());
+    setSelectionStart(null);
+    setPasteMessage(`✓ ${selectedCells.size} celdas borradas`);
+    setTimeout(() => setPasteMessage(''), 3000);
   };
 
   // Build ordered list of (doctorId, slot) rows for paste navigation
@@ -139,6 +200,17 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
             Ver todos los médicos
           </button>
         )}
+        {selectedCells.size > 0 && isAdmin && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-600">{selectedCells.size} celdas seleccionadas</span>
+            <button
+              onClick={handleDeleteSelected}
+              className="flex items-center gap-1.5 bg-rose-500 text-white text-xs font-black px-3 py-1.5 rounded-full hover:bg-rose-600 shadow-md"
+            >
+              Borrar selección
+            </button>
+          </div>
+        )}
       </div>
 
       {pasteMessage && (
@@ -186,7 +258,8 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
               for (let d = 1; d <= daysInMonth; d++) {
                 (['m', 't', 'n'] as SlotType[]).forEach(slot => {
                   const sigla = currentMonthData[med.id]?.[slot]?.[d] || 'X';
-                  const peso = variables[slot][sigla] || 0;
+                  // Ensure empty/invalid siglas don't add hours
+                  const peso = (sigla && sigla !== 'X' && variables[slot][sigla]) ? variables[slot][sigla] : 0;
                   medTotalMonth += peso;
                   const wIdx = sundays.findIndex(sunD => d <= sunD);
                   if (wIdx !== -1) weeklyAcc[wIdx] += peso;
@@ -297,7 +370,9 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                     const d = i + 1;
                     const dow = new Date(selectedYear, selectedMonth, d).getDay();
                     const val = currentMonthData[med.id]?.[slot]?.[d] || 'X';
-                    const isPT = val === 'PT';
+                    // Display siglas in lowercase (except X which stays uppercase)
+                    const displayVal = val === 'X' ? 'X' : val.toLowerCase();
+                    const isPT = val.toUpperCase() === 'PT';
                     const isShift = val !== 'X';
                     const cellConflicts = conflicts.personal[`${med.id}-${d}-${slot}`] || [];
                     const hasConflict = cellConflicts.length > 0;
@@ -306,11 +381,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                     return (
                       <td
                         key={d}
-                        onClick={() => {
-                          if (!isAdmin) return;
-                          setEditingCell({ doctorId: med.id, day: d, slot });
-                          setEditingValue(val === 'X' ? '' : val);
-                        }}
+                        onClick={(e) => handleCellClick(med.id, d, slot, e)}
                         title={cellConflicts.map(c => c.message).join('\n')}
                         className={`
                           border border-slate-200 py-0.5 md:py-1 cursor-pointer
@@ -321,6 +392,7 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                           ${!isEditing && !isShift ? 'opacity-10 text-slate-400' : ''}
                           ${!isEditing && isPT ? 'text-amber-600 font-black' : 'text-slate-800 font-medium'}
                           ${!isEditing && hasConflict ? 'bg-rose-50 text-rose-600' : ''}
+                          ${selectedCells.has(getCellKey(med.id, d, slot)) ? 'bg-sky-200 ring-2 ring-sky-500' : ''}
                         `}
                       >
                         {isEditing ? (
@@ -336,10 +408,10 @@ export function ShiftGridTable(props: ShiftGridTableProps) {
                             onBlur={() => handleSetShift(med.id, d, slot, editingValue || 'X')}
                             className="w-full text-center bg-transparent outline-none text-emerald-700 text-[8px] md:text-xs"
                             style={{ minWidth: 22 }}
-                            maxLength={6}
+                            maxLength={10}
                           />
                         ) : (
-                          isShift ? (showGridHours ? `${variables[slot][val] || 0}` : val) : ''
+                          isShift ? (showGridHours ? `${variables[slot][val] || 0}` : displayVal) : ''
                         )}
                       </td>
                     );
